@@ -1,0 +1,3 @@
+# Use repository artifacts as canonical state
+
+Exspecso will keep product intent, workflow state, evidence, and decisions in directly reviewable repository artifacts rather than a database, cloud control plane, generated mirror, or chat memory. Entity metadata and accepted evidence are authoritative; checked-in `status.md` files are disposable, deterministic Status Summaries that improve human and agent orientation but never override their source artifacts or drive Delivery Loop transitions independently. This preserves portability, auditability, cold-start reconstruction, and human control at the cost of requiring careful schemas, atomic file updates, deterministic relationship validation, and projection-drift detection.

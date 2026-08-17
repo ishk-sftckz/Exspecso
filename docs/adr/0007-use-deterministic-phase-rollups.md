@@ -1,0 +1,3 @@
+# Use deterministic Phase roll-ups
+
+Phase status is derived from its required Specifications: `planned` before delivery starts, `in-progress` while some required work is underway or complete, `blocked` only when unfinished work has no progressable path, and `done` only when every required non-cancelled Specification is done. `baseline` is an explicit, never-inferred terminal marker for pre-existing brownfield capability that Exspecso did not deliver or verify, while `cancelled` requires an explicit user decision. Baseline capability does not enter the Delivery Loop; changes to it are planned as new work in an active delivery Phase.

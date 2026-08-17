@@ -1,0 +1,3 @@
+# Treat active Phase as an explicit navigation pointer
+
+Configuration may identify one `activePhase` to preserve orientation across sessions, but that pointer is not lifecycle authority and does not authorize or schedule work. It changes only through explicit confirmed Phase planning or selection and is cleared when a new Roadmap begins. Multiple Phases may be materialized, Roadmap order supplies the recommended next Phase, and Specification-scoped delivery remains subject to the global WIP limit and normal dependencies. When the pointed Phase becomes `done`, `baseline`, or `cancelled`, status recommends the next declared Phase without silently changing the pointer; a later independent Phase may be selected explicitly when another Phase is blocked.

@@ -1,0 +1,3 @@
+# Pin a repository-local CLI runtime
+
+Project configuration records the exact Exspecso CLI version and integrity metadata used by generated Runtime Adapters. Initialization installs that version into a disposable, gitignored repository-local Tool Runtime, and adapters invoke its local binary without unpinned `npx` execution, silent downloads, or automatic upgrades. Exspecso does not modify the host application's `package.json` and requires no global installation, preserving support for non-Node repositories. A missing or mismatched runtime stops with an explicit repair instruction for the pinned version. Tool upgrades are explicit operations that update the version pin, local runtime, adapters, and Adapter Manifest together.

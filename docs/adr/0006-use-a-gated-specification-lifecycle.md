@@ -1,0 +1,3 @@
+# Use a gated Specification lifecycle
+
+Specifications progress through `draft → in-review → approved → in-progress → done`, with explicit `needs-revision` and `cancelled` exits. The first Task activation creates `in-progress`; Task failure, blocking, correction, pending Closure Verification, and pending Final Review keep that state and are exposed through the Status Summary rather than inventing a Specification `blocked` status. Only changed intent creates `needs-revision`, while relevant post-completion evidence drift reopens `done` work as `in-progress` unless the approved Specification itself must change.

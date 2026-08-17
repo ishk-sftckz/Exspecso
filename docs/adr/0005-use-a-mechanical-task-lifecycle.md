@@ -1,0 +1,3 @@
+# Use a mechanical Task lifecycle
+
+Tasks use the validated lifecycle `planned → ready → in-progress → done`, with `verification-failed`, `blocked`, and `cancelled` as explicit branches. `planned` means the Task exists but its Plan or dependencies are not yet executable; the helper promotes it to `ready` only when the Plan is approved, dependencies have accepted Verified Checkpoints, its Evidence Contract is valid, and no blocker exists. Only Delivery Loop activation creates `in-progress`, only an accepted Verified Checkpoint creates `done`, and relevant evidence invalidation reopens `done` work as `verification-failed` rather than silently preserving completion.

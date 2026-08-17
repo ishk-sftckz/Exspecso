@@ -1,0 +1,3 @@
+# Reopen the smallest Evidence Boundary after review
+
+A `needs-implementation-fix` Final Review verdict references the smallest affected Task and Acceptance Criteria, moves that Task from `done` to `verification-failed`, and makes its prior Verified Checkpoint historical for the changed state. Dependents reopen only when impact analysis proves their Evidence Boundaries are affected. A Correction Episode with `trigger: review` reruns the complete affected Evidence Contract and produces a new revisioned checkpoint, after which affected Closure Verification and an independent Final Review run again. `needs-spec-revision` moves the Specification to `needs-revision` and stops implementation, while `human-review-required` blocks completion without inventing a fix.
