@@ -1,3 +1,0 @@
-# Keep Plan status independent of delivery progress
-
-Plan status represents only planning validity: `draft` while the delivery approach or Task set is being prepared, `ready` after the exact Plan revision and included Tasks receive Content-bound Approval with the Specification, and `superseded` after an approved replacement takes authority. Plans never become `in-progress` or `done`; Task and Specification lifecycles represent delivery progress. Failures, blockers, corrections, and completion therefore do not change Plan status. Relevant intent or implementation-scope revisions supersede the Plan and apply Revision Impact Record invalidation. Readiness Validation requires exactly one current `ready` Plan for an approved or in-progress Specification.

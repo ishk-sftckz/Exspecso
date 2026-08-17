@@ -1,3 +1,0 @@
-# Require parent revision to remove cancelled scope
-
-Cancellation terminates a Task, Specification, or Phase as a historical entity but does not count as completion, cascade automatically, or remove the entity from its parent's approved required scope. Until an approved parent revision removes or replaces it, the parent cannot become `done`: Task removal requires a Plan revision, Specification removal a Phase revision, and Phase removal a Roadmap revision. The Revision Impact Record determines affected dependencies, Acceptance Criteria, and evidence. A cancelled Roadmap is terminal without a parent revision. Status Summaries distinguish cancelled entities still required by current scope from cancelled entities removed by an approved revision.

@@ -1,3 +1,0 @@
-# Use immutable project-unique artifact identities
-
-Roadmaps, Phases, Specifications, Requirements, Acceptance Criteria, and Tasks receive immutable project-unique type-prefixed IDs such as `ROADMAP-001`, `PHASE-001`, `SPEC-001`, `REQ-001`, `AC-001`, and `TASK-001`. Identity remains stable across title, slug, directory, and wording changes, while revisions increment beneath the same ID. Cancelled and superseded entities remain addressable and their IDs are never reused. Parent relationships are explicit metadata instead of being inferred solely from paths, and reparenting approved work requires revision impact analysis. Runtime adapters and CLI operations target stable IDs; friendly names remain display conveniences.
