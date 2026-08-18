@@ -1,0 +1,1 @@
+{"content":"For a Node-targeted TypeScript package, module and moduleResolution should use nodenext; bundler resolution is for bundlers and can hide Node-invalid imports. Package type module produces ESM output.","source":"web","provider":"websearch","confidence":"MEDIUM","fetched_at":"2026-08-18T04:32:34.699Z","ttl":86400000,"kind":"docs"}

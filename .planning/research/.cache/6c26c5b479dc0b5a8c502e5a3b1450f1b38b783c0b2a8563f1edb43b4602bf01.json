@@ -1,0 +1,1 @@
+{"content":"OpenCode supports project .opencode command Markdown files, JSON/JSONC configuration, and project plugins. Its V2 plugin API is beta, so V1 should use stable command files and invoke the exspecso helper rather than depend on plugin hooks.","source":"web","provider":"websearch","confidence":"MEDIUM","fetched_at":"2026-08-18T04:32:34.939Z","ttl":86400000,"kind":"web"}
