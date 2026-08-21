@@ -1,1 +1,0 @@
-{"content":"Claude Code plugins are self-contained directories with a .claude-plugin manifest and skills, hooks, agents, MCP, and bin assets. For a distributable workflow use a plugin, with native commands/skills calling a bundled deterministic helper.","source":"web","provider":"websearch","confidence":"MEDIUM","fetched_at":"2026-08-18T04:32:34.785Z","ttl":86400000,"kind":"web"}

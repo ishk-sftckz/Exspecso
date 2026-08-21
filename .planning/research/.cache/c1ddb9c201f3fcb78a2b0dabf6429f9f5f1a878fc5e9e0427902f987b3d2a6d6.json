@@ -1,1 +1,0 @@
-{"content":"Node production applications should use Active or Maintenance LTS releases. In August 2026, set the package engine floor to Node >=24, the supported active LTS line, rather than tracking Current releases.","source":"web","provider":"websearch","confidence":"MEDIUM","fetched_at":"2026-08-18T04:32:34.556Z","ttl":86400000,"kind":"docs"}

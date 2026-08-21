@@ -1,1 +1,0 @@
-{"content":"Claude Code supports project-scoped skills in .claude/skills; each has SKILL.md, is directly invocable, and may package support files. Use these as the native Claude adapter surface, but keep Exspecso state outside the adapter.","source":"web","provider":"websearch","confidence":"MEDIUM","fetched_at":"2026-08-18T04:32:01.166Z","ttl":86400000,"kind":"web"}
