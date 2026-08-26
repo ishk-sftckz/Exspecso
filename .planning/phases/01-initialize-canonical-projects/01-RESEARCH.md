@@ -347,10 +347,10 @@ Source: Inquirer requires an interactive TTY; repeatable `multiple: true` CLI op
    - **Accepted boundary (2026-08-26, D-19):** Phase 1 proves process interruption, injected exceptions, and killed-process recovery at every declared promotion step. Physical power-loss durability and universal APFS/NTFS/ext4 guarantees are explicitly outside the Phase 1 evidence claim until separate platform evidence exists.
    - Planning consequence: Implement journaled recovery and deterministic fault injection now; phrase every ART-07 acceptance criterion and completion claim within this evidence boundary.
 
-2. **Which initial artifact IDs must be materialized in Phase 1?**
+2. **RESOLVED — Which initial artifact IDs must be materialized in Phase 1?**
    - What we know: The initial artifacts are minimal, while later Roadmap/Phase/Spec artifacts are lazy. [VERIFIED: .planning/REQUIREMENTS.md:15-18]
-   - What's unclear: The exact stable ID assigned to the initial constitution/configuration family is not yet locked.
-   - Recommendation: Add a planner checkpoint to freeze the initial artifact schema and ID vocabulary before implementation; preserve the already locked future `ROADMAP` literal. Quote: “one stable `ROADMAP` artifact at `.exspecso/roadmap.md`.” [VERIFIED: .planning/REQUIREMENTS.md:30]
+   - **Accepted vocabulary (2026-08-26, D-20):** `ROADMAP`, `PHASE-NNN`, `SPEC-NNN`, `REQ-NNN`, `AC-NNN`, `PLAN-NNN`, `TASK-NNN`, `DEC-NNN`, and `FINDING-NNN` are the exact public identifier families.
+   - Materialization boundary: `init` creates only the minimal project config and constitution required by D-01 through D-03; it does not eagerly create Roadmap, Phase, Spec, Plan, Task, Decision, or finding artifacts. The parser/resolver may recognize the D-20 vocabulary before those deeper artifacts become actionable.
 
 ## Environment Availability
 

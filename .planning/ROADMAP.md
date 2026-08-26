@@ -33,7 +33,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
 **Plans**: 6 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Verify flagged packages and freeze the stable-ID vocabulary
+- [ ] 01-01-PLAN.md — Verify flagged package versions before dependency installation
 - [ ] 01-02-PLAN.md — Prove the packaged Codex initializer tracer and containing Git-root behavior
 - [ ] 01-03-PLAN.md — Add explicit runtime selection and all native adapter outputs
 - [ ] 01-04-PLAN.md — Encode canonical artifact schemas, stable-ID resolution, and aggregate validation
