@@ -1,0 +1,7 @@
+docs:
+  - path: docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md
+    type: ADR
+    precedence: 0
+  - path: docs/specs/SPEC-exspecso-v13-phase-oriented-workflow.md
+    type: SPEC
+    precedence: 10

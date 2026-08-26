@@ -13,17 +13,18 @@ V1 ships as one local-first TypeScript/Node npm package. Human-readable Markdown
 ### Constraints
 
 - **Canonical state**: Ordinary Markdown and small JSON files in the repository — users must be able to inspect, edit, diff, and reconstruct project truth directly.
-- **Technology**: One TypeScript/Node npm package and one codebase — the canonical v12 build target; specific supporting libraries will be selected through current ecosystem research.
+- **Technology**: One TypeScript/Node npm package and one codebase — the canonical v13 build target; specific supporting libraries will be selected through current ecosystem research.
 - **Runtime support**: Claude Code, OpenAI Codex, and OpenCode are first-class V1 targets — each must preserve shared operations, artifacts, and the same portable `exspecso-<operation>` skill IDs.
 - **Command notation**: Public Exspecso documentation uses `/exspecso-<operation>` consistently. Runtime adapters may translate only a host-owned invocation sigil when required (for example, Codex explicitly invokes a skill as `$exspecso-start`); the `exspecso-<operation>` identity, arguments, behavior, and artifacts remain unchanged.
 - **Architecture**: Three logical layers (canonical artifacts, deterministic helper, runtime orchestration) — reasoning and mechanical bookkeeping must remain separated.
 - **Planning**: Coverage before compression and progressive elaboration — no fixed artifact-count targets, no orphan work, and no future-only scope.
 - **Roadmap lifecycle**: One stable `ROADMAP` at `.exspecso/roadmap.md` — no numbered Roadmap folders, active-Roadmap selector, separate Roadmap status artifact, or `/exspecso-new-roadmap` command in V1.
-- **Phase grooming**: `/exspecso-start` records `planning.initialPhaseGrooming` as `progressive` (default) or `all-phases` — both preserve lazy executable Spec materialization.
-- **Execution**: One approved Spec per Delivery Loop and WIP=1 by default — parallel Tasks require proven independence, non-conflicting change surfaces, independent verification, and independent checkpoints.
+- **Planning surface**: `/exspecso-start` always creates the lightweight Phase and Spec Roadmap map; `/exspecso-plan PHASE-NNN` deeply plans every declared Spec while preserving independent Spec artifacts.
+- **Execution**: One approved Phase per user-facing Delivery Loop, one active internal Spec Delivery Loop at a time by default, and Task WIP=1 — parallel Tasks require proven independence, non-conflicting change surfaces, independent verification, and independent checkpoints.
 - **Dependencies**: Explicit stable IDs form acyclic Phase, Spec, and Task graphs — dependencies gate delivery readiness, while declared order is only a preference among ready work.
 - **Verification**: Every Acceptance Criterion declares verification intent before implementation — evidence strength must match the behavior claimed.
 - **Verification integrity**: Builders cannot weaken, delete, skip, or reinterpret approved verification merely to obtain a pass — conflicts require escalation.
+- **Completion**: A Phase becomes done only after every required Spec is reviewed and done and any declared Phase-level integration or closure verification passes.
 - **Continuity**: Every Task must be independently reconstructible from canonical artifacts and repository state — a physical fresh session is optional runtime strategy.
 - **Checkpoints**: Resume checkpoints preserve incomplete-work continuity; verified checkpoints alone establish completion — Git repositories default to an atomic commit per verified Task.
 - **Recovery**: Correction is bounded by explicit attempts and stop conditions — it may not expand scope or replace the evidence contract that found the failure.

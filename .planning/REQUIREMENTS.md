@@ -1,6 +1,7 @@
 # Requirements: Exspecso
 
 **Defined:** 2026-08-21
+**Updated:** 2026-08-26 for Documentation v13 Phase-oriented workflow
 **Core Value:** Approved specs must survive context limits, implementation, failure, verification, runtime changes, and session boundaries without losing intent or allowing unproven work to count as complete.
 
 ## v1 Requirements
@@ -40,19 +41,19 @@
 - [ ] **DISC-08**: User confirms the synthesized project direction before the Brief, Standards, or Roadmap becomes authoritative.
 - [ ] **DISC-09**: User receives a project Brief, applicable Standards, and one canonical `.exspecso/roadmap.md` after confirmed orientation.
 - [ ] **DISC-10**: User can resume an interrupted orientation workflow from persisted confirmed answers and current discovery state without relying on prior chat history.
-- [ ] **DISC-11**: User can choose `progressive` or `all-phases` as the initial Phase-grooming horizon after confirming project direction.
-- [ ] **DISC-12**: User can choose `progressive` to keep every Phase as a concise Roadmap declaration until `/exspecso-plan PHASE-NNN` materializes it.
-- [ ] **DISC-13**: User can choose `all-phases` to materialize every declared Phase at Phase-planning depth without creating executable Spec artifacts.
+- [ ] **DISC-11**: User receives the smallest complete lightweight Spec map under every Roadmap Phase after confirming project direction.
+- [ ] **DISC-12**: User receives only lightweight Phase and Spec declarations from `/exspecso-start`, without Phase folders or detailed Spec, Plan, or Task artifacts.
+- [ ] **DISC-13**: User receives stable Spec IDs, concise outcomes or titles, preferred order, and explicit Spec dependencies where meaningful in each Roadmap Phase declaration.
 
 ### Progressive Planning
 
 - [ ] **PLAN-01**: User receives a Roadmap containing the smallest complete set of major Phase outcomes needed for the confirmed release goal.
 - [ ] **PLAN-02**: User receives stable Phase IDs and explicit Phase dependencies as concise outcome-level declarations in the canonical Roadmap.
 - [ ] **PLAN-03**: User can run `/exspecso-plan PHASE-NNN` only for a Phase declared by `.exspecso/roadmap.md`.
-- [ ] **PLAN-04**: User receives a materialized Phase brief and status containing the smallest complete set of bounded Specs needed to cover every Phase success outcome.
-- [ ] **PLAN-05**: User receives stable Spec IDs and explicit Spec dependencies from Phase planning without executable Spec folders being created prematurely.
-- [ ] **PLAN-06**: User can run `/exspecso-plan SPEC-NNN` only for a Spec declared by its planned parent Phase.
-- [ ] **PLAN-07**: User receives one executable Spec folder containing `spec.md`, `plan.md`, `tasks.md`, and `status.md` after deep Spec planning.
+- [ ] **PLAN-04**: User receives a materialized Phase brief and status containing detailed outcomes, scope, constraints, and optional Phase closure verification without duplicating the Roadmap's canonical Spec membership map.
+- [ ] **PLAN-05**: User can rely on the Roadmap as the sole canonical source of lightweight Spec membership, order, and dependencies before detailed Spec artifacts exist.
+- [ ] **PLAN-06**: User receives deep planning for every Spec declared under the target Phase from one `/exspecso-plan PHASE-NNN` operation.
+- [ ] **PLAN-07**: User receives a separate bounded `spec.md`, `plan.md`, `tasks.md`, and `status.md` family for every Spec in the planned Phase.
 - [ ] **PLAN-08**: User receives only Requirements and Acceptance Criteria necessary for the current approved Spec outcome.
 - [ ] **PLAN-09**: User receives Acceptance Criteria that collectively cover every current Requirement without uncovered approved behavior.
 - [ ] **PLAN-10**: User receives a declared verification intent for every Acceptance Criterion before a Spec can become implementation-ready.
@@ -60,13 +61,13 @@
 - [ ] **PLAN-12**: User receives the smallest viable implementation approach and minimum Task set that satisfies approved scope and evidence obligations.
 - [ ] **PLAN-13**: User receives one canonical `tasks.md` whose stable Task sections each declare linked Requirements, Acceptance Criteria, objective, scope boundary, dependencies, status, and concrete verification contract.
 - [ ] **PLAN-14**: User receives a failing-reproduction requirement for bug-fix work whenever reproduction is technically feasible.
-- [ ] **PLAN-15**: User can approve or revise each Phase plan and executable Spec plan before it becomes authoritative.
+- [ ] **PLAN-15**: User can approve or revise the Phase brief and every detailed Spec, Plan, and Task family before the Phase becomes implementation-ready.
 - [ ] **PLAN-16**: User can plan work without Exspecso modifying application source code.
 - [ ] **PLAN-17**: User receives complete parent-outcome coverage before Exspecso removes duplication, future-only work, or unnecessary decomposition.
 - [ ] **PLAN-18**: User receives no child work that lacks justification through a current approved parent outcome.
 - [ ] **PLAN-19**: User can receive a one-Phase, one-Spec, or one-Task decomposition when one unit is sufficient, without fixed artifact-count targets.
-- [ ] **PLAN-20**: User can trust that `all-phases` grooming gives every declared Phase a complete Spec declaration list while leaving `spec.md`, `plan.md`, and `tasks.md` lazy.
-- [ ] **PLAN-21**: User can trust that merely declaring or grooming a Phase does not arbitrarily set it as the active current-work Phase.
+- [ ] **PLAN-20**: User can trust that Phase planning preserves independently bounded Spec artifacts instead of flattening the Phase into one Plan, Task list, context, or evidence boundary.
+- [ ] **PLAN-21**: User can trust that merely declaring or materializing a Phase does not arbitrarily set it as the active current-work Phase.
 
 ### Deterministic Control
 
@@ -84,14 +85,15 @@
 - [ ] **CTRL-12**: User can preserve a meaningful product, architecture, scope, constraint, or tradeoff decision as a stable `DEC-NNN` record.
 - [ ] **CTRL-13**: User can supersede a durable decision while retaining and linking the prior rationale.
 - [ ] **CTRL-14**: User does not receive Decision Log entries for routine implementation details, activity history, or minor naming choices.
+- [ ] **CTRL-15**: User is protected from activating a second Spec Delivery Loop while another Spec Delivery Loop is active in the same Phase by default.
 
 ### Evidence-Gated Delivery
 
-- [ ] **DELV-01**: User can start a bounded Delivery Loop for one approved Spec with `/exspecso-implement SPEC-NNN`.
-- [ ] **DELV-02**: User receives a blocked result with unmet Phase or Spec dependency IDs when the target Spec is not delivery-ready.
-- [ ] **DELV-03**: User can trust that the approved Plan is the Delivery Loop's finite work budget and that the loop does not invent Requirements, Tasks, or scope.
-- [ ] **DELV-04**: User receives continuous execution by default, with Exspecso selecting the next ready approved Task after each verified checkpoint.
-- [ ] **DELV-05**: User can select step execution and receive a safe `paused` result after one verified Task or closure boundary.
+- [ ] **DELV-01**: User can start a bounded Phase Delivery Loop for one approved, implementation-ready Phase with `/exspecso-implement PHASE-NNN`.
+- [ ] **DELV-02**: User receives a blocked result naming unmet Phase or Spec dependencies, invalid graphs, missing detailed Spec plans, or active blockers when the target Phase is not delivery-ready.
+- [ ] **DELV-03**: User can trust that the approved Phase and its fully planned Spec set are the outer Delivery Loop's finite work budget and that neither loop invents Specs, Requirements, Tasks, or scope.
+- [ ] **DELV-04**: User receives continuous execution by default, with Exspecso completing one selected Spec Delivery Loop, recomputing READY Specs, and continuing until the Phase completes or reaches a terminal result.
+- [ ] **DELV-05**: User can select step execution and receive a safe `paused` result at a completed Spec boundary while Task checkpoints remain internal safety boundaries.
 - [ ] **DELV-06**: User can interrupt delivery and receive an explicit `interrupted` result rather than ambiguous loop state.
 - [ ] **DELV-07**: User can trust that implementation changes are limited to the current Task's approved scope and linked Acceptance Criteria.
 - [ ] **DELV-08**: User receives a recorded deferred finding for useful non-blocking work outside the current Task instead of silent implementation.
@@ -107,8 +109,10 @@
 - [ ] **DELV-18**: User receives required Spec-level closure verification after all implementation Tasks and before final review.
 - [ ] **DELV-19**: User receives a logically independent final review after required Task and closure evidence passes.
 - [ ] **DELV-20**: User can trust that a correctable final-review finding reopens the smallest affected Task and Acceptance Criteria, reruns full required evidence, creates a new verified checkpoint, refreshes trace, reruns affected closure evidence, and returns to review.
-- [ ] **DELV-21**: User receives exactly one explainable Delivery Loop result: `completed`, `paused`, `blocked`, `needs-human`, `needs-spec-revision`, `correction-exhausted`, or `interrupted`.
-- [ ] **DELV-22**: User receives `completed` without repeated work when implementation is invoked for a Spec that already satisfies all completion gates.
+- [ ] **DELV-21**: User receives exactly one explainable Phase Delivery Loop result—`completed`, `paused`, `blocked`, `needs-human`, `needs-spec-revision`, `correction-exhausted`, or `interrupted`—with the relevant inner Spec or Task cause when applicable.
+- [ ] **DELV-22**: User receives `completed` without repeated work when implementation is invoked for a Phase that already satisfies all completion gates.
+- [ ] **DELV-23**: User receives deterministic selection of one READY incomplete Spec from explicit dependencies, with declared order used only as a tie-breaker and readiness recomputed after each completed Spec.
+- [ ] **DELV-24**: User receives declared Phase-level integration or closure verification after all required Specs are done, and the Phase becomes `done` only after that evidence passes.
 
 ### Correction and Continuity
 
@@ -135,6 +139,7 @@
 - [ ] **TRACE-05**: User can trust that a Spec becomes `done` only after Requirements are satisfied, verification intent is complete, required Task evidence passes, verified checkpoints are accepted, required closure evidence passes, trace closes, and final review passes.
 - [ ] **TRACE-06**: User can run `/exspecso-status` to view artifact-derived Roadmap, Phase, Spec, Task, blocker, evidence, review, and Delivery Loop state.
 - [ ] **TRACE-07**: User receives one concrete next command from status without status silently mutating or repairing project state.
+- [ ] **TRACE-08**: User can run `/exspecso-review PHASE-NNN` as a review-only aggregate over each Spec's canonical review report and Phase closure evidence without duplicating Spec review state or modifying application code.
 
 ### Runtime Portability
 
@@ -148,15 +153,15 @@
 ### Change, Hardening, and Release
 
 - [ ] **REL-01**: User can update a canonical artifact through `/exspecso-update` with an explicit revision and confirmation boundary.
-- [ ] **REL-02**: User can extend `.exspecso/roadmap.md` through `/exspecso-new-phase "<outcome>"` without creating a second Roadmap artifact.
+- [ ] **REL-02**: User can extend `.exspecso/roadmap.md` through `/exspecso-new-phase "<outcome>"` with the new Phase's lightweight Spec map and without creating a second Roadmap artifact.
 - [ ] **REL-03**: User receives safe, explainable behavior for malformed frontmatter, broken links, interrupted writes, dirty working trees, and external Git drift.
 - [ ] **REL-04**: User can safely rerun every Exspecso command without duplicate artifacts or corrupted confirmed state.
 - [ ] **REL-05**: User can follow greenfield and brownfield examples that demonstrate the intended progressive workflow.
 - [ ] **REL-06**: Maintainer can run one shared conformance fixture through Claude Code, OpenAI Codex, and OpenCode.
-- [ ] **REL-07**: Maintainer can verify continuous delivery, step-mode pause/resume, correction recovery, review-driven reopening, and cross-runtime continuation through automated fixtures.
+- [ ] **REL-07**: Maintainer can verify continuous Phase delivery, Spec-boundary step pause/resume, correction recovery, review-driven reopening, Phase closure, and cross-runtime continuation through automated fixtures.
 - [ ] **REL-08**: Maintainer can measure resume cost in files read, tool calls, approximate context, and steps to the next useful action.
 - [ ] **REL-09**: User can install the released V1 as one documented npm package.
-- [ ] **REL-10**: User receives the next stable `PHASE-NNN`, parent justification, and required Phase dependencies only after `/exspecso-new-phase` validates the request and receives confirmation.
+- [ ] **REL-10**: User receives the next stable `PHASE-NNN`, parent justification, required Phase dependencies, and smallest complete lightweight Spec map only after `/exspecso-new-phase` validates the request and receives confirmation.
 - [ ] **REL-11**: User is directed to `/exspecso-update` before adding a Phase when the requested outcome changes the established project direction.
 
 ## v2 Requirements
@@ -168,7 +173,7 @@ Deferred to future releases and not included in the current roadmap.
 - **ADV-01**: User can use richer repository-intelligence providers such as structural indexes or code knowledge graphs as optional derived context.
 - **ADV-02**: User can maintain living or delta-based specifications that reconcile implemented change without weakening approved-intent history.
 - **ADV-03**: User can use a lightweight quick-change workflow that preserves essential scope and evidence guarantees with reduced ceremony.
-- **ADV-04**: User can orchestrate multiple approved Specs or Phases automatically when higher-level independence is proven.
+- **ADV-04**: User can execute multiple Spec Delivery Loops or Phase Delivery Loops in parallel when higher-level independence and integration safety are proven.
 - **ADV-05**: User can use additional coding-agent runtimes through the same shared conformance contract.
 - **ADV-06**: User can collaborate through optional remote services while repository artifacts remain authoritative.
 
@@ -182,15 +187,15 @@ Deferred to future releases and not included in the current roadmap.
 | Multiple npm packages or a required monorepo | One release unit keeps shared contracts simple until a concrete split is justified |
 | Heavy project-management or enterprise-SDLC functionality | Exspecso governs agent delivery without becoming a PM platform |
 | Permanent named product-level agent roles | Temporary runtime workers are sufficient and avoid hard-coding orchestration tactics into the product model |
-| Phase-wide implementation in V1 | One approved Spec is the finite and reviewable Delivery Loop boundary |
-| Automatic multi-Spec or multi-Phase execution in V1 | Higher-level concurrency is deferred until shared contracts and Task-level safety are proven |
-| Unbounded autonomous or background execution | Exspecso only runs a finite approved Plan after an explicit command |
+| Public user scheduling of every Spec plan or Spec Delivery Loop | Phase is the normal user-facing planning and delivery boundary while Specs remain internal safety units |
+| Automatic parallel multi-Spec or multi-Phase execution in V1 | Higher-level concurrency is deferred until shared contracts and Task-level safety are proven |
+| Unbounded autonomous or background execution | Exspecso only runs a finite approved Phase and planned Spec set after an explicit command |
 | Universal TDD or E2E after every Task | Evidence must match the Acceptance Criterion rather than follow one testing ritual |
 | Speculative scale, providers, generalized abstractions, or future-proof architecture | Future possibility is not a current requirement |
 | Runtime-specific canonical state | Runtime switching depends on one portable source of truth |
-| Numbered Roadmap folders, `ROADMAP-002`, or `/exspecso-new-roadmap` | Documentation v12 evolves one canonical `.exspecso/roadmap.md` through revisions, Git history, durable decisions, and `/exspecso-new-phase` |
-| Historical RALP terminology and contracts | Documentation v12 retains the bounded Correction Loop as the canonical recovery model |
-| Fixed Phase, Requirement, Spec, or Task count thresholds | Documentation v12 requires coverage-driven decomposition without numeric quotas |
+| Numbered Roadmap folders, `ROADMAP-002`, or `/exspecso-new-roadmap` | Documentation v13 evolves one canonical `.exspecso/roadmap.md` through revisions, Git history, durable decisions, and `/exspecso-new-phase` |
+| Historical RALP terminology and contracts | Documentation v13 retains the bounded Correction Loop as the canonical recovery model |
+| Fixed Phase, Requirement, Spec, or Task count thresholds | Documentation v13 requires coverage-driven decomposition without numeric quotas |
 
 ## Traceability
 
@@ -261,6 +266,7 @@ Deferred to future releases and not included in the current roadmap.
 | CTRL-12 | Phase 2 | Pending |
 | CTRL-13 | Phase 2 | Pending |
 | CTRL-14 | Phase 2 | Pending |
+| CTRL-15 | Phase 2 | Pending |
 | DELV-01 | Phase 4 | Pending |
 | DELV-02 | Phase 4 | Pending |
 | DELV-03 | Phase 4 | Pending |
@@ -283,6 +289,8 @@ Deferred to future releases and not included in the current roadmap.
 | DELV-20 | Phase 5 | Pending |
 | DELV-21 | Phase 4 | Pending |
 | DELV-22 | Phase 4 | Pending |
+| DELV-23 | Phase 4 | Pending |
+| DELV-24 | Phase 4 | Pending |
 | REC-01 | Phase 5 | Pending |
 | REC-02 | Phase 5 | Pending |
 | REC-03 | Phase 5 | Pending |
@@ -303,6 +311,7 @@ Deferred to future releases and not included in the current roadmap.
 | TRACE-05 | Phase 5 | Pending |
 | TRACE-06 | Phase 5 | Pending |
 | TRACE-07 | Phase 5 | Pending |
+| TRACE-08 | Phase 5 | Pending |
 | PORT-01 | Phase 6 | Pending |
 | PORT-02 | Phase 6 | Pending |
 | PORT-03 | Phase 6 | Pending |

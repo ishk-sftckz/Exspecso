@@ -13,7 +13,7 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-08-21)
+See: .planning/PROJECT.md (updated 2026-08-26)
 
 **Core value:** Approved specs must survive context limits, implementation, failure, verification, runtime changes, and session boundaries without losing intent or allowing unproven work to count as complete.
 **Current focus:** Phase 1 — Initialize Canonical Projects
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-08-21)
 Phase: 1 of 6 (Initialize Canonical Projects)
 Plan: Not yet planned
 Status: Ready to plan
-Last activity: 2026-08-26 — Renamed Phase 2 to Build the Project Truth Engine and made its fixture-based proof boundary explicit.
+Last activity: 2026-08-26 — Aligned project truth with Documentation v13's Phase-oriented planning and delivery workflow while retaining portable `exspecso-<operation>` identities.
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -53,12 +53,14 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Project]: Use Documentation v12 as the implementation source of truth.
-- [Project]: Keep one canonical `.exspecso/roadmap.md` with stable ID `ROADMAP`.
+- [Project]: Use Documentation v13's Phase-oriented workflow as the implementation source of truth.
+- [Project]: Keep one canonical `.exspecso/roadmap.md` with stable ID `ROADMAP`; it owns the lightweight Phase and Spec declaration/dependency map.
 - [Project]: Use `exspecso-<operation>` as the portable skill ID and `/exspecso-<operation>` as public notation; adapters translate only host-owned sigils.
-- [Project]: Use progressive or all-phases initial grooming without eager executable Spec artifacts.
+- [Project]: `/exspecso-start` always creates the lightweight Phase/Spec Roadmap map without materializing detailed Phase or Spec artifacts.
+- [Project]: `/exspecso-plan PHASE-NNN` deeply plans every Spec in one Phase while preserving independent Spec contracts.
+- [Project]: `/exspecso-implement PHASE-NNN` runs one outer Phase Delivery Loop with one active internal Spec Delivery Loop at a time by default.
 - [Project]: Follow a contract-led vertical MVP spine.
-- [Phase 2]: Prove deterministic artifact resolution, validation, context selection, readiness, status, and next-action reconstruction against hand-authored fixtures before Phase 3 orientation work begins.
+- [Phase 2]: Prove deterministic artifact resolution, validation, context selection, readiness, status, Phase/Spec selection, and next-action reconstruction against hand-authored fixtures before Phase 3 orientation work begins.
 
 ### Pending Todos
 
@@ -77,5 +79,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-08-26
-Stopped at: Roadmap revised; Phase 1 is ready for detailed planning.
+Stopped at: Documentation v13 migration completed; Phase 1 remains ready for detailed planning with its discussion checkpoint preserved.
 Resume file: None

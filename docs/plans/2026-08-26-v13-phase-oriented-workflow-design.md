@@ -1,7 +1,7 @@
 # Exspecso v13 Phase-Oriented Workflow Design
 
-**Date:** 2026-08-26  
-**Status:** Approved  
+**Date:** 2026-08-26
+**Status:** Accepted (approved by project owner)
 **Decision owner:** Project owner
 
 ## Purpose

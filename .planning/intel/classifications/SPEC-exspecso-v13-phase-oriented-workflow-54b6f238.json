@@ -1,0 +1,13 @@
+{
+  "source_path": "/Users/ishk.sftckz/Projects/exspecso/docs/specs/SPEC-exspecso-v13-phase-oriented-workflow.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "SPEC: Exspecso Documentation v13 Phase-Oriented Workflow",
+  "summary": "Defines Exspecso v13 contracts for phase-oriented start, planning, implementation, verification, delivery loops, and portable command identities.",
+  "scope": ["Exspecso", "phase-oriented workflow", "Roadmap", "start", "phase planning", "phase delivery loop", "spec delivery loop", "verification", "portable skill identity"],
+  "cross_refs": ["docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md"],
+  "locked": false,
+  "precedence": 10,
+  "notes": ""
+}
