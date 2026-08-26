@@ -194,16 +194,139 @@ Deferred to future releases and not included in the current roadmap.
 
 ## Traceability
 
-Roadmap phase mappings are populated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| SETUP-01 | Phase 1 | Pending |
+| SETUP-02 | Phase 1 | Pending |
+| SETUP-03 | Phase 1 | Pending |
+| SETUP-04 | Phase 1 | Pending |
+| SETUP-05 | Phase 1 | Pending |
+| SETUP-06 | Phase 1 | Pending |
+| SETUP-07 | Phase 1 | Pending |
+| SETUP-08 | Phase 1 | Pending |
+| ART-01 | Phase 1 | Pending |
+| ART-02 | Phase 1 | Pending |
+| ART-03 | Phase 1 | Pending |
+| ART-04 | Phase 1 | Pending |
+| ART-05 | Phase 1 | Pending |
+| ART-06 | Phase 1 | Pending |
+| ART-07 | Phase 1 | Pending |
+| ART-08 | Phase 1 | Pending |
+| ART-09 | Phase 1 | Pending |
+| DISC-01 | Phase 3 | Pending |
+| DISC-02 | Phase 3 | Pending |
+| DISC-03 | Phase 3 | Pending |
+| DISC-04 | Phase 3 | Pending |
+| DISC-05 | Phase 3 | Pending |
+| DISC-06 | Phase 3 | Pending |
+| DISC-07 | Phase 3 | Pending |
+| DISC-08 | Phase 3 | Pending |
+| DISC-09 | Phase 3 | Pending |
+| DISC-10 | Phase 3 | Pending |
+| DISC-11 | Phase 3 | Pending |
+| DISC-12 | Phase 3 | Pending |
+| DISC-13 | Phase 3 | Pending |
+| PLAN-01 | Phase 3 | Pending |
+| PLAN-02 | Phase 3 | Pending |
+| PLAN-03 | Phase 3 | Pending |
+| PLAN-04 | Phase 3 | Pending |
+| PLAN-05 | Phase 3 | Pending |
+| PLAN-06 | Phase 3 | Pending |
+| PLAN-07 | Phase 3 | Pending |
+| PLAN-08 | Phase 3 | Pending |
+| PLAN-09 | Phase 3 | Pending |
+| PLAN-10 | Phase 3 | Pending |
+| PLAN-11 | Phase 3 | Pending |
+| PLAN-12 | Phase 3 | Pending |
+| PLAN-13 | Phase 3 | Pending |
+| PLAN-14 | Phase 3 | Pending |
+| PLAN-15 | Phase 3 | Pending |
+| PLAN-16 | Phase 3 | Pending |
+| PLAN-17 | Phase 3 | Pending |
+| PLAN-18 | Phase 3 | Pending |
+| PLAN-19 | Phase 3 | Pending |
+| PLAN-20 | Phase 3 | Pending |
+| PLAN-21 | Phase 3 | Pending |
+| CTRL-01 | Phase 2 | Pending |
+| CTRL-02 | Phase 2 | Pending |
+| CTRL-03 | Phase 2 | Pending |
+| CTRL-04 | Phase 2 | Pending |
+| CTRL-05 | Phase 2 | Pending |
+| CTRL-06 | Phase 2 | Pending |
+| CTRL-07 | Phase 2 | Pending |
+| CTRL-08 | Phase 2 | Pending |
+| CTRL-09 | Phase 4 | Pending |
+| CTRL-10 | Phase 4 | Pending |
+| CTRL-11 | Phase 2 | Pending |
+| CTRL-12 | Phase 2 | Pending |
+| CTRL-13 | Phase 2 | Pending |
+| CTRL-14 | Phase 2 | Pending |
+| DELV-01 | Phase 4 | Pending |
+| DELV-02 | Phase 4 | Pending |
+| DELV-03 | Phase 4 | Pending |
+| DELV-04 | Phase 4 | Pending |
+| DELV-05 | Phase 4 | Pending |
+| DELV-06 | Phase 4 | Pending |
+| DELV-07 | Phase 4 | Pending |
+| DELV-08 | Phase 4 | Pending |
+| DELV-09 | Phase 4 | Pending |
+| DELV-10 | Phase 4 | Pending |
+| DELV-11 | Phase 4 | Pending |
+| DELV-12 | Phase 4 | Pending |
+| DELV-13 | Phase 4 | Pending |
+| DELV-14 | Phase 4 | Pending |
+| DELV-15 | Phase 4 | Pending |
+| DELV-16 | Phase 4 | Pending |
+| DELV-17 | Phase 4 | Pending |
+| DELV-18 | Phase 4 | Pending |
+| DELV-19 | Phase 4 | Pending |
+| DELV-20 | Phase 5 | Pending |
+| DELV-21 | Phase 4 | Pending |
+| DELV-22 | Phase 4 | Pending |
+| REC-01 | Phase 5 | Pending |
+| REC-02 | Phase 5 | Pending |
+| REC-03 | Phase 5 | Pending |
+| REC-04 | Phase 5 | Pending |
+| REC-05 | Phase 5 | Pending |
+| REC-06 | Phase 5 | Pending |
+| CONT-01 | Phase 5 | Pending |
+| CONT-02 | Phase 5 | Pending |
+| CONT-03 | Phase 5 | Pending |
+| CONT-04 | Phase 5 | Pending |
+| CONT-05 | Phase 5 | Pending |
+| CONT-06 | Phase 5 | Pending |
+| CONT-07 | Phase 5 | Pending |
+| TRACE-01 | Phase 5 | Pending |
+| TRACE-02 | Phase 5 | Pending |
+| TRACE-03 | Phase 5 | Pending |
+| TRACE-04 | Phase 5 | Pending |
+| TRACE-05 | Phase 5 | Pending |
+| TRACE-06 | Phase 5 | Pending |
+| TRACE-07 | Phase 5 | Pending |
+| PORT-01 | Phase 6 | Pending |
+| PORT-02 | Phase 6 | Pending |
+| PORT-03 | Phase 6 | Pending |
+| PORT-04 | Phase 6 | Pending |
+| PORT-05 | Phase 6 | Pending |
+| PORT-06 | Phase 6 | Pending |
+| REL-01 | Phase 6 | Pending |
+| REL-02 | Phase 6 | Pending |
+| REL-03 | Phase 6 | Pending |
+| REL-04 | Phase 6 | Pending |
+| REL-05 | Phase 6 | Pending |
+| REL-06 | Phase 6 | Pending |
+| REL-07 | Phase 6 | Pending |
+| REL-08 | Phase 6 | Pending |
+| REL-09 | Phase 6 | Pending |
+| REL-10 | Phase 6 | Pending |
+| REL-11 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 124 total
-- Mapped to phases: 0
-- Unmapped: 124 ⚠️
+- Mapped to phases: 124
+- Unmapped: 0 ✓
+- Duplicate mappings: 0 ✓
 
 ---
 *Requirements defined: 2026-08-21*
-*Last updated: 2026-08-21 after Documentation v12 Roadmap lifecycle and portable command-identity alignment*
+*Last updated: 2026-08-21 after vertical-MVP roadmap creation*
