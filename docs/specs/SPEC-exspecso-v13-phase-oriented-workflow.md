@@ -1,8 +1,8 @@
 # SPEC: Exspecso Documentation v13 Phase-Oriented Workflow
 
-**Source version:** Documentation v13  
-**Source date:** 2026-08-26  
-**Normalization status:** Approved by project owner  
+**Source version:** Documentation v13
+**Source date:** 2026-08-26
+**Normalization status:** Approved by project owner
 **Decision precedence:** See `docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md`
 
 ## Source Set
