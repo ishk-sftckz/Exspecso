@@ -342,10 +342,10 @@ Source: Inquirer requires an interactive TTY; repeatable `multiple: true` CLI op
 
 ## Open Questions
 
-1. **What exact cross-platform filesystem guarantee is accepted for ART-07?**
+1. **RESOLVED — What exact cross-platform filesystem guarantee is accepted for ART-07?**
    - What we know: Node exposes staging, `sync`, and `rename`, while the context requires fail-closed recovery. [CITED: https://nodejs.org/api/fs.html] [VERIFIED: .planning/phases/01-initialize-canonical-projects/01-CONTEXT.md:35-40]
-   - What's unclear: Whether V1’s proof target is process interruption only, or also power-loss durability across APFS, NTFS, and ext4.
-   - Recommendation: Plan a journaled recovery implementation now, then make platform/fault-injection verification a release gate; do not claim physical power-loss guarantees without platform evidence.
+   - **Accepted boundary (2026-08-26, D-19):** Phase 1 proves process interruption, injected exceptions, and killed-process recovery at every declared promotion step. Physical power-loss durability and universal APFS/NTFS/ext4 guarantees are explicitly outside the Phase 1 evidence claim until separate platform evidence exists.
+   - Planning consequence: Implement journaled recovery and deterministic fault injection now; phrase every ART-07 acceptance criterion and completion claim within this evidence boundary.
 
 2. **Which initial artifact IDs must be materialized in Phase 1?**
    - What we know: The initial artifacts are minimal, while later Roadmap/Phase/Spec artifacts are lazy. [VERIFIED: .planning/REQUIREMENTS.md:15-18]
@@ -379,8 +379,8 @@ Source: Inquirer requires an interactive TTY; repeatable `multiple: true` CLI op
 
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |---|---|---|---|---|
-| SETUP-01 | Root invocation initializes once | integration | `npm test -- --run tests/integration/init-root.test.ts` | ❌ Wave 0 |
-| SETUP-02 | Nested invocation resolves Git root | integration | `npm test -- --run tests/integration/init-nested.test.ts` | ❌ Wave 0 |
+| SETUP-01 | Root invocation initializes once | integration | `npm test -- --run tests/integration/init-codex-tracer.test.ts` | ❌ Wave 0 |
+| SETUP-02 | Nested invocation resolves Git root | integration | `npm test -- --run tests/integration/init-codex-tracer.test.ts` | ❌ Wave 0 |
 | SETUP-03, SETUP-04 | Explicit selection and suggestion-only detection | unit + integration | `npm test -- --run tests/unit/runtime-selection.test.ts` | ❌ Wave 0 |
 | SETUP-05, SETUP-08 | Selected native files and completion render | unit | `npm test -- --run tests/unit/adapters.test.ts` | ❌ Wave 0 |
 | SETUP-06, ART-05, ART-09 | Minimal initial tree and reserved Roadmap contract | integration | `npm test -- --run tests/integration/minimal-artifacts.test.ts` | ❌ Wave 0 |

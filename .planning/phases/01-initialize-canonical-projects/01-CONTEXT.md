@@ -38,6 +38,7 @@ Phase 1 delivers the repository-local foundation for Exspecso: one idempotent np
 - **D-16:** Validation and resolution failures exit nonzero and never repair or mutate canonical artifacts implicitly.
 - **D-17:** Duplicate stable IDs make resolution ambiguous. Exspecso lists every conflicting definition, selects none, and blocks the operation until the user repairs the duplicate.
 - **D-18:** After an interrupted atomic write, the next invocation may remove only clearly identified Exspecso staging debris, must confirm that the previous canonical set remains valid, and reports the recovery. Ambiguous or externally changed canonical files cause a fail-closed stop.
+- **D-19:** Phase 1 proves ART-07 against deterministic process interruption, injected exceptions, and killed-process recovery at every declared promotion step. It does not claim physical power-loss durability or universal guarantees across APFS, NTFS, ext4, or other filesystems without separate platform evidence. — **Reversibility:** reversible — later platform testing may strengthen the evidence claim without changing the canonical write contract.
 
 ### the agent's Discretion
 - Exact TypeScript libraries for CLI prompts, schema validation, atomic filesystem operations, and unique-ID generation.
