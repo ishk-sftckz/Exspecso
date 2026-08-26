@@ -1,7 +1,7 @@
 # Phase 1: Initialize Canonical Projects - Pattern Map
 
-**Mapped:** 2026-08-26  
-**Files analyzed:** 21 planned source, configuration, and test files (plus five generated output shapes)  
+**Mapped:** 2026-08-26
+**Files analyzed:** 21 planned source, configuration, and test files (plus five generated output shapes)
 **Analogs found:** 0 / 21
 
 ## Repository Finding
@@ -183,6 +183,6 @@ Every planned implementation file lacks a close code analog because the reposito
 
 ## Metadata
 
-**Analog search scope:** repository root, excluding `.git`; source, test, package, TypeScript, and configuration filename searches  
-**Files scanned:** 24 tracked/non-Git repository files; 0 implementation files  
+**Analog search scope:** repository root, excluding `.git`; source, test, package, TypeScript, and configuration filename searches
+**Files scanned:** 24 tracked/non-Git repository files; 0 implementation files
 **Pattern extraction date:** 2026-08-26
