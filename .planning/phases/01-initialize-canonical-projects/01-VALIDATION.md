@@ -40,15 +40,19 @@ created: 2026-08-26
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 1-00-01 | 00 | 0 | SETUP-01–08, ART-01–09 | T-1-01 / T-1-04 | Test harness isolates repositories and supports deterministic fault injection | infrastructure | `npm test -- --run` | ❌ W0 | ⬜ pending |
-| 1-01-01 | 01 | 1 | SETUP-01, SETUP-02 | T-1-01 | All resolved targets remain inside the containing Git root | integration | `npm test -- --run tests/integration/init-root.test.ts tests/integration/init-nested.test.ts` | ❌ W0 | ⬜ pending |
-| 1-01-02 | 01 | 1 | SETUP-03, SETUP-04 | — | Runtime detection never grants selection authority | unit + integration | `npm test -- --run tests/unit/runtime-selection.test.ts` | ❌ W0 | ⬜ pending |
-| 1-02-01 | 02 | 1 | SETUP-05, SETUP-08 | T-1-02 | Only explicitly selected native adapter targets are written | unit | `npm test -- --run tests/unit/adapters.test.ts` | ❌ W0 | ⬜ pending |
-| 1-02-02 | 02 | 1 | SETUP-06, ART-05, ART-09 | — | Init does not materialize deferred workflow artifacts or duplicate Roadmaps | integration | `npm test -- --run tests/integration/minimal-artifacts.test.ts` | ❌ W0 | ⬜ pending |
-| 1-03-01 | 03 | 2 | SETUP-07 | T-1-02 | Modified or unowned adapters are preserved and all conflicts preflight before writes | integration | `npm test -- --run tests/integration/init-rerun.test.ts` | ❌ W0 | ⬜ pending |
-| 1-04-01 | 04 | 1 | ART-01, ART-02, ART-03, ART-04, ART-06 | T-1-03 | Artifact resolution rejects duplicate IDs and preserves stable identity across renames | unit | `npm test -- --run tests/unit/artifacts.test.ts` | ❌ W0 | ⬜ pending |
-| 1-05-01 | 05 | 2 | ART-07 | T-1-01 / T-1-04 | Interrupted promotion retains or restores the last fully valid artifact set | integration | `npm test -- --run tests/integration/transaction-recovery.test.ts` | ❌ W0 | ⬜ pending |
-| 1-05-02 | 05 | 2 | ART-08 | T-1-03 | Validation aggregates stable, actionable diagnostics and exits nonzero without mutation | integration | `npm test -- --run tests/integration/validation-errors.test.ts` | ❌ W0 | ⬜ pending |
+| 1-01-01 | 01 | 1 | ART-08 | T-01-SC | Vitest legitimacy approval precedes installation | package metadata + human | `npm view vitest@4.1.11 name version repository maintainers dist.integrity scripts --json` | n/a | ⬜ pending |
+| 1-01-02 | 01 | 1 | SETUP-03 | T-01-SC | Inquirer legitimacy approval precedes installation | package metadata + human | `npm view @inquirer/prompts@8.6.0 name version repository maintainers dist.integrity scripts --json` | n/a | ⬜ pending |
+| 1-01-03 | 01 | 1 | ART-03 | T-01-02 | Public ID vocabulary is explicit before encoding | decision | `node -e "const r=9;if(r!==9)process.exit(1)"` | n/a | ⬜ pending |
+| 1-02-01 | 02 | 2 | SETUP-01, SETUP-05, SETUP-06, SETUP-08, ART-01, ART-02 | T-02-01 / T-02-03 | Packed CLI proves one contained canonical+Codex path | integration | `npm test -- --run tests/integration/init-codex-tracer.test.ts` | ❌ W0 | ⬜ pending |
+| 1-02-02 | 02 | 2 | SETUP-01, SETUP-02 | T-02-01 | Root/nested/no-repository targeting is exact and zero-write on error | integration | `npm test -- --run tests/integration/init-codex-tracer.test.ts tests/integration/init-nested.test.ts` | ❌ W0 | ⬜ pending |
+| 1-03-01 | 03 | 3 | SETUP-03, SETUP-04 | T-03-01 | Detection never grants selection authority | unit + TTY human | `npm test -- --run tests/unit/runtime-selection.test.ts` | ❌ W0 | ⬜ pending |
+| 1-03-02 | 03 | 3 | SETUP-05, SETUP-08 | T-03-02 / T-03-04 | Only explicitly selected native adapter targets/invocations are produced | unit | `npm test -- --run tests/unit/adapters.test.ts` | ❌ W0 | ⬜ pending |
+| 1-04-01 | 04 | 4 | ART-01–06, ART-09 | T-04-01 / T-04-03 | IDs resolve deterministically; duplicates select none; renames preserve identity | unit | `npm test -- --run tests/unit/artifacts.test.ts` | ❌ W0 | ⬜ pending |
+| 1-04-02 | 04 | 4 | ART-08 | T-04-01 / T-04-02 | Direct edits aggregate actionable diagnostics and never mutate | integration | `npm test -- --run tests/integration/validation-errors.test.ts` | ❌ W0 | ⬜ pending |
+| 1-05-01 | 05 | 5 | SETUP-05, SETUP-07 | T-05-01 | Managed ownership requires a valid header and matching body hash | unit + integration | `npm test -- --run tests/unit/adapters.test.ts tests/integration/init-rerun.test.ts` | ❌ W0 | ⬜ pending |
+| 1-05-02 | 05 | 5 | SETUP-07 | T-05-01 / T-05-03 | Rerun is additive; every conflict blocks all writes until explicit replacement | integration | `npm test -- --run tests/integration/init-rerun.test.ts` | ❌ W0 | ⬜ pending |
+| 1-06-01 | 06 | 6 | ART-07 | T-06-01 / T-06-03 | Contained exclusive transaction exposes every deterministic fault point | integration | `npm test -- --run tests/integration/transaction-recovery.test.ts` | ❌ W0 | ⬜ pending |
+| 1-06-02 | 06 | 6 | SETUP-06, ART-01, ART-02, ART-07, ART-08, ART-09 | T-06-02 / T-06-04 | Recovery validates hashes/set or fails closed; persistent tree stays minimal | integration | `npm test -- --run tests/integration/transaction-recovery.test.ts tests/integration/minimal-artifacts.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -56,11 +60,10 @@ created: 2026-08-26
 
 ## Wave 0 Requirements
 
-- [ ] `package.json`, `tsconfig.json`, and package bin entry — Node package baseline
-- [ ] `vitest.config.ts` and `npm test` script — Vitest execution contract
-- [ ] `tests/helpers/git-fixture.ts` — isolated temporary Git repository fixture
-- [ ] `tests/helpers/run-cli.ts` — child-process CLI harness with cwd/stdin/env control
-- [ ] Transaction fault-injection seam — deterministic failure after every promotion step
+- [ ] Plan 01 package-legitimacy checkpoints approve exact Vitest and Inquirer versions
+- [ ] Plan 02 tracer creates `package.json`, `tsconfig.json`, package bin, and `npm test` script
+- [ ] Plan 02 creates `tests/helpers/git-fixture.ts` and `tests/helpers/run-cli.ts`
+- [ ] Plan 06 transaction exposes deterministic failure before/after every state transition
 
 ---
 
