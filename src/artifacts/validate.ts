@@ -2,7 +2,7 @@ import { access, readdir, readFile } from "node:fs/promises";
 import type { Dirent } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { type ZodIssue } from "zod";
-import { type ArtifactDefinition, scanArtifactDefinitions } from "./resolve.js";
+import { type ArtifactDefinition, scanArtifacts } from "./resolve.js";
 import { parseArtifactId, projectConfigSchema } from "./schema.js";
 import type { Diagnostic } from "../errors/diagnostic.js";
 
@@ -165,7 +165,9 @@ export async function validateProject(root: string): Promise<readonly Diagnostic
       });
     }
   }
-  const definitions = (await scanArtifactDefinitions(root)).filter((definition) => definition.path === canonicalDirectory || definition.path.startsWith(`${canonicalDirectory}/`));
+  const scanResult = await scanArtifacts(root);
+  const definitions = scanResult.definitions.filter((definition) => definition.path === canonicalDirectory || definition.path.startsWith(`${canonicalDirectory}/`));
+  diagnostics.push(...scanResult.diagnostics.filter((diagnostic) => diagnostic.path === canonicalDirectory || diagnostic.path.startsWith(`${canonicalDirectory}/`)));
   diagnostics.push(...(await validateRawArtifactIds(root)));
   diagnostics.push(...validateDefinitions(definitions));
   try {

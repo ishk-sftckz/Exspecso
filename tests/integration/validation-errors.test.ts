@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
+import { resolveArtifact } from "../../src/artifacts/resolve.js";
 import { runInit } from "../../src/init/run-init.js";
 import { validateProject, validateProjectConfig } from "../../src/artifacts/validate.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
@@ -87,6 +88,7 @@ describe("direct-edit validation", () => {
     expect(stderr.read()).toContain("Repair:");
     expect(stdout.read()).toBe("");
     await expect(snapshot(fixture.root)).resolves.toEqual(before);
+    await expect(resolveArtifact(fixture.root, "SPEC-002")).resolves.toMatchObject({ kind: "resolved", id: "SPEC-002" });
   });
 
   it("returns every independent config schema error with actionable diagnostics", async () => {
