@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: executing
-stopped_at: Completed 01-06-PLAN.md; awaiting phase review and independent verification
-last_updated: "2026-08-27T08:16:50.928Z"
+status: blocked
+stopped_at: "Phase 1 verification found 3 gaps; next: $gsd-plan-phase 1 --gaps"
+last_updated: "2026-08-27T08:27:19.334Z"
 last_activity: 2026-08-27
-last_activity_desc: Phase 01 execution started
+last_activity_desc: Phase 01 plans executed; independent verification found three blocking gaps.
 progress:
-  total_phases: 1
+  total_phases: 6
   completed_phases: 0
   total_plans: 6
   completed_plans: 6
@@ -27,18 +27,18 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 
 ## Current Position
 
-Phase: 01 (Initialize Canonical Projects) — EXECUTING
+Phase: 01 (Initialize Canonical Projects) — GAPS FOUND
 Plan: 6 of 6
-Status: Awaiting phase review and independent verification
-Last activity: 2026-08-27 — Plan 01-06 execution completed; phase remains unverified
+Status: blocked
+Last activity: 2026-08-27 — All six plans executed; independent verification found three blocking gaps (19/25 must-haves verified).
 
-Progress: [██████████] 100%
+Plan execution: [██████████] 100% (6/6 plans); phase completion blocked by verification gaps.
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
+- Total plans completed: 6
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -96,7 +96,11 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+- Invalid canonical JSON IDs and parent IDs bypass validation (ART-03, ART-08).
+- Recovery can remove a live writer's transaction because recovery and writers do not share atomic ownership (SETUP-06, ART-01, ART-07).
+- Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
+- Next: `$gsd-plan-phase 1 --gaps`, then execute gap plans and re-verify. Real-TTY UAT and security verification remain before advancement.
+- Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
 ## Deferred Items
 
@@ -106,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T08:16:50.922Z
-Stopped at: Completed 01-06-PLAN.md; awaiting phase review and independent verification
-Resume file: None
+Last session: 2026-08-27T08:27:19.328Z
+Stopped at: Phase 1 verification found 3 gaps; next: $gsd-plan-phase 1 --gaps
+Resume file: .planning/phases/01-initialize-canonical-projects/01-VERIFICATION.md
