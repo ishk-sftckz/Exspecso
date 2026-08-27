@@ -34,7 +34,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 6/6 plans executed; verification found 3 blocking gaps (19/25 must-haves verified). Phase remains incomplete.
+**Plans**: 10 plans — 6 executed and 4 additive gap plans pending. Verification found 3 blocking gaps (19/25 must-haves verified). Phase remains incomplete; native-provider approval is required by 01-09 before containment or source-install implementation.
 
 Plans:
 **Wave 1**
@@ -60,6 +60,22 @@ Plans:
 **Wave 6** *(blocked on Wave 5 completion)*
 
 - [x] 01-06-PLAN.md — Enforce contained atomic transactions and conservative recovery
+
+**Wave 7** *(gap closure; depends on executed 01-06)*
+
+- [ ] 01-07-PLAN.md — Preserve invalid JSON declarations and reject init before mutation
+
+**Wave 8** *(gap closure; depends on 01-07)*
+
+- [ ] 01-08-PLAN.md — Give writers and recovery one atomic ownership protocol
+
+**Wave 9** *(gap closure; depends on 01-08; blocking native-provider decision)*
+
+- [ ] 01-09-PLAN.md — Approve and implement directory-bound containment with real race regressions
+
+**Wave 10** *(gap closure; depends on 01-09 and its explicit native-provider approval)*
+
+- [ ] 01-10-PLAN.md — Prove the isolated native source install and installed-CLI success/refusal contract
 
 ### Phase 2: Build the Project Truth Engine
 
@@ -147,7 +163,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Initialize Canonical Projects | 6/6 | Gaps found | - |
+| 1. Initialize Canonical Projects | 6/10 | Gaps found; native-provider decision pending | - |
 | 2. Build the Project Truth Engine | 0/TBD | Not started | - |
 | 3. Orient and Plan One Approved Phase | 0/TBD | Not started | - |
 | 4. Deliver One Approved Phase | 0/TBD | Not started | - |
