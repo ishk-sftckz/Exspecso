@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
+import { findGitRoot } from "../filesystem/git-root.js";
 
 export interface InitInput {
   argv: string[];
@@ -60,15 +61,6 @@ function isWithinRoot(root: string, target: string): boolean {
   return pathFromRoot !== "" && pathFromRoot !== ".." && !pathFromRoot.startsWith(`..${sep}`) && !isAbsolute(pathFromRoot);
 }
 
-async function isGitRoot(path: string): Promise<boolean> {
-  try {
-    const marker = await lstat(join(path, ".git"));
-    return marker.isDirectory() || marker.isFile();
-  } catch {
-    return false;
-  }
-}
-
 function writeError(output: NodeJS.WritableStream, code: string, message: string): void {
   output.write(`${code}: ${message}\n`);
 }
@@ -80,6 +72,27 @@ function parseAgents(argv: string[]): "codex" | null {
   return "codex";
 }
 
+async function hasSymlinkedAncestor(root: string, target: string): Promise<boolean> {
+  let current = dirname(target);
+  while (current !== root) {
+    try {
+      if ((await lstat(current)).isSymbolicLink()) {
+        return true;
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        return true;
+      }
+    }
+    const parent = dirname(current);
+    if (parent === current) {
+      return true;
+    }
+    current = parent;
+  }
+  return false;
+}
+
 export async function runInit(input: InitInput): Promise<number> {
   const agent = parseAgents(input.argv);
   if (agent === null) {
@@ -87,12 +100,13 @@ export async function runInit(input: InitInput): Promise<number> {
     return 1;
   }
 
-  const repositoryRoot = resolve(input.cwd);
-  if (!(await isGitRoot(repositoryRoot))) {
+  const searchedPath = resolve(input.cwd);
+  const repositoryRoot = await findGitRoot(searchedPath);
+  if (repositoryRoot === null) {
     writeError(
       input.stderr,
       "EXSPECSO_INIT_NO_GIT_ROOT",
-      `No Git repository contains \"${repositoryRoot}\". Run \`git init\` or move into the intended repository.`,
+      `No Git repository contains \"${searchedPath}\". Run \`git init\` or move into the intended repository.`,
     );
     return 1;
   }
@@ -125,6 +139,13 @@ export async function runInit(input: InitInput): Promise<number> {
   if (targets.some(({ target }) => !isWithinRoot(repositoryRoot, target))) {
     writeError(input.stderr, "EXSPECSO_INIT_INVALID_TARGET", "Initializer target escapes the containing repository.");
     return 1;
+  }
+
+  for (const { target } of targets) {
+    if (await hasSymlinkedAncestor(repositoryRoot, target)) {
+      writeError(input.stderr, "EXSPECSO_INIT_UNSAFE_TARGET", `Refusing symlinked target path \"${target}\".`);
+      return 1;
+    }
   }
 
   for (const { target } of targets) {

@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -115,9 +115,10 @@ describe("packed Codex initializer tracer", () => {
   it("resolves the containing Git root before initialization", async () => {
     const fixture = await useFixture(createGitFixture);
     const nestedDirectory = await fixture.createNestedDirectory("packages", "cli", "deep");
+    const canonicalRoot = await realpath(fixture.root);
 
-    await expect(findGitRoot(fixture.root)).resolves.toBe(fixture.root);
-    await expect(findGitRoot(nestedDirectory)).resolves.toBe(fixture.root);
+    await expect(findGitRoot(fixture.root)).resolves.toBe(canonicalRoot);
+    await expect(findGitRoot(nestedDirectory)).resolves.toBe(canonicalRoot);
   });
 
   it("initializes at the nearest containing Git root from a deep nested cwd", async () => {
