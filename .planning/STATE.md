@@ -53,7 +53,7 @@ Plan execution: [████████░░] 80% (8/10 plans); phase complet
 
 **Velocity:**
 
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: -
 - Total execution time: 0 hours
 

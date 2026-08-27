@@ -22,9 +22,8 @@ tech-stack:
     - token-specific non-recursive cleanup after fresh inspection
     - barrier-controlled interprocess recovery tests with asserted child exit
 key-files:
-  created: []
+  created: [src/filesystem/ownership.ts]
   modified:
-    - src/filesystem/ownership.ts
     - src/filesystem/transaction.ts
     - src/filesystem/recovery.ts
     - src/init/run-init.ts
@@ -131,3 +130,7 @@ None.
 ## Self-Check: PASSED
 
 All declared production/test files and the five Task commits exist in Git history.
+
+## Orchestrator Wave Verification
+
+After executor completion, `npm run build` passed and `npm test -- --run` passed all 62 tests across 8 files (7.24 seconds). The schema-drift and UI gates did not block; codebase drift was skipped because no STRUCTURE.md exists. These wave checks do not replace independent phase verification.
