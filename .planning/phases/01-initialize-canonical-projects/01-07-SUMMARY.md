@@ -73,7 +73,7 @@ status: complete
 1. **Task 1: Reject one invalid JSON parent through the real init boundary** — `6c08599` (`test` RED), `dcb1aae` (`feat` GREEN)
 2. **Task 2: Cover invalid declaration shapes and aggregate independent errors** — `649107d` (`test` RED), `5ebd1c2` (`feat` GREEN)
 
-**Checkpoint tracking:** `c0b1c9b` (`docs`) records the user’s explicit approval of the Task 1 tracer before Task 2 began.
+**Checkpoint tracking:** `c0b1c9b` (`docs`) records the pending Task 1 tracer checkpoint. The user then replied `approve` in this task on 2026-08-27, explicitly authorizing Task 2 before it began.
 
 ## Files Created/Modified
 
@@ -109,8 +109,12 @@ None.
 
 ## Remaining Phase Obligations
 
-This plan closes only CR-01. The Phase remains incomplete: independent re-verification, real-TTY UAT, prohibition acknowledgements, the security audit, and Plans 01-08 through 01-10 remain pending. Native/provider/platform changes were not approved or performed. Requirement checkboxes and recorded verifier failures remain pending their independent re-verification.
+This plan implements the repair for CR-01 only; the recorded verifier gap remains open until independent re-verification. The Phase remains incomplete: independent re-verification, real-TTY UAT, prohibition acknowledgements, the security audit, and Plans 01-08 through 01-10 remain pending. Native/provider/platform changes were not approved or performed. Requirement checkboxes and recorded verifier failures remain pending their independent re-verification.
 
 ## Self-Check: PASSED
 
-All five source/test files and the plan summary exist. Task commits `6c08599`, `dcb1aae`, `649107d`, and `5ebd1c2`, plus the tracer-approval tracking commit `c0b1c9b`, are present in Git history.
+All five source/test files and the plan summary exist. Task commits `6c08599`, `dcb1aae`, `649107d`, and `5ebd1c2`, plus the pending-checkpoint tracking commit `c0b1c9b`, are present in Git history.
+
+## Orchestrator Wave Verification
+
+After the executor returned, `npm run build` and `npm test -- --run` were rerun successfully: 8 test files, 54 tests passed. The schema-drift and UI gates did not block; codebase drift was skipped because no STRUCTURE.md exists. These wave checks do not replace independent phase verification.

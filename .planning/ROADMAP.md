@@ -34,7 +34,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 7/10 plans executed — 6 executed and 4 additive gap plans pending. Verification found 3 blocking gaps (19/25 must-haves verified). Phase remains incomplete; native-provider approval is required by 01-09 before containment or source-install implementation.
+**Plans**: 7/10 plans executed — the original 6 plans and gap plan 01-07 are complete; 01-08 through 01-10 remain pending. The prior verification found 3 blocking gaps (19/25 must-haves verified); CR-01 has a tested repair awaiting independent re-verification. Phase remains incomplete; native-provider approval is required by 01-09 before containment or source-install implementation.
 
 Plans:
 **Wave 1**
