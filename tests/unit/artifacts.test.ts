@@ -1,10 +1,12 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import { renderConstitution, renderProjectConfig } from "../../src/artifacts/templates.js";
 import { resolveArtifact, scanArtifactDefinitions } from "../../src/artifacts/resolve.js";
 import { ARTIFACT_ID_PATTERNS, projectConfigSchema } from "../../src/artifacts/schema.js";
+import { runInit } from "../../src/init/run-init.js";
 
 const temporaryPaths: string[] = [];
 
@@ -22,6 +24,10 @@ async function write(root: string, path: string, content: string): Promise<void>
   const target = join(root, path);
   await mkdir(join(target, ".."), { recursive: true });
   await writeFile(target, content, { encoding: "utf8", flag: "w" });
+}
+
+function memoryOutput(): Writable {
+  return new Writable({ write(_chunk, _encoding, callback) { callback(); } });
 }
 
 describe("canonical artifact contracts", () => {
@@ -96,6 +102,18 @@ describe("canonical artifact contracts", () => {
     expect(secondTask).toMatchObject({ kind: "resolved", location: { kind: "section", path: "specs/SPEC-001/tasks.md", heading: "## TASK-002 Second task", startLine: 6, endLine: 7 } });
   });
 
+  it("resolves every exact D-20 family to a canonical location", async () => {
+    const root = await fixture();
+    await write(root, ".exspecso/roadmap.md", "# ROADMAP\n");
+    await write(root, ".exspecso/definitions.md", "# PHASE-001\n# SPEC-001\n# REQ-001\n# AC-001\n# PLAN-001\n# TASK-001\n# DEC-001\n# FINDING-001\n");
+
+    const results = await Promise.all([
+      "ROADMAP", "PHASE-001", "SPEC-001", "REQ-001", "AC-001", "PLAN-001", "TASK-001", "DEC-001", "FINDING-001",
+    ].map((id) => resolveArtifact(root, id)));
+
+    expect(results.map((result) => result.kind)).toEqual(Array(9).fill("resolved"));
+  });
+
   it("keeps identity stable across title changes and declaration reordering, but fails closed for duplicates", async () => {
     const root = await fixture();
     await write(root, "specs.md", "## SPEC-002 Later declaration\n\n## SPEC-001 Renamed display title\n");
@@ -137,5 +155,27 @@ describe("canonical artifact contracts", () => {
     await expect(resolveArtifact(root, "PLAN-001")).resolves.toMatchObject({ kind: "not-found" });
     await expect(readFile(join(root, ".exspecso/exspecso.config.json"), "utf8")).resolves.toBe(before);
     await expect(readFile(join(root, ".exspecso/roadmap.md"), "utf8")).rejects.toThrow();
+  });
+
+  it("keeps fresh and repeated initialization limited to minimal artifacts and selected adapters", async () => {
+    const root = await fixture();
+    await mkdir(join(root, ".git"));
+    const init = () => runInit({
+      selectedAgents: ["codex"],
+      cwd: root,
+      stdin: new PassThrough(),
+      stdout: memoryOutput(),
+      stderr: memoryOutput(),
+    });
+
+    await expect(init()).resolves.toBe(0);
+    await init();
+
+    await expect(readFile(join(root, ".exspecso/exspecso.config.json"), "utf8")).resolves.toContain("unclassified");
+    await expect(readFile(join(root, ".exspecso/constitution.md"), "utf8")).resolves.toContain("Artifact truth");
+    await expect(readFile(join(root, ".agents/skills/exspecso-start/SKILL.md"), "utf8")).resolves.toContain("exspecso-start");
+    for (const deferredPath of ["roadmap.md", "phases", "specs", "requirements", "plans", "tasks", "decisions", "findings", "trace", "research", "reports", "reviews"]) {
+      await expect(readFile(join(root, ".exspecso", deferredPath), "utf8")).rejects.toThrow();
+    }
   });
 });
