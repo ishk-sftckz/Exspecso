@@ -25,7 +25,10 @@ async function createGitRepository(): Promise<string> {
   return root;
 }
 
-async function packAndRun(cwd: string): Promise<{ stdout: string; stderr: string }> {
+async function packAndRun(
+  cwd: string,
+  args: string[] = ["init", "--agent", "codex"],
+): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   const packingDirectory = await createTemporaryDirectory("exspecso-pack-");
   await execFileAsync("npm", ["run", "build"], { cwd: packageRoot });
   const { stdout: packOutput } = await execFileAsync(
@@ -39,9 +42,17 @@ async function packAndRun(cwd: string): Promise<{ stdout: string; stderr: string
     "npm",
     ["install", "--ignore-scripts", "--no-package-lock", "--prefix", runner, join(packingDirectory, filename)],
   );
-  return execFileAsync(join(runner, "node_modules", ".bin", "exspecso"), ["init", "--agent", "codex"], {
-    cwd,
-  });
+  try {
+    const result = await execFileAsync(join(runner, "node_modules", ".bin", "exspecso"), args, { cwd });
+    return { exitCode: 0, ...result };
+  } catch (error) {
+    const commandError = error as Error & { code?: number; stdout?: string; stderr?: string };
+    return {
+      exitCode: commandError.code ?? 1,
+      stdout: commandError.stdout ?? "",
+      stderr: commandError.stderr ?? "",
+    };
+  }
 }
 
 describe("packed Codex initializer tracer", () => {
@@ -50,6 +61,7 @@ describe("packed Codex initializer tracer", () => {
 
     const result = await packAndRun(repositoryRoot);
 
+    expect(result.exitCode).toBe(0);
     expect(result.stderr).toBe("");
     expect(result.stdout).toMatch(/^\/exspecso-start/);
     expect(result.stdout).toContain("$exspecso-start");
@@ -89,5 +101,17 @@ describe("packed Codex initializer tracer", () => {
 
     await expect(readFile(join(repositoryRoot, ".exspecso", "roadmap.md"), "utf8")).rejects.toThrow();
     await expect(writeFile(join(repositoryRoot, "unrelated.txt"), "unchanged")).resolves.toBeUndefined();
+  });
+
+  it("returns an error before writing when the selected agent is unsupported", async () => {
+    const repositoryRoot = await createGitRepository();
+
+    const result = await packAndRun(repositoryRoot, ["init", "--agent", "claude"]);
+
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toContain("EXSPECSO_INIT_USAGE");
+    await expect(readFile(join(repositoryRoot, ".exspecso", "exspecso.config.json"), "utf8")).rejects.toThrow();
+    await expect(readFile(join(repositoryRoot, ".agents", "skills", "exspecso-start", "SKILL.md"), "utf8")).rejects.toThrow();
   });
 });
