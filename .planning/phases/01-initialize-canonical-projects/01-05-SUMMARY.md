@@ -11,6 +11,7 @@ provides:
   - Immutable additive initialization plans with complete-set preflight checks
   - Explicit selected-target replacement authorization and stale-preimage protection
 affects: [init, adapters, cli, phase-01-06]
+requirements-completed: [SETUP-05, SETUP-07]
 tech-stack:
   added: []
   patterns: [self-describing-managed-files, immutable-preflight-plan, additive-runtime-selection, current-preimage-recheck]
