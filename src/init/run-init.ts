@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
-import { z } from "zod";
 import { buildAdapterPlan } from "../adapters/registry.js";
+import { projectConfigSchema, type ProjectConfig } from "../artifacts/schema.js";
+import { renderConstitution, renderProjectConfig } from "../artifacts/templates.js";
 import { findGitRoot } from "../filesystem/git-root.js";
 import { formatCompletion } from "./completion.js";
 import type { AgentId } from "./runtime-selection.js";
@@ -14,35 +15,6 @@ export interface InitInput {
   stdout: NodeJS.WritableStream;
   stderr: NodeJS.WritableStream;
 }
-
-const projectConfigSchema = z.object({
-  schemaVersion: z.literal(1),
-  project: z.object({
-    id: z.uuid(),
-    title: z.string().min(1),
-  }),
-  mode: z.literal("unclassified"),
-  selectedAgents: z.array(z.enum(["claude", "codex", "opencode"])).min(1),
-  onboardingStatus: z.literal("not-started"),
-});
-
-const constitution = `# Exspecso Constitution
-
-## Artifact truth
-Repository files are the inspectable source of project truth.
-
-## Human control
-People approve intent, scope, and meaningful tradeoffs.
-
-## Evidence integrity
-Completion claims require evidence that matches the behavior claimed.
-
-## Bounded scope
-Work stays within approved requirements and explicit recovery limits.
-
-## Runtime portability
-Supported coding runtimes share one portable Exspecso artifact model.
-`;
 
 function isWithinRoot(root: string, target: string): boolean {
   const pathFromRoot = relative(root, target);
@@ -86,7 +58,7 @@ export async function runInit(input: InitInput): Promise<number> {
     return 1;
   }
 
-  const config = {
+  const config: ProjectConfig = {
     schemaVersion: 1 as const,
     project: {
       id: randomUUID(),
@@ -99,11 +71,11 @@ export async function runInit(input: InitInput): Promise<number> {
   const targets = [
     {
       target: resolve(repositoryRoot, ".exspecso", "exspecso.config.json"),
-      content: `${JSON.stringify(config, null, 2)}\n`,
+      content: renderProjectConfig(config),
     },
     {
       target: resolve(repositoryRoot, ".exspecso", "constitution.md"),
-      content: constitution,
+      content: renderConstitution(),
     },
     ...buildAdapterPlan(input.selectedAgents).map((adapter) => {
       return {

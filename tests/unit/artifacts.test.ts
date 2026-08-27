@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -20,6 +20,7 @@ async function fixture(): Promise<string> {
 
 async function write(root: string, path: string, content: string): Promise<void> {
   const target = join(root, path);
+  await mkdir(join(target, ".."), { recursive: true });
   await writeFile(target, content, { encoding: "utf8", flag: "w" });
 }
 
