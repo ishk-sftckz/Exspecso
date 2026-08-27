@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
-import { ADAPTER_REGISTRY, renderAdapter } from "../adapters/registry.js";
+import { buildAdapterPlan } from "../adapters/registry.js";
 import { findGitRoot } from "../filesystem/git-root.js";
 import { formatCompletion } from "./completion.js";
 import type { AgentId } from "./runtime-selection.js";
@@ -105,11 +105,10 @@ export async function runInit(input: InitInput): Promise<number> {
       target: resolve(repositoryRoot, ".exspecso", "constitution.md"),
       content: constitution,
     },
-    ...input.selectedAgents.map((agent) => {
-      const adapter = ADAPTER_REGISTRY[agent];
+    ...buildAdapterPlan(input.selectedAgents).map((adapter) => {
       return {
         target: resolve(repositoryRoot, adapter.relativePath),
-        content: renderAdapter(adapter),
+        content: adapter.content,
       };
     }),
   ];

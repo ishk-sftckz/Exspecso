@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ADAPTER_REGISTRY, renderAdapter } from "../../src/adapters/registry.js";
+import { ADAPTER_REGISTRY, buildAdapterPlan, renderAdapter } from "../../src/adapters/registry.js";
 import { formatCompletion } from "../../src/init/completion.js";
 import { SUPPORTED_AGENTS, type AgentId } from "../../src/init/runtime-selection.js";
 
@@ -42,7 +42,7 @@ describe("native adapter registry", () => {
 
   it("writes only selected native targets and completion invocations for every non-empty subset", () => {
     for (const selected of nonEmptySubsets(SUPPORTED_AGENTS)) {
-      const targets = selected.map((agent) => ADAPTER_REGISTRY[agent].relativePath);
+      const targets = buildAdapterPlan(selected).map((target) => target.relativePath);
       const completion = formatCompletion(selected);
 
       expect(targets).toEqual(selected.map((agent) => expected[agent].path));
@@ -59,10 +59,7 @@ describe("native adapter registry", () => {
     const renders = await Promise.all(
       selections.map(async (selected) => ({
         selected,
-        targets: selected.map((agent) => ({
-          path: ADAPTER_REGISTRY[agent].relativePath,
-          content: renderAdapter(ADAPTER_REGISTRY[agent]),
-        })),
+        targets: buildAdapterPlan(selected).map((target) => ({ path: target.relativePath, content: target.content })),
         completion: formatCompletion(selected),
       })),
     );

@@ -11,6 +11,12 @@ export interface AdapterDefinition {
   render(): string;
 }
 
+export interface AdapterTarget {
+  readonly agent: AgentId;
+  readonly relativePath: string;
+  readonly content: string;
+}
+
 const templateVersion = 1;
 
 function withManagedHeader(body: string): string {
@@ -77,4 +83,17 @@ export const ADAPTER_REGISTRY: Readonly<Record<AgentId, AdapterDefinition>> = Ob
 
 export function renderAdapter(adapter: AdapterDefinition): string {
   return adapter.render();
+}
+
+export function buildAdapterPlan(selectedAgents: readonly AgentId[]): readonly AdapterTarget[] {
+  return Object.freeze(
+    selectedAgents.map((agent) => {
+      const adapter = ADAPTER_REGISTRY[agent];
+      return Object.freeze({
+        agent,
+        relativePath: adapter.relativePath,
+        content: renderAdapter(adapter),
+      });
+    }),
+  );
 }
