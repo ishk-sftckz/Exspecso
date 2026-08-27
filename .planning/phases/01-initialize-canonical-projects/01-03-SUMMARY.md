@@ -11,6 +11,7 @@ provides:
   - Immutable selected-runtime adapter plans with native destinations and managed headers
   - Canonical-first completion output with selected native invocation spellings
 affects: [01-04, 01-05, 01-06, initialization, runtime-adapters]
+requirements-completed: [SETUP-03, SETUP-04, SETUP-05, SETUP-08]
 tech-stack:
   added: []
   patterns:
