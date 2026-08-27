@@ -34,7 +34,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 8/10 plans executed — the original 6 plans and gap plans 01-07/01-08 are complete; 01-09 and 01-10 remain pending. The prior verification found 3 blocking gaps (19/25 must-haves verified); CR-01 and CR-02 have tested repairs awaiting independent re-verification. Phase remains incomplete; native-provider approval is required by 01-09 before containment or source-install implementation.
+**Plans**: 8/18 executed. Completed plans 01-01–08 are preserved; ten serial containment plans 01-09–18 replace the unapproved old source-install proposal. Replan passed independent checking after one revision; explicit contract approval remains required. Phase remains incomplete: CR-01/02 repairs await re-verification; CR-03 and human/security gates remain open.
 
 Plans:
 **Wave 1**
@@ -69,13 +69,47 @@ Plans:
 
 - [x] 01-08-PLAN.md — Give writers and recovery one atomic ownership protocol (completed; CR-02 repair awaits independent re-verification)
 
-**Wave 9** *(gap closure; depends on 01-08; blocking native-provider decision)*
+**Wave 9** *(gap closure; depends on 01-08; explicit human approval required)*
 
-- [ ] 01-09-PLAN.md — Approve and implement directory-bound containment with real race regressions
+- [ ] 01-09-PLAN.md — Approve exact safety, support, Node and evidence contract
 
-**Wave 10** *(gap closure; depends on 01-09 and its explicit native-provider approval)*
+**Wave 10** *(gap closure; depends on 01-09)*
 
-- [ ] 01-10-PLAN.md — Prove the isolated native source install and installed-CLI success/refusal contract
+- [ ] 01-10-PLAN.md — Prove installed POSIX and Windows native promotion tracers
+
+**Wave 11** *(gap closure; depends on 01-10)*
+
+- [ ] 01-11-PLAN.md — Require native tracer evidence on every approved target
+
+**Wave 12** *(gap closure; depends on 01-11)*
+
+- [ ] 01-12-PLAN.md — Bind artifact validation and initializer reads
+
+**Wave 13** *(gap closure; depends on 01-12)*
+
+- [ ] 01-13-PLAN.md — Bind ownership and staging operations
+
+**Wave 14** *(gap closure; depends on 01-13)*
+
+- [ ] 01-14-PLAN.md — Make promotion and recovery restartable through bound operations
+
+**Wave 15** *(gap closure; depends on 01-14)*
+
+- [ ] 01-15-PLAN.md — Complete conservative cleanup and native safety checks
+
+**Wave 16** *(gap closure; depends on 01-15)*
+
+- [ ] 01-16-PLAN.md — Prove the same-package prebuilt installation contract
+
+**Wave 17** *(gap closure; depends on 01-16)*
+
+- [ ] 01-17-PLAN.md — Run the complete installed containment test matrix
+
+**Wave 18** *(gap closure; depends on 01-17)*
+
+- [ ] 01-18-PLAN.md — Gate the final package candidate on platform evidence and review
+
+**Cross-cutting constraints:** Preserve all completed contracts and all three agent adapters; no unapproved support/Node/authority change; same-package prebuilts; no unsafe pathname fallback; evidence distinguishes test and release binaries; missing native matrix rows block support; no publishing or Phase 2 advancement before independent closure.
 
 ### Phase 2: Build the Project Truth Engine
 
@@ -163,7 +197,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Initialize Canonical Projects | 8/10 | Gaps found; 01-09 native-provider decision pending | - |
+| 1. Initialize Canonical Projects | 8/18 | Portable replan checked; approval and verification pending | - |
 | 2. Build the Project Truth Engine | 0/TBD | Not started | - |
 | 3. Orient and Plan One Approved Phase | 0/TBD | Not started | - |
 | 4. Deliver One Approved Phase | 0/TBD | Not started | - |

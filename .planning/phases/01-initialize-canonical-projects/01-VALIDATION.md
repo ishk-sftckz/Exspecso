@@ -11,6 +11,8 @@ created: 2026-08-26
 
 # Phase 1 — Validation Strategy
 
+**Current routing (2026-08-28):** The original tables below are historical planning snapshots. Plans 01-01–08 are executed, with latest local build/62-test evidence in 01-08-SUMMARY. Old 09/10 source-install rows are superseded, not active. Use the Portable Replan section at the end and 01-CONTAINMENT-TEST-MATRIX.md for current pending evidence. Status stays draft/noncompliant until separate validation establishes otherwise.
+
 > Per-phase validation contract for feedback sampling during execution.
 
 ---
@@ -108,3 +110,27 @@ Use deterministic barriers rather than probabilistic timing; await killed-child 
 01-10 owns the final automated closure gate: run `npm run build`, `npm test -- --run`, and `npm pack --dry-run` separately. The full suite must execute the produced source tarball's isolated lifecycle-enabled installation, installed-provider load trace, root/nested CLI checks, and provider-unavailable zero-write regression. The dry-run proves contents only. Reuse the unmodified successful installation to keep focused feedback bounded; use separate installations for destructive negative cases. The shared run-cli helper remains unchanged; sanitize subprocess environments explicitly in the tracer.
 
 After repairs, require independent phase verification, real-TTY selection UAT, acknowledgement of the four retained plus one new descriptor-less judgment prohibitions, and `$gsd-secure-phase 1`. Record the actual Node/OS/filesystem used. D-19 does not authorize power-loss or universal-filesystem claims. No planning update changes `01-VERIFICATION.md`, `01-REVIEW.md`, requirement completion, or Phase 2 readiness.
+
+
+## Portable Replan — 2026-08-28 (current pending contract)
+
+All new implementation evidence is pending. Retain the historical failure reports and existing tests. The complete catalogue contains 42 case families with explicit operation/site/transition/environment expansion; it is not a claim that 42 example tests alone are complete. Commands and oracles are in `01-CONTAINMENT-TEST-MATRIX.md`, consumed by each plan.
+
+| Plan | Task scope | Required validation | Status |
+|---|---|---|---|
+| 09 | 1 approval | Read-only exact inputs plus explicit human boundary/matrix/provider/Node/evidence-mode decision | awaiting approval |
+| 10 | 1–3 provider and tracer | NP-01/02, TR-01/02; real native POSIX and Windows installed promotion | pending 09 |
+| 11 | 1–2 native matrix gate | Required ENV rows and GATE-01/02 tracer evidence | pending 10 |
+| 12 | 1–2 bound reads | RD-01–04; artifacts/validation/rerun suites | pending 11 |
+| 13 | 1–2 ownership/stage | OW-01–04, TX-01/02, RACE-02/03 | pending 12 |
+| 14 | 1–2 promotion/restore | TX-03/04, RC-01–04; every actual write/transition and forced termination | pending 13 |
+| 15 | 1–2 cleanup/native safety | CL-01/02, NP-03/04, EF-01/02; native diagnostics | pending 14 |
+| 16 | 1–2 prebuilt package | PK-01–04; actual offline cached ignore-scripts install and negative cases | pending 15 |
+| 17 | 1–2 full installed grid | RACE-01–06, AD-01/02, EF-01/02, ST-01, BASE-01; expanded inventory | pending 16 |
+| 18 | 1–2 final evidence/docs | Exact final tarball across all lanes, rejecting aggregate, full build/test/pack gate | pending 17 |
+
+Missing tests/fixtures/provider/CI files are intentionally created by their owning earlier tasks. No green test is inferred from a planned command. Keep existing suites/fixtures; new native-provider, evidence-aggregate and installed-race suites cover new boundaries only. Preserve baseline assertions, adapting platform termination mechanics without changing their meaning. Unit mocks and instrumentation do not substitute for uninstrumented package E2E; the exact evidence-mode limit must be accepted in 09.
+
+Run focused non-watch tests at each task and full regression checks after meaningful integration. Shard large generated grids with explicit required-shard aggregation; provide progress during longer builds rather than omit cases to enforce a 60-second wall-clock cap. All native ENV rows require actual native execution; missing/skipped/cancelled/stale rows block support. Real-TTY and existing host smoke observations stay explicit human evidence. Full future host workflow conformance is still Phase 6.
+
+After candidate evidence, require independent phase verification, real-TTY UAT, five judgment acknowledgements and `$gsd-secure-phase 1`. No physical power-loss, universal filesystem, strict lexical relocation prevention or arbitrary concurrent overwrite claim follows from this matrix. No requirement checkbox or Phase completion changes during planning.

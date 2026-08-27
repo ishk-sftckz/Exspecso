@@ -4,15 +4,15 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: "Awaiting native-provider decision"
-stopped_at: "01-09 Task 1 blocking-human decision; no native implementation authorized"
-last_updated: "2026-08-27T16:59:13.499Z"
-last_activity: 2026-08-27
-last_activity_desc: Plan 01-08 complete with independent build/62-test rerun and wave gates. Plan 01-09 read-only checkpoint assessment finished; explicit native-provider/build/install/platform approval is pending.
+status: Portable replan awaiting independent check
+stopped_at: Portable containment replan requested; implementation paused
+last_updated: "2026-08-27T18:26:26.335377+00:00"
+last_activity: 2026-08-28
+last_activity_desc: Portable containment replan passed independent checking after revision; 10 serial plans and 42 test families pending explicit contract approval and execution.
 progress:
-  total_phases: 6
+  total_phases: 1
   completed_phases: 0
-  total_plans: 10
+  total_plans: 19
   completed_plans: 8
 ---
 
@@ -28,21 +28,28 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 9 of 10 active; Task 1 decision pending, 0/3 tasks complete
-Status: Awaiting native-provider decision
-Last activity: 2026-08-27 — 01-08 independent wave verification passed; 01-09 reached its blocking-human native-provider decision without native code, install, or package changes.
+Plan: 9 of 18; revised 01-09 Task 1 blocking-human decision; 0/1 task complete
+Status: Awaiting portable contract approval
+Last activity: 2026-08-28 — portable replan passed independent checking after one revision; old macOS-first source-install proposal superseded, not approved.
 
-Plan execution: [████████░░] 80% (8/10 plans); phase completion remains blocked by verification gaps and pending human/security gates.
+Plan execution: 8 completed plans preserved; 10 revised/new plans pending (18 total). The larger denominator reflects the portable replan, not lost completed work. Phase completion remains blocked by verification gaps and human/security gates.
 
-### Active Execution Checkpoint
+### Active Execution Checkpoint — revised portable contract
+
+- The user authorized replanning for Windows, macOS, Linux, all three agent adapters, and comprehensive tests; implementation remains paused.
+- See `01-CONTAINMENT-REPLAN.md` and `01-CONTAINMENT-RESEARCH.md`. Proposed same-package prebuilts remove end-user compiler/header needs; the exact provider, OS/CPU/Node/libc/filesystem matrix and infrastructure still need approval.
+- Every already-open directory can be relocated. The object-authority versus strict lexical-containment boundary requires an explicit decision, never a silent reduction in the safety claim.
+- Ten serial plans (01-09–18) and 42 test families passed independent plan checking after revision; see 01-CONTAINMENT-PLAN-CHECK.md. All implementation and new test results remain pending. Do not resume the superseded source-install contract or count this planning request as native implementation approval.
+
+### Superseded Execution Checkpoint — history only
 
 - Plan: `01-09`; Task 1: approve or reject the same-package native containment provider; type: `decision`; gate: `blocking-human`; 0/3 tasks complete.
-- Awaiting explicit approval of the specified direct C Node-API filesystem binding, local C++ compiler/Node-header source-install prerequisites, macOS arm64/APFS first acceptance environment, and refusal before mutation on unverified/unsupported providers, including Windows.
+- The superseded proposal requested approval (never granted) of the specified direct C Node-API filesystem binding, local C++ compiler/Node-header source-install prerequisites, macOS arm64/APFS first acceptance environment, and refusal before mutation on unverified/unsupported providers, including Windows.
 - No new npm dependency, node-addon-api, node-gyp, tool download, or prebuilt-binary download is included. Product/canonical/recovery decisions remain TypeScript; native code owns only descriptor-bound filesystem mechanics.
 - If required platform support is incompatible, stop and replan rather than silently narrow it. Plan 01-10 cannot begin until 01-09's decision and implementation are complete.
 - User approvals of 01-07 and 01-08 tracers do not authorize this native decision. No native implementation, package change, installation, or compilation probe was performed during this checkpoint.
 - Read-only evidence: parent runtime `/Users/ishk.sftckz/.nvm/versions/node/v20.19.5/bin/node` is Node 20.19.5 / Node-API 9; Homebrew `/opt/homebrew/Cellar/node/25.2.1/bin/node` is Node 25.2.1 / Node-API 10. Both exist; the checkpoint executor used Homebrew Node while parent verification used Node 20. Headers at `/opt/homebrew/include/node` are Node 25.2.1; Apple clang 17 is present. Build/load compatibility remains unproven and must be explicitly checked after approval without silently raising the package's Node >=20 contract.
-- Resume: fresh continuation executor for 01-09 Task 1 with the exact user decision; only approval permits Task 2. No 01-09 SUMMARY exists because no task is complete. Independent phase verification, TTY UAT, acknowledgements, and security audit remain pending.
+- Historical resume route, superseded by the 2026-08-28 replan: fresh continuation executor for old 01-09 Task 1. Do not execute that contract. No 01-09 SUMMARY exists because no task is complete. Independent phase verification, TTY UAT, acknowledgements, and security audit remain pending.
 
 ### Plan 01-08 Completion
 
@@ -131,8 +138,8 @@ None yet.
 - CR-01 invalid canonical JSON declarations are repaired by Plan 01-07; independent phase re-verification remains required before closing the recorded verifier gap.
 - The live-writer recovery and stale-owner races are repaired and tested in 01-08; CR-02 still requires independent phase re-verification before it is closed.
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
-- Plans 01-08 through 01-10 remain in serial waves. Plan 01-09 requires explicit native-provider/build/install/platform approval before native changes; approval has not been granted.
-- Next: `$gsd-execute-phase 1 --gaps-only`, then independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` before advancement.
+- Plan 01-08 is complete. User requested replanning of the remaining serial containment work; revised approval and evidence gates must pass before implementation.
+- Next: `$gsd-execute-phase 1 --gaps-only` resolves the read-only exact support/provider/Node/evidence proposal in revised 01-09 Task 1 and asks for its explicit approval. No implementation before that approval. After execution, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
 ## Deferred Items
@@ -143,6 +150,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T16:59:13.499Z
-Stopped at: 01-09 Task 1 blocking-human native-provider decision; see Active Execution Checkpoint.
+Last session: 2026-08-27T18:26:26.335377+00:00
+Stopped at: Revised 01-09 Task 1 contract approval; replan checked, implementation not authorized.
 Resume file: .planning/phases/01-initialize-canonical-projects/01-09-PLAN.md
