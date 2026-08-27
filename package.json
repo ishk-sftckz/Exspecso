@@ -1,0 +1,28 @@
+{
+  "name": "exspecso",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Spec-driven harness engineering for AI coding agents",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "exspecso": "dist/cli/main.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "8.6.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}
