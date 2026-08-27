@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: "Awaiting tracer approval"
-stopped_at: "01-07 Task 1 committed and verified; tracer human-verify gate before Task 2"
-last_updated: "2026-08-27T15:09:14.530Z"
+status: "In Progress"
+stopped_at: Completed 01-07-PLAN.md; Plan 01-08 remains pending
+last_updated: "2026-08-27T15:18:06.401Z"
 last_activity: 2026-08-27
-last_activity_desc: Plan 01-07 Task 1 committed; invalid JSON parent regression and build independently rerun successfully. Awaiting tracer approval before Task 2.
+last_activity_desc: Plan 01-07 completed after approved tracer verification; full suite and build passed. Phase remains incomplete pending Plans 01-08 through 01-10 and independent gates.
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -27,28 +27,25 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 
 ## Current Position
 
-Phase: 01 (Initialize Canonical Projects) — TRACER CHECKPOINT; phase incomplete
-Plan: 7 of 10 active; Task 1 of 2 committed, Task 2 pending
-Status: Awaiting tracer approval
-Last activity: 2026-08-27 — 01-07 Task 1 committed and focused regression/build passed; GSD tracer feedback gate requires user approval before expansion.
+Phase: 01 (Initialize Canonical Projects) — phase incomplete
+Plan: 8 of 10 active; Plan 01-07 complete
+Status: In progress; awaiting Plan 01-08
+Last activity: 2026-08-27 — 01-07 completed after explicit tracer approval; full test suite and build passed.
 
-Plan execution: [██████░░░░] 60% (6/10 plans); phase completion remains blocked by verification gaps and pending human/security gates.
+Plan execution: [███████░░░] 70% (7/10 plans); phase completion remains blocked by verification gaps and pending human/security gates.
 
-### Active Execution Checkpoint
+### Recent Completed Plan
 
-- Plan: `01-07`; type: `human-verify`; gate: tracer feedback before expansion (execute-plan.md).
-- Completed Task 1: reject one invalid JSON parent through real init; RED commit `6c08599`, implementation commit `dcb1aae`.
-- Orchestrator verification: `npm test -- --run tests/integration/validation-errors.test.ts -t "invalid JSON parent"` passed (1 test, 5 skipped); `npm run build` passed.
-- Awaiting: explicit approval of this tracer result. Do not run Task 2 or later plans until the user responds.
-- Resume at Task 2: cover invalid declaration shapes and aggregate independent errors. Use a fresh continuation executor with these committed-task details; verify existing commits rather than repeat Task 1.
-- No `01-07-SUMMARY.md` yet because the plan is incomplete. These production commits are an intentional checkpoint, not abandoned unsummarized work.
-- Full suite, independent phase re-verification, native-provider approval, real-TTY UAT, prohibition acknowledgements, and security audit remain pending.
+- Plan: `01-07`; Task 1 tracer approval was explicitly provided before Task 2 began.
+- RED commits: `6c08599`, `649107d`. GREEN commits: `dcb1aae`, `5ebd1c2`.
+- Final verification: `npm test -- --run` passed (54 tests); `npm run build` passed.
+- Full independent phase re-verification, native-provider approval, real-TTY UAT, prohibition acknowledgements, and security audit remain pending.
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -73,6 +70,7 @@ Plan execution: [██████░░░░] 60% (6/10 plans); phase complet
 | Phase 01 P04 | 6min | 2 tasks | 8 files |
 | Phase 01 P05 | 6min | 2 tasks | 7 files |
 | Phase 01 P06 | 15min | 2 tasks | 6 files |
+| Phase 01 P07 | 10min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -99,6 +97,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Rerun configuration is additive, while only explicitly requested adapters can be created, refreshed, or replaced.
 - [Phase ?]: Replacement is selected-target scoped and every planned preimage is rechecked before promotion.
 - [Phase 01]: Restore only the hash-validated prior set after an interrupted init transaction; ambiguity preserves evidence and blocks new writes.
+- [Phase ?]: Use own-property declaration checks so explicit invalid id and parent values cannot disappear during artifact scanning.
+- [Phase ?]: Keep config JSON parsing under configuration diagnostics while malformed non-config canonical JSON emits EXSPECSO_ARTIFACT_PARSE.
+- [Phase ?]: Use scanner diagnostics as the single declaration-validation path to aggregate each independent canonical error once.
 
 ### Pending Todos
 
@@ -106,10 +107,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- Invalid canonical JSON IDs and parent IDs bypass validation (ART-03, ART-08).
+- CR-01 invalid canonical JSON declarations are repaired by Plan 01-07; independent phase re-verification remains required before closing the recorded verifier gap.
 - Recovery can remove a live writer's transaction because recovery and writers do not share atomic ownership (SETUP-06, ART-01, ART-07).
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
-- Plans 01-07 through 01-10 are ready in serial waves 7 through 10. Plan 01-09 requires explicit native-provider/build/install/platform approval before native changes; approval has not been granted.
+- Plans 01-08 through 01-10 remain in serial waves. Plan 01-09 requires explicit native-provider/build/install/platform approval before native changes; approval has not been granted.
 - Next: `$gsd-execute-phase 1 --gaps-only`, then independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` before advancement.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
@@ -121,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T15:09:14.530Z
-Stopped at: 01-07 Task 1 committed; awaiting tracer approval before Task 2. See Active Execution Checkpoint above.
-Resume file: .planning/phases/01-initialize-canonical-projects/01-07-PLAN.md
+Last session: 2026-08-27T15:18:06.393Z
+Stopped at: Completed 01-07-PLAN.md; Plan 01-08 remains pending
+Resume file: None
