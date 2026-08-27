@@ -4,6 +4,8 @@ import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "nod
 import { buildAdapterPlan } from "../adapters/registry.js";
 import { projectConfigSchema, type ProjectConfig } from "../artifacts/schema.js";
 import { renderConstitution, renderProjectConfig } from "../artifacts/templates.js";
+import { validateProject } from "../artifacts/validate.js";
+import { renderDiagnostics } from "../errors/diagnostic.js";
 import { findGitRoot } from "../filesystem/git-root.js";
 import { formatCompletion } from "./completion.js";
 import type { AgentId } from "./runtime-selection.js";
@@ -55,6 +57,12 @@ export async function runInit(input: InitInput): Promise<number> {
       "EXSPECSO_INIT_NO_GIT_ROOT",
       `No Git repository contains \"${searchedPath}\". Run \`git init\` or move into the intended repository.`,
     );
+    return 1;
+  }
+
+  const validationDiagnostics = await validateProject(repositoryRoot);
+  if (validationDiagnostics.length > 0) {
+    input.stderr.write(renderDiagnostics(validationDiagnostics));
     return 1;
   }
 

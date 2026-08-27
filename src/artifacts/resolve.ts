@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import type { Dirent } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { artifactKindForId, parseArtifactId, type ArtifactId, type ArtifactKind } from "./schema.js";
+import type { Diagnostic } from "../errors/diagnostic.js";
 
 export type ArtifactLocation =
   | { readonly kind: "file"; readonly path: string }
@@ -21,18 +22,10 @@ export interface ArtifactDefinition {
   readonly parentId?: ArtifactId;
 }
 
-export interface ResolutionDiagnostic {
-  readonly code: "EXSPECSO_ARTIFACT_INVALID_ID" | "EXSPECSO_ARTIFACT_NOT_FOUND" | "EXSPECSO_ARTIFACT_DUPLICATE_ID" | "EXSPECSO_ROADMAP_RESERVED_PATH";
-  readonly path: string;
-  readonly expected: string;
-  readonly actual: string;
-  readonly hint: string;
-}
-
 export type ResolveArtifactResult =
   | { readonly kind: "resolved"; readonly id: ArtifactId; readonly location: ArtifactLocation }
-  | { readonly kind: "not-found"; readonly diagnostics: readonly ResolutionDiagnostic[] }
-  | { readonly kind: "ambiguous"; readonly definitions: readonly ArtifactDefinition[]; readonly diagnostics: readonly ResolutionDiagnostic[] };
+  | { readonly kind: "not-found"; readonly diagnostics: readonly Diagnostic[] }
+  | { readonly kind: "ambiguous"; readonly definitions: readonly ArtifactDefinition[]; readonly diagnostics: readonly Diagnostic[] };
 
 const ignoredDirectoryNames = new Set([".git", "node_modules", "dist"]);
 const reservedRoadmapPath = ".exspecso/roadmap.md";
@@ -164,7 +157,7 @@ export async function scanArtifactDefinitions(root: string): Promise<readonly Ar
   return definitions.sort((left, right) => left.path.localeCompare(right.path) || left.location.kind.localeCompare(right.location.kind) || (left.location.kind === "section" && right.location.kind === "section" ? left.location.startLine - right.location.startLine : 0));
 }
 
-function invalidIdDiagnostic(id: string): ResolutionDiagnostic {
+function invalidIdDiagnostic(id: string): Diagnostic {
   return {
     code: "EXSPECSO_ARTIFACT_INVALID_ID",
     path: ".",
