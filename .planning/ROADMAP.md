@@ -67,7 +67,7 @@ Plans:
 
 **Wave 8** *(gap closure; depends on 01-07)*
 
-- [ ] 01-08-PLAN.md — Give writers and recovery one atomic ownership protocol
+- [ ] 01-08-PLAN.md — Give writers and recovery one atomic ownership protocol (Task 1 committed and verified; tracer approval required before Task 2)
 
 **Wave 9** *(gap closure; depends on 01-08; blocking native-provider decision)*
 

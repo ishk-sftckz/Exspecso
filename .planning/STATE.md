@@ -4,11 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: "In Progress"
-stopped_at: Completed 01-07-PLAN.md; Plan 01-08 remains pending
-last_updated: "2026-08-27T15:18:06.401Z"
+status: "Awaiting tracer approval"
+stopped_at: "01-08 Task 1 committed and verified; tracer human-verify gate before Task 2"
+last_updated: "2026-08-27T15:28:23.934Z"
 last_activity: 2026-08-27
-last_activity_desc: Plan 01-07 completed after approved tracer verification; full suite and build passed. Phase remains incomplete pending Plans 01-08 through 01-10 and independent gates.
+last_activity_desc: Plan 01-07 complete. Plan 01-08 Task 1 committed; both ownership races, all 56 tests, and build independently rerun successfully. Awaiting new tracer approval before Task 2.
 progress:
   total_phases: 6
   completed_phases: 0
@@ -27,12 +27,22 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 
 ## Current Position
 
-Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 8 of 10 active; Plan 01-07 complete
-Status: In progress; awaiting Plan 01-08
-Last activity: 2026-08-27 — 01-07 completed after explicit tracer approval; full test suite and build passed.
+Phase: 01 (Initialize Canonical Projects) — TRACER CHECKPOINT; phase incomplete
+Plan: 8 of 10 active; Task 1 of 2 committed, Task 2 pending
+Status: Awaiting tracer approval
+Last activity: 2026-08-27 — 01-08 Task 1 committed; two deterministic ownership races, 56 tests, and build passed. GSD tracer feedback requires approval before Task 2.
 
 Plan execution: [███████░░░] 70% (7/10 plans); phase completion remains blocked by verification gaps and pending human/security gates.
+
+### Active Execution Checkpoint
+
+- Plan: `01-08`; type: `human-verify`; gate: tracer feedback before expansion (execute-plan.md).
+- Completed Task 1: serialize a real writer and recovery through one owned lease. RED commit `1c8a38e`; GREEN commit `8a3b0f5`.
+- Orchestrator verification: `npm test -- --run tests/integration/transaction-recovery.test.ts -t "ownership race"` passed (2 tests); `npm test -- --run` passed (8 files, 56 tests); `npm run build` passed.
+- Awaiting: explicit approval of this new tracer. The user's earlier `approve` applied only to 01-07 Task 1 and was consumed before 01-07 Task 2.
+- Resume at Task 2: make stale-owner acquisition and cleanup safe under competing recovery. Use a fresh continuation executor with these completed-task details; verify the existing commits instead of repeating Task 1.
+- No `01-08-SUMMARY.md` exists because the plan is incomplete. These production commits are an intentional checkpoint, not abandoned unsummarized work.
+- Do not begin Task 2 or later plans before the user responds. Native-provider/build/install/platform approval, independent phase verification, real-TTY UAT, prohibition acknowledgements, and security audit remain pending.
 
 ### Recent Completed Plan
 
@@ -108,7 +118,7 @@ None yet.
 ### Blockers/Concerns
 
 - CR-01 invalid canonical JSON declarations are repaired by Plan 01-07; independent phase re-verification remains required before closing the recorded verifier gap.
-- Recovery can remove a live writer's transaction because recovery and writers do not share atomic ownership (SETUP-06, ART-01, ART-07).
+- The live-writer recovery races are repaired and tested in 01-08 Task 1; stale-owner acquisition and cleanup remain pending in Task 2, and CR-02 requires independent re-verification.
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
 - Plans 01-08 through 01-10 remain in serial waves. Plan 01-09 requires explicit native-provider/build/install/platform approval before native changes; approval has not been granted.
 - Next: `$gsd-execute-phase 1 --gaps-only`, then independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` before advancement.
@@ -122,6 +132,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T15:18:06.393Z
-Stopped at: Completed 01-07-PLAN.md; Plan 01-08 remains pending
-Resume file: None
+Last session: 2026-08-27T15:28:23.934Z
+Stopped at: 01-08 Task 1 committed; awaiting tracer approval before Task 2. See Active Execution Checkpoint above.
+Resume file: .planning/phases/01-initialize-canonical-projects/01-08-PLAN.md
