@@ -1,4 +1,4 @@
-import { lstat, readFile, readdir, rm, unlink, writeFile } from "node:fs/promises";
+import { lstat, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import { validateProject } from "../artifacts/validate.js";
@@ -6,7 +6,6 @@ import { assertSafeTarget } from "./safe-path.js";
 import {
   backupFile,
   isRegularFile,
-  lockRelativePath,
   readTransactionJournal,
   removeRecoveredTransaction,
   stageFile,
@@ -15,10 +14,12 @@ import {
   transactionStageRoot,
   type TransactionJournal,
 } from "./transaction.js";
+import { acquireInitOwnership, inspectInitOwnership, releaseInitOwnership, type InitOwnership } from "./ownership.js";
 
 export type RecoveryResult =
   | { readonly kind: "none" }
   | { readonly kind: "recovered"; readonly transactionId: string; readonly disposition: "restored-prior" }
+  | { readonly kind: "busy" }
   | { readonly kind: "ambiguous"; readonly message: string };
 
 function containedRelativePath(path: string): boolean {
@@ -99,53 +100,55 @@ async function restorePrior(root: string, stageRoot: string, journal: Transactio
  * Recovers only a complete, self-identifying journal. Any unexpected path,
  * hash, root, or external canonical change is left untouched for inspection.
  */
-export async function recoverInterruptedTransaction(rootInput: string): Promise<RecoveryResult> {
+export async function recoverInterruptedTransaction(rootInput: string, ownership?: InitOwnership): Promise<RecoveryResult> {
   const root = resolve(rootInput);
+  let heldOwnership = ownership;
+  let ownsLease = false;
+  if (heldOwnership === undefined) {
+    const acquisition = await acquireInitOwnership(root);
+    if (acquisition.kind === "busy") return { kind: "busy" };
+    if (acquisition.kind === "ambiguous") return { kind: "ambiguous", message: acquisition.message };
+    heldOwnership = acquisition.ownership;
+    ownsLease = true;
+  }
   const stagingRoot = join(root, stagingRelativePath);
-  let directories: string[];
   try {
-    directories = (await readdir(stagingRoot, { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return { kind: "none" };
-    return { kind: "ambiguous", message: "cannot inspect transaction staging directory" };
-  }
-  if (directories.length === 0) return { kind: "none" };
-  if (directories.length !== 1) return { kind: "ambiguous", message: "multiple transaction staging directories found" };
-  const transactionId = directories[0];
-  const stageRoot = transactionStageRoot(root, transactionId);
-  let journal: TransactionJournal;
-  try {
-    journal = await readTransactionJournal(stageRoot);
-  } catch {
-    return { kind: "ambiguous", message: "transaction journal is unreadable" };
-  }
-  const shapeError = journalShapeIsValid(journal, transactionId, root);
-  if (shapeError !== null) return { kind: "ambiguous", message: shapeError };
-  const evidenceError = await validateEvidence(root, stageRoot, journal);
-  if (evidenceError !== null) return { kind: "ambiguous", message: evidenceError };
-  try {
-    await restorePrior(root, stageRoot, journal);
-    const diagnostics = await validateProject(root);
-    if (diagnostics.length > 0) return { kind: "ambiguous", message: "restored canonical set does not validate" };
-    await removeRecoveredTransaction(root, stageRoot, journal);
-    return { kind: "recovered", transactionId, disposition: "restored-prior" };
-  } catch {
-    return { kind: "ambiguous", message: "could not restore the validated prior canonical set" };
+    let directories: string[];
+    try {
+      directories = (await readdir(stagingRoot, { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return { kind: "none" };
+      return { kind: "ambiguous", message: "cannot inspect transaction staging directory" };
+    }
+    if (directories.length === 0) return { kind: "none" };
+    if (directories.length !== 1) return { kind: "ambiguous", message: "multiple transaction staging directories found" };
+    const transactionId = directories[0];
+    const stageRoot = transactionStageRoot(root, transactionId);
+    let journal: TransactionJournal;
+    try {
+      journal = await readTransactionJournal(stageRoot);
+    } catch {
+      return { kind: "ambiguous", message: "transaction journal is unreadable" };
+    }
+    const shapeError = journalShapeIsValid(journal, transactionId, root);
+    if (shapeError !== null) return { kind: "ambiguous", message: shapeError };
+    const evidenceError = await validateEvidence(root, stageRoot, journal);
+    if (evidenceError !== null) return { kind: "ambiguous", message: evidenceError };
+    try {
+      await restorePrior(root, stageRoot, journal);
+      const diagnostics = await validateProject(root);
+      if (diagnostics.length > 0) return { kind: "ambiguous", message: "restored canonical set does not validate" };
+      await removeRecoveredTransaction(root, stageRoot, journal);
+      return { kind: "recovered", transactionId, disposition: "restored-prior" };
+    } catch {
+      return { kind: "ambiguous", message: "could not restore the validated prior canonical set" };
+    }
+  } finally {
+    if (ownsLease && heldOwnership !== undefined) await releaseInitOwnership(heldOwnership);
   }
 }
 
 export async function hasActiveTransaction(rootInput: string): Promise<boolean> {
-  const root = resolve(rootInput);
-  try {
-    const raw = JSON.parse(await readFile(join(root, lockRelativePath), "utf8")) as { pid?: unknown };
-    if (typeof raw.pid !== "number" || !Number.isInteger(raw.pid) || raw.pid <= 0) return false;
-    try {
-      process.kill(raw.pid, 0);
-      return true;
-    } catch (error) {
-      return (error as NodeJS.ErrnoException).code === "EPERM";
-    }
-  } catch {
-    return false;
-  }
+  const inspection = await inspectInitOwnership(rootInput);
+  return inspection.kind !== "none" && inspection.kind !== "stale";
 }
