@@ -24,6 +24,16 @@ async function useFixture(): Promise<GitFixture> {
   return fixture;
 }
 
+async function snapshotTree(path: string, prefix = ""): Promise<readonly string[]> {
+  const entries = await readdir(path, { withFileTypes: true });
+  const snapshots = await Promise.all(entries.sort((left, right) => left.name.localeCompare(right.name)).map(async (entry) => {
+    const relativePath = join(prefix, entry.name);
+    if (entry.isDirectory()) return snapshotTree(join(path, entry.name), relativePath);
+    return [`${relativePath}:${await readFile(join(path, entry.name), "utf8")}`];
+  }));
+  return snapshots.flat();
+}
+
 function output(): { stream: Writable; read: () => string } {
   let value = "";
   return {
@@ -106,6 +116,67 @@ describe("journaled init transaction", () => {
     expect(stderr.read()).toContain("EXSPECSO_INIT_TRANSACTION_BUSY");
     release?.();
     await expect(first).resolves.toMatchObject({ kind: "committed" });
+  });
+
+  it("ownership race: direct recovery leaves a live writer's evidence byte-identical", async () => {
+    const fixture = await useFixture();
+    const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });
+    let releaseWriter: (() => void) | undefined;
+    const writerReady = new Promise<void>((resolveWriter) => { releaseWriter = resolveWriter; });
+    let writerEntered: (() => void) | undefined;
+    const writerEnteredReady = new Promise<void>((resolveWriter) => { writerEntered = resolveWriter; });
+    const writer = commitTransaction(plan, { onReadyToPromote: async () => { writerEntered?.(); await writerReady; } });
+    await writerEnteredReady;
+    const beforeRecovery = await snapshotTree(join(fixture.root, ".exspecso"));
+
+    try {
+      await expect(recoverInterruptedTransaction(fixture.root)).resolves.toEqual({ kind: "busy" });
+      await expect(snapshotTree(join(fixture.root, ".exspecso"))).resolves.toEqual(beforeRecovery);
+    } finally {
+      releaseWriter?.();
+      await writer;
+    }
+  });
+
+  it("ownership race: init loses to a writer that starts after its idle observation", async () => {
+    const fixture = await useFixture();
+    const stdout = output();
+    const stderr = output();
+    let releaseInit: (() => void) | undefined;
+    const initReady = new Promise<void>((resolveInit) => { releaseInit = resolveInit; });
+    let initEntered: (() => void) | undefined;
+    const initEnteredReady = new Promise<void>((resolveInit) => { initEntered = resolveInit; });
+    const initInput = {
+      selectedAgents: ["codex"] as const,
+      cwd: fixture.root,
+      stdin: new PassThrough(),
+      stdout: stdout.stream,
+      stderr: stderr.stream,
+      beforeOwnershipAcquire: async () => { initEntered?.(); await initReady; },
+    } as Parameters<typeof runInit>[0] & { readonly beforeOwnershipAcquire: () => Promise<void> };
+    const init = runInit(initInput);
+    const initState = await Promise.race([
+      initEnteredReady.then(() => "entered" as const),
+      init.then(() => "finished" as const),
+    ]);
+    expect(initState).toBe("entered");
+
+    const writerPlan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });
+    let releaseWriter: (() => void) | undefined;
+    const writerReady = new Promise<void>((resolveWriter) => { releaseWriter = resolveWriter; });
+    let writerEntered: (() => void) | undefined;
+    const writerEnteredReady = new Promise<void>((resolveWriter) => { writerEntered = resolveWriter; });
+    const writer = commitTransaction(writerPlan, { onReadyToPromote: async () => { writerEntered?.(); await writerReady; } });
+    await writerEnteredReady;
+    const beforeInit = await snapshotTree(join(fixture.root, ".exspecso"));
+
+    releaseInit?.();
+    await expect(init).resolves.toBe(1);
+    expect(stderr.read()).toContain("EXSPECSO_INIT_TRANSACTION_BUSY");
+    await expect(snapshotTree(join(fixture.root, ".exspecso"))).resolves.toEqual(beforeInit);
+
+    releaseWriter?.();
+    await expect(writer).resolves.toMatchObject({ kind: "committed" });
   });
 
   it("stages, hashes, journals deterministic promotion order, and retains evidence after each injected promotion fault", async () => {
