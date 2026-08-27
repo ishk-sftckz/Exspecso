@@ -21,13 +21,13 @@
 
 - [x] **ART-01**: User can inspect current project intent and progress directly through ordinary Markdown and small JSON files in the repository.
 - [x] **ART-02**: User can operate Exspecso without a database, cloud account, hidden canonical state, generated duplicate views, or an export step.
-- [ ] **ART-03**: User can address each Roadmap, Phase, Spec, Requirement, Acceptance Criterion, Plan, Task, Decision, and review finding through a stable ID.
-- [ ] **ART-04**: User can rename human-readable titles and slugs without changing stable artifact identity or explicit parent relationships.
-- [ ] **ART-05**: User receives deeper artifacts only when the corresponding workflow first makes them actionable.
-- [ ] **ART-06**: User can resolve an artifact ID to its canonical file or stable section, including a `TASK-NNN` section inside one Spec-level `tasks.md`.
+- [x] **ART-03**: User can address each Roadmap, Phase, Spec, Requirement, Acceptance Criterion, Plan, Task, Decision, and review finding through a stable ID.
+- [x] **ART-04**: User can rename human-readable titles and slugs without changing stable artifact identity or explicit parent relationships.
+- [x] **ART-05**: User receives deeper artifacts only when the corresponding workflow first makes them actionable.
+- [x] **ART-06**: User can resolve an artifact ID to its canonical file or stable section, including a `TASK-NNN` section inside one Spec-level `tasks.md`.
 - [ ] **ART-07**: User retains the previous valid artifact set when an atomic multi-file workflow write fails or is interrupted.
-- [ ] **ART-08**: User can edit canonical artifacts directly and receive explicit validation errors for invalid structure or relationships.
-- [ ] **ART-09**: User can rely on one stable `ROADMAP` artifact at `.exspecso/roadmap.md` without numbered Roadmap folders, an active-Roadmap selector, or a separate canonical Roadmap status file.
+- [x] **ART-08**: User can edit canonical artifacts directly and receive explicit validation errors for invalid structure or relationships.
+- [x] **ART-09**: User can rely on one stable `ROADMAP` artifact at `.exspecso/roadmap.md` without numbered Roadmap folders, an active-Roadmap selector, or a separate canonical Roadmap status file.
 
 ### Discovery and Orientation
 
@@ -211,13 +211,13 @@ Deferred to future releases and not included in the current roadmap.
 | SETUP-08 | Phase 1 | Complete |
 | ART-01 | Phase 1 | Complete |
 | ART-02 | Phase 1 | Complete |
-| ART-03 | Phase 1 | Pending |
-| ART-04 | Phase 1 | Pending |
-| ART-05 | Phase 1 | Pending |
-| ART-06 | Phase 1 | Pending |
+| ART-03 | Phase 1 | Complete |
+| ART-04 | Phase 1 | Complete |
+| ART-05 | Phase 1 | Complete |
+| ART-06 | Phase 1 | Complete |
 | ART-07 | Phase 1 | Pending |
-| ART-08 | Phase 1 | Pending |
-| ART-09 | Phase 1 | Pending |
+| ART-08 | Phase 1 | Complete |
+| ART-09 | Phase 1 | Complete |
 | DISC-01 | Phase 3 | Pending |
 | DISC-02 | Phase 3 | Pending |
 | DISC-03 | Phase 3 | Pending |
