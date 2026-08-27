@@ -4,11 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: Blocked pending 01-09 native-provider/platform approval
-stopped_at: Completed 01-08-PLAN.md; 01-09 remains blocked on native-provider/platform approval
-last_updated: "2026-08-27T16:55:23.317Z"
+status: "Awaiting native-provider decision"
+stopped_at: "01-09 Task 1 blocking-human decision; no native implementation authorized"
+last_updated: "2026-08-27T16:59:13.499Z"
 last_activity: 2026-08-27
-last_activity_desc: Plan 01-08 complete. The explicitly approved tracer expanded into stale-owner recovery coverage; focused tests, full suite (62 tests), and build passed. 01-09 remains blocked on its separate native-provider/platform decision.
+last_activity_desc: Plan 01-08 complete with independent build/62-test rerun and wave gates. Plan 01-09 read-only checkpoint assessment finished; explicit native-provider/build/install/platform approval is pending.
 progress:
   total_phases: 6
   completed_phases: 0
@@ -28,11 +28,21 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 9 of 10 active; Plan 01-08 complete
-Status: Blocked pending 01-09 native-provider/platform approval
-Last activity: 2026-08-27 — 01-08 completed after the user explicitly approved its Task 1 tracer; stale-owner coverage, 62 automated tests, and build passed.
+Plan: 9 of 10 active; Task 1 decision pending, 0/3 tasks complete
+Status: Awaiting native-provider decision
+Last activity: 2026-08-27 — 01-08 independent wave verification passed; 01-09 reached its blocking-human native-provider decision without native code, install, or package changes.
 
 Plan execution: [████████░░] 80% (8/10 plans); phase completion remains blocked by verification gaps and pending human/security gates.
+
+### Active Execution Checkpoint
+
+- Plan: `01-09`; Task 1: approve or reject the same-package native containment provider; type: `decision`; gate: `blocking-human`; 0/3 tasks complete.
+- Awaiting explicit approval of the specified direct C Node-API filesystem binding, local C++ compiler/Node-header source-install prerequisites, macOS arm64/APFS first acceptance environment, and refusal before mutation on unverified/unsupported providers, including Windows.
+- No new npm dependency, node-addon-api, node-gyp, tool download, or prebuilt-binary download is included. Product/canonical/recovery decisions remain TypeScript; native code owns only descriptor-bound filesystem mechanics.
+- If required platform support is incompatible, stop and replan rather than silently narrow it. Plan 01-10 cannot begin until 01-09's decision and implementation are complete.
+- User approvals of 01-07 and 01-08 tracers do not authorize this native decision. No native implementation, package change, installation, or compilation probe was performed during this checkpoint.
+- Read-only evidence: parent runtime `/Users/ishk.sftckz/.nvm/versions/node/v20.19.5/bin/node` is Node 20.19.5 / Node-API 9; Homebrew `/opt/homebrew/Cellar/node/25.2.1/bin/node` is Node 25.2.1 / Node-API 10. Both exist; the checkpoint executor used Homebrew Node while parent verification used Node 20. Headers at `/opt/homebrew/include/node` are Node 25.2.1; Apple clang 17 is present. Build/load compatibility remains unproven and must be explicitly checked after approval without silently raising the package's Node >=20 contract.
+- Resume: fresh continuation executor for 01-09 Task 1 with the exact user decision; only approval permits Task 2. No 01-09 SUMMARY exists because no task is complete. Independent phase verification, TTY UAT, acknowledgements, and security audit remain pending.
 
 ### Plan 01-08 Completion
 
@@ -133,6 +143,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T16:55:23.309Z
-Stopped at: Completed 01-08-PLAN.md; 01-09 remains blocked on native-provider/platform approval
-Resume file: None
+Last session: 2026-08-27T16:59:13.499Z
+Stopped at: 01-09 Task 1 blocking-human native-provider decision; see Active Execution Checkpoint.
+Resume file: .planning/phases/01-initialize-canonical-projects/01-09-PLAN.md
