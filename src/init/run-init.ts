@@ -1,8 +1,10 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
+import { ADAPTER_REGISTRY, renderAdapter } from "../adapters/registry.js";
 import { findGitRoot } from "../filesystem/git-root.js";
+import { formatCompletion } from "./completion.js";
 import type { AgentId } from "./runtime-selection.js";
 
 export interface InitInput {
@@ -41,21 +43,6 @@ Work stays within approved requirements and explicit recovery limits.
 ## Runtime portability
 Supported coding runtimes share one portable Exspecso artifact model.
 `;
-
-const codexSkillBody = `---
-name: exspecso-start
-description: Begin Exspecso project orientation from the canonical repository artifacts.
----
-
-# Exspecso Start
-
-Use the repository's canonical Exspecso artifacts to begin project orientation. Preserve approved intent, surface uncertainty for human resolution, and write only the artifacts required by the approved workflow.
-`;
-
-function managedCodexSkill(): string {
-  const hash = createHash("sha256").update(codexSkillBody).digest("hex");
-  return `<!-- exspecso:managed template-version=1 original-body-sha256=${hash} -->\n${codexSkillBody}`;
-}
 
 function isWithinRoot(root: string, target: string): boolean {
   const pathFromRoot = relative(root, target);
@@ -118,14 +105,13 @@ export async function runInit(input: InitInput): Promise<number> {
       target: resolve(repositoryRoot, ".exspecso", "constitution.md"),
       content: constitution,
     },
-    ...(input.selectedAgents.includes("codex")
-      ? [
-          {
-            target: resolve(repositoryRoot, ".agents", "skills", "exspecso-start", "SKILL.md"),
-            content: managedCodexSkill(),
-          },
-        ]
-      : []),
+    ...input.selectedAgents.map((agent) => {
+      const adapter = ADAPTER_REGISTRY[agent];
+      return {
+        target: resolve(repositoryRoot, adapter.relativePath),
+        content: renderAdapter(adapter),
+      };
+    }),
   ];
 
   if (targets.some(({ target }) => !isWithinRoot(repositoryRoot, target))) {
@@ -174,10 +160,7 @@ export async function runInit(input: InitInput): Promise<number> {
       await rename(stagedTarget, target);
     }
 
-    input.stdout.write("/exspecso-start\n");
-    if (input.selectedAgents.includes("codex")) {
-      input.stdout.write("For Codex, invoke $exspecso-start\n");
-    }
+    input.stdout.write(formatCompletion(input.selectedAgents));
     return 0;
   } catch (error) {
     writeError(input.stderr, "EXSPECSO_INIT_WRITE_FAILED", "Initialization could not complete; no completion guidance was printed.");
