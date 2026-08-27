@@ -18,7 +18,7 @@ describe("managed adapter ownership", () => {
     expect(inspection.existingContent).toBe(modified);
     expect(inspection.diff).toContain("--- existing");
     expect(inspection.diff).toContain("+++ generated");
-    expect(inspection.diff).toContain("+Local user note.");
+    expect(inspection.diff).toContain("-Local user note.");
   });
 
   it("does not grant ownership to unowned or malformed headers", () => {

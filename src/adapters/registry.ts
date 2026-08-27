@@ -1,5 +1,5 @@
-import { createHash } from "node:crypto";
 import type { AgentId } from "../init/runtime-selection.js";
+import { renderManagedFile } from "./managed-file.js";
 
 export interface AdapterDefinition {
   readonly agent: AgentId;
@@ -15,13 +15,6 @@ export interface AdapterTarget {
   readonly agent: AgentId;
   readonly relativePath: string;
   readonly content: string;
-}
-
-const templateVersion = 1;
-
-function withManagedHeader(body: string): string {
-  const hash = createHash("sha256").update(body).digest("hex");
-  return `<!-- exspecso:managed template-version=${templateVersion} original-body-sha256=${hash} -->\n${body}`;
 }
 
 function skillBody(runtime: string, nativeInvocation: string): string {
@@ -47,7 +40,7 @@ function defineAdapter(
   const { body, ...adapter } = definition;
   return Object.freeze({
     ...adapter,
-    render: () => withManagedHeader(body),
+    render: () => renderManagedFile(body),
   });
 }
 
