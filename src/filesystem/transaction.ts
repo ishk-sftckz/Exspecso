@@ -138,7 +138,7 @@ async function signalExternalFault(point: PromotionFaultPoint): Promise<void> {
   if (signalPath === undefined || process.env.EXSPECSO_TEST_FAULT_POINT !== point) return;
   await writeFile(signalPath, `${JSON.stringify({ point, pid: process.pid })}\n`, "utf8");
   if (process.env.EXSPECSO_TEST_WAIT_FOR_KILL === "1") {
-    await new Promise<void>(() => undefined);
+    await new Promise<void>(() => { setInterval(() => undefined, 1_000); });
   }
 }
 

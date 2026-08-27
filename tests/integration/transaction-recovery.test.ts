@@ -78,8 +78,7 @@ async function killAtPromotion(root: string, point: PromotionFaultPoint): Promis
   await expect(exited).resolves.toEqual({ code: null, signal: "SIGKILL" });
 }
 
-async function writeOwnershipRecord(root: string, container: string, pid: number): Promise<string> {
-  const token = randomUUID();
+async function writeOwnershipRecord(root: string, container: string, pid: number, token = randomUUID()): Promise<string> {
   await mkdir(container, { recursive: true });
   await writeFile(join(container, `owner-${token}.json`), `${JSON.stringify({
     schemaVersion: 1,
@@ -307,7 +306,7 @@ describe("journaled init transaction", () => {
     const fixture = await useFixture();
     const candidateToken = randomUUID();
     const candidate = join(fixture.root, ".exspecso", `.init.lock.candidate-${candidateToken}`);
-    await writeOwnershipRecord(fixture.root, candidate, 2_147_000_000);
+    await writeOwnershipRecord(fixture.root, candidate, 2_147_000_000, candidateToken);
 
     const acquisition = await acquireInitOwnership(fixture.root);
     expect(acquisition.kind).toBe("acquired");

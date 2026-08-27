@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { lstat, mkdir, open, readFile, readdir, realpath, rename, rmdir, unlink } from "node:fs/promises";
+import { lstat, mkdir, open, readFile, readdir, realpath, rename, rmdir, unlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 
@@ -39,6 +39,11 @@ export type InitOwnershipAcquisition =
   | { readonly kind: "acquired"; readonly ownership: InitOwnership }
   | { readonly kind: "busy"; readonly message: string }
   | { readonly kind: "ambiguous"; readonly message: string };
+
+interface AcquireInitOwnershipOptions {
+  /** Internal deterministic test seam; it never changes ownership decisions. */
+  readonly onStaleOwnerObserved?: () => void | Promise<void>;
+}
 
 function ownerFileName(token: string): string {
   return `${ownerFilePrefix}${token}${ownerFileSuffix}`;
@@ -88,15 +93,6 @@ async function writeOwnerRecord(path: string, record: OwnerRecord): Promise<void
     await handle.sync();
   } finally {
     await handle.close();
-  }
-}
-
-async function hasInterruptedCandidate(operationalRoot: string): Promise<boolean> {
-  try {
-    return (await readdir(operationalRoot)).some((entry) => entry.startsWith(candidatePrefix));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
-    throw error;
   }
 }
 
@@ -164,9 +160,83 @@ async function removeObservedStaleOwner(root: string, observed: Extract<InitOwne
   }
 }
 
+interface ObservedDeadCandidate {
+  readonly path: string;
+  readonly token: string;
+  readonly recordName: string;
+}
+
+type CandidateInspection =
+  | { readonly kind: "none" }
+  | { readonly kind: "stale"; readonly candidates: readonly ObservedDeadCandidate[] }
+  | { readonly kind: "ambiguous"; readonly message: string };
+
+async function inspectOwnershipCandidates(root: string, operationalRoot: string): Promise<CandidateInspection> {
+  let entries;
+  try {
+    entries = await readdir(operationalRoot, { withFileTypes: true });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return { kind: "none" };
+    return { kind: "ambiguous", message: "cannot inspect initialization ownership candidates" };
+  }
+  const candidates: ObservedDeadCandidate[] = [];
+  for (const entry of entries.filter((candidate) => candidate.name.startsWith(candidatePrefix))) {
+    const token = entry.name.slice(candidatePrefix.length);
+    if (!entry.isDirectory() || !isUuid(token)) return { kind: "ambiguous", message: "interrupted initialization ownership candidate was preserved for inspection" };
+    const candidatePath = join(operationalRoot, entry.name);
+    let records;
+    try {
+      records = await readdir(candidatePath, { withFileTypes: true });
+    } catch {
+      return { kind: "ambiguous", message: "interrupted initialization ownership candidate was preserved for inspection" };
+    }
+    if (records.length !== 1 || !records[0].isFile()) return { kind: "ambiguous", message: "interrupted initialization ownership candidate was preserved for inspection" };
+    const recordName = records[0].name;
+    let record: OwnerRecord | undefined;
+    try {
+      record = parseOwnerRecord(await readFile(join(candidatePath, recordName), "utf8"), root, recordName);
+    } catch {
+      return { kind: "ambiguous", message: "interrupted initialization ownership candidate was preserved for inspection" };
+    }
+    if (record === undefined || record.token !== token || liveness(record) !== "stale") {
+      return { kind: "ambiguous", message: "interrupted initialization ownership candidate was preserved for inspection" };
+    }
+    candidates.push({ path: candidatePath, token, recordName });
+  }
+  return candidates.length === 0 ? { kind: "none" } : { kind: "stale", candidates };
+}
+
+async function removeObservedDeadCandidate(root: string, observed: ObservedDeadCandidate): Promise<boolean> {
+  let records;
+  try {
+    records = await readdir(observed.path, { withFileTypes: true });
+  } catch {
+    return false;
+  }
+  if (records.length !== 1 || !records[0].isFile() || records[0].name !== observed.recordName) return false;
+  try {
+    const record = parseOwnerRecord(await readFile(join(observed.path, observed.recordName), "utf8"), root, observed.recordName);
+    if (record === undefined || record.token !== observed.token || liveness(record) !== "stale") return false;
+    await unlink(join(observed.path, observed.recordName));
+    await rmdir(observed.path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function removeCandidate(candidatePath: string, recordPath: string): Promise<void> {
   await unlink(recordPath).catch(() => undefined);
   await rmdir(candidatePath).catch(() => undefined);
+}
+
+async function signalExternalOwnershipPublication(): Promise<void> {
+  const signalPath = process.env.EXSPECSO_TEST_OWNERSHIP_SYNC_FILE;
+  if (signalPath === undefined) return;
+  await writeFile(signalPath, `${JSON.stringify({ point: "after-ownership-publication", pid: process.pid })}\n`, "utf8");
+  if (process.env.EXSPECSO_TEST_WAIT_FOR_OWNERSHIP_KILL === "1") {
+    await new Promise<void>(() => { setInterval(() => undefined, 1_000); });
+  }
 }
 
 async function publishOwnership(root: string): Promise<InitOwnershipAcquisition> {
@@ -184,6 +254,7 @@ async function publishOwnership(root: string): Promise<InitOwnershipAcquisition>
     await syncDirectory(operationalRoot);
     await rename(candidatePath, lockPath);
     await syncDirectory(operationalRoot);
+    await signalExternalOwnershipPublication();
     return {
       kind: "acquired",
       ownership: { [ownershipBrand]: true, root, token, recordName, lockPath, state: "acquired" },
@@ -201,22 +272,28 @@ async function publishOwnership(root: string): Promise<InitOwnershipAcquisition>
 }
 
 /** Atomically publishes a unique owner directory, reclaiming only an identified dead owner. */
-export async function acquireInitOwnership(rootInput: string): Promise<InitOwnershipAcquisition> {
+export async function acquireInitOwnership(rootInput: string, options: AcquireInitOwnershipOptions = {}): Promise<InitOwnershipAcquisition> {
   const root = await canonicalRoot(rootInput);
   const operationalRoot = join(root, ".exspecso");
   let inspection = await inspectInitOwnership(root);
   if (inspection.kind === "busy" || inspection.kind === "ambiguous") return inspection;
   if (inspection.kind === "stale") {
+    await options.onStaleOwnerObserved?.();
     if (!await removeObservedStaleOwner(root, inspection)) return { kind: "busy", message: "initialization ownership changed during stale-owner reclamation" };
     inspection = await inspectInitOwnership(root);
     if (inspection.kind !== "none") return inspection.kind === "ambiguous" ? inspection : { kind: "busy", message: "initialization ownership changed during stale-owner reclamation" };
   }
-  try {
-    if (await hasInterruptedCandidate(operationalRoot)) return { kind: "ambiguous", message: "interrupted initialization ownership candidate was preserved for inspection" };
-  } catch {
-    return { kind: "ambiguous", message: "cannot inspect initialization ownership candidates" };
+  const candidates = await inspectOwnershipCandidates(root, operationalRoot);
+  if (candidates.kind === "ambiguous") return candidates;
+  const published = await publishOwnership(root);
+  if (published.kind !== "acquired" || candidates.kind !== "stale") return published;
+  for (const candidate of candidates.candidates) {
+    if (!await removeObservedDeadCandidate(root, candidate)) {
+      await releaseInitOwnership(published.ownership);
+      return { kind: "ambiguous", message: "initialization ownership candidate changed during cleanup" };
+    }
   }
-  return publishOwnership(root);
+  return published;
 }
 
 /** Releases only the UUID-named record owned by this lease; repeated release is harmless. */
