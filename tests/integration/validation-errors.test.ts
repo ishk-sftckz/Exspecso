@@ -125,6 +125,66 @@ describe("direct-edit validation", () => {
     ]));
   });
 
+  it("aggregates independent invalid declarations once alongside config, duplicate, and parent errors", async () => {
+    const fixture = await useFixture();
+    await write(fixture.root, ".exspecso/exspecso.config.json", "{ malformed");
+    await write(fixture.root, ".exspecso/invalid.json", JSON.stringify({ id: "REQUIREMENT-001", parent: null }));
+    await write(fixture.root, ".exspecso/specs/first.md", "---\nid: SPEC-001\nparent: PHASE-404\n---\n# First\n");
+    await write(fixture.root, ".exspecso/specs/second.md", "# SPEC-001 Second\n");
+
+    const diagnostics = await validateProject(fixture.root);
+
+    expect(diagnostics.map((diagnostic) => diagnostic.code)).toEqual(expect.arrayContaining([
+      "EXSPECSO_CONFIG_PARSE",
+      "EXSPECSO_ARTIFACT_INVALID_ID",
+      "EXSPECSO_ARTIFACT_UNKNOWN_PARENT",
+      "EXSPECSO_ARTIFACT_DUPLICATE_ID",
+    ]));
+    expect(diagnostics.filter((diagnostic) => diagnostic.code === "EXSPECSO_ARTIFACT_INVALID_ID")).toEqual([
+      expect.objectContaining({ path: ".exspecso/invalid.json", section: "id", actual: "REQUIREMENT-001" }),
+      expect.objectContaining({ path: ".exspecso/invalid.json", section: "parent", actual: "null" }),
+    ]);
+  });
+
+  it("reports malformed canonical JSON separately from the project configuration parser", async () => {
+    const fixture = await useFixture();
+    await write(fixture.root, ".exspecso/definition.json", "{ malformed");
+
+    await expect(validateProject(fixture.root)).resolves.toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: "EXSPECSO_ARTIFACT_PARSE",
+        path: ".exspecso/definition.json",
+        expected: "valid JSON",
+        actual: "malformed JSON",
+      }),
+    ]));
+  });
+
+  it("blocks init for every declared invalid JSON shape without mutating the fixture tree", async () => {
+    const fixture = await useFixture();
+    const values: readonly unknown[] = ["REQUIREMENT-001", "", null, 1, true, [], {}];
+    for (const [index, value] of values.entries()) {
+      await write(fixture.root, `.exspecso/invalid-id-${index}.json`, JSON.stringify({ id: value, parent: "PHASE-001" }));
+      await write(fixture.root, `.exspecso/invalid-parent-${index}.json`, JSON.stringify({ id: `SPEC-${String(index + 1).padStart(3, "0")}`, parent: value }));
+    }
+    const before = await snapshot(fixture.root);
+    const stdout = capturedOutput();
+    const stderr = capturedOutput();
+
+    const exitCode = await runInit({
+      selectedAgents: ["codex"],
+      cwd: fixture.root,
+      stdin: new PassThrough(),
+      stdout: stdout.output,
+      stderr: stderr.output,
+    });
+
+    expect(exitCode).not.toBe(0);
+    expect(stderr.read().match(/EXSPECSO_ARTIFACT_INVALID_ID/g)).toHaveLength(values.length * 2);
+    expect(stdout.read()).toBe("");
+    await expect(snapshot(fixture.root)).resolves.toEqual(before);
+  });
+
   it("reports malformed JSON through a stable parse diagnostic without a stack trace", async () => {
     const diagnostics = await validateProjectConfig(".exspecso/exspecso.config.json", "{ malformed");
 
