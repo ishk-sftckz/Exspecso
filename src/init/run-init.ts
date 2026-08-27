@@ -1,21 +1,33 @@
 import { randomUUID } from "node:crypto";
 import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
-import { buildAdapterPlan } from "../adapters/registry.js";
-import { projectConfigSchema, type ProjectConfig } from "../artifacts/schema.js";
-import { renderConstitution, renderProjectConfig } from "../artifacts/templates.js";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { projectConfigSchema } from "../artifacts/schema.js";
 import { validateProject } from "../artifacts/validate.js";
 import { renderDiagnostics } from "../errors/diagnostic.js";
 import { findGitRoot } from "../filesystem/git-root.js";
 import { formatCompletion } from "./completion.js";
+import { buildInitPlan, validateInitPlan, type InitPlan } from "./plan.js";
 import type { AgentId } from "./runtime-selection.js";
 
 export interface InitInput {
   selectedAgents: readonly AgentId[];
+  replaceAgents?: readonly AgentId[];
   cwd: string;
   stdin: NodeJS.ReadableStream;
   stdout: NodeJS.WritableStream;
   stderr: NodeJS.WritableStream;
+}
+
+function writePlanProblems(output: NodeJS.WritableStream, plan: InitPlan): void {
+  for (const conflict of plan.conflicts) {
+    writeError(
+      output,
+      "EXSPECSO_INIT_ADAPTER_CONFLICT",
+      `${conflict.relativePath} is ${conflict.state}; review and rerun with \`--replace-agent ${conflict.agent}\` to replace only this selected adapter.`,
+    );
+    output.write(`${conflict.diff}\n`);
+  }
+  for (const problem of plan.approvalProblems) writeError(output, problem.code, problem.message);
 }
 
 function isWithinRoot(root: string, target: string): boolean {
@@ -66,32 +78,29 @@ export async function runInit(input: InitInput): Promise<number> {
     return 1;
   }
 
-  const config: ProjectConfig = {
-    schemaVersion: 1 as const,
-    project: {
-      id: randomUUID(),
-      title: basename(repositoryRoot),
-    },
-    mode: "unclassified" as const,
-    selectedAgents: [...input.selectedAgents],
-    onboardingStatus: "not-started" as const,
-  };
-  const targets = [
-    {
-      target: resolve(repositoryRoot, ".exspecso", "exspecso.config.json"),
-      content: renderProjectConfig(config),
-    },
-    {
-      target: resolve(repositoryRoot, ".exspecso", "constitution.md"),
-      content: renderConstitution(),
-    },
-    ...buildAdapterPlan(input.selectedAgents).map((adapter) => {
-      return {
-        target: resolve(repositoryRoot, adapter.relativePath),
-        content: adapter.content,
-      };
-    }),
-  ];
+  let plan: InitPlan;
+  try {
+    plan = await buildInitPlan({
+      repositoryRoot,
+      selectedAgents: input.selectedAgents,
+      replaceAgents: input.replaceAgents,
+    });
+  } catch {
+    writeError(input.stderr, "EXSPECSO_INIT_PREFLIGHT_FAILED", "Cannot inspect the current initialization targets.");
+    return 1;
+  }
+
+  if (plan.conflicts.length > 0 || plan.approvalProblems.length > 0) {
+    writePlanProblems(input.stderr, plan);
+    return 1;
+  }
+
+  const planProblems = await validateInitPlan(plan);
+  if (planProblems.length > 0) {
+    for (const problem of planProblems) writeError(input.stderr, problem.code, problem.message);
+    return 1;
+  }
+  const targets = plan.writes;
 
   if (targets.some(({ target }) => !isWithinRoot(repositoryRoot, target))) {
     writeError(input.stderr, "EXSPECSO_INIT_INVALID_TARGET", "Initializer target escapes the containing repository.");
@@ -105,19 +114,6 @@ export async function runInit(input: InitInput): Promise<number> {
     }
   }
 
-  for (const { target } of targets) {
-    try {
-      await lstat(target);
-      writeError(input.stderr, "EXSPECSO_INIT_CONFLICT", `Refusing to replace existing file \"${target}\".`);
-      return 1;
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-        writeError(input.stderr, "EXSPECSO_INIT_PREFLIGHT_FAILED", `Cannot inspect \"${target}\".`);
-        return 1;
-      }
-    }
-  }
-
   const stageRoot = resolve(repositoryRoot, `.exspecso-stage-${randomUUID()}`);
   try {
     for (const { target, content } of targets) {
@@ -126,10 +122,18 @@ export async function runInit(input: InitInput): Promise<number> {
       await writeFile(stagedTarget, content, "utf8");
     }
 
-    const stagedConfig = await readFile(join(stageRoot, ".exspecso", "exspecso.config.json"), "utf8");
-    const parsedConfig = projectConfigSchema.safeParse(JSON.parse(stagedConfig));
-    if (!parsedConfig.success) {
-      writeError(input.stderr, "EXSPECSO_INIT_STAGED_CONFIG_INVALID", "Generated config did not satisfy the initialization contract.");
+    const stagedConfigTarget = targets.find(({ relativePath }) => relativePath === ".exspecso/exspecso.config.json");
+    if (stagedConfigTarget !== undefined) {
+      const stagedConfig = await readFile(join(stageRoot, stagedConfigTarget.relativePath), "utf8");
+      if (!projectConfigSchema.safeParse(JSON.parse(stagedConfig)).success) {
+        writeError(input.stderr, "EXSPECSO_INIT_STAGED_CONFIG_INVALID", "Generated config did not satisfy the initialization contract.");
+        return 1;
+      }
+    }
+
+    const changedSincePreflight = await validateInitPlan(plan);
+    if (changedSincePreflight.length > 0) {
+      for (const problem of changedSincePreflight) writeError(input.stderr, problem.code, problem.message);
       return 1;
     }
 

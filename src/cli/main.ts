@@ -19,6 +19,23 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<numb
       return 1;
     }
 
+    const replacementSelection = parsedArguments.replaceAgents.length === 0
+      ? { kind: "selected" as const, agents: [] }
+      : await resolveSelectedAgents({
+          argvAgents: parsedArguments.replaceAgents,
+          isInputTTY: false,
+          isOutputTTY: false,
+          detectedAgents: [],
+        });
+    if (replacementSelection.kind === "invalid") {
+      process.stderr.write(`${replacementSelection.code}: ${replacementSelection.message}\n`);
+      return 1;
+    }
+    if (replacementSelection.kind === "cancelled") {
+      process.stderr.write("EXSPECSO_INIT_CANCELLED: Replacement approval was cancelled; no files were written.\n");
+      return 1;
+    }
+
     const selection = await resolveSelectedAgents({
       argvAgents: parsedArguments.agents,
       isInputTTY: process.stdin.isTTY === true,
@@ -36,6 +53,7 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<numb
 
     return await runInit({
       selectedAgents: selection.agents,
+      replaceAgents: replacementSelection.agents,
       cwd: process.cwd(),
       stdin: process.stdin,
       stdout: process.stdout,

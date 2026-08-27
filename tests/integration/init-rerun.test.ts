@@ -3,6 +3,7 @@ import { join, relative } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import { inspectManagedFile, renderManagedFile } from "../../src/adapters/managed-file.js";
+import { parseInitArguments } from "../../src/cli/arguments.js";
 import { buildInitPlan, validateInitPlan } from "../../src/init/plan.js";
 import { runInit } from "../../src/init/run-init.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
@@ -91,6 +92,15 @@ describe("managed adapter ownership", () => {
 });
 
 describe("additive initialization reruns", () => {
+  it("parses replacement approval as a strict repeatable option", () => {
+    expect(parseInitArguments(["--agent", "codex", "--replace-agent", "codex", "--replace-agent", "claude"])).toEqual({
+      kind: "parsed",
+      agents: ["codex"],
+      replaceAgents: ["codex", "claude"],
+    });
+    expect(parseInitArguments(["--replace-agent"])).toMatchObject({ kind: "invalid", code: "EXSPECSO_INIT_USAGE" });
+  });
+
   it("unions a new selected agent without changing project identity, constitution, or unselected adapter bytes", async () => {
     const fixture = await useFixture();
     await expect(initialize(fixture.root, ["codex"])).resolves.toMatchObject({ exitCode: 0 });
