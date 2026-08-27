@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { PassThrough, Writable } from "node:stream";
@@ -8,6 +9,7 @@ import { buildInitPlan } from "../../src/init/plan.js";
 import { assertSafeTransactionPaths } from "../../src/filesystem/safe-path.js";
 import { commitTransaction, readTransactionJournal, stagingRelativePath, type PromotionFaultPoint } from "../../src/filesystem/transaction.js";
 import { recoverInterruptedTransaction } from "../../src/filesystem/recovery.js";
+import { acquireInitOwnership, lockRelativePath, releaseInitOwnership } from "../../src/filesystem/ownership.js";
 import { runInit } from "../../src/init/run-init.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 
@@ -54,6 +56,13 @@ async function waitForFile(path: string): Promise<void> {
   throw new Error("timed out waiting for transaction synchronization signal");
 }
 
+async function waitForChildExit(child: ReturnType<typeof spawn>): Promise<{ code: number | null; signal: NodeJS.Signals | null }> {
+  return new Promise((resolveExit, rejectExit) => {
+    child.once("error", rejectExit);
+    child.once("close", (code, signal) => resolveExit({ code, signal }));
+  });
+}
+
 async function killAtPromotion(root: string, point: PromotionFaultPoint): Promise<void> {
   const signal = join(root, "transaction-sync.json");
   const child = spawn(process.execPath, [join(packageRoot, "dist", "cli", "main.js"), "init", "--agent", "codex"], {
@@ -65,7 +74,41 @@ async function killAtPromotion(root: string, point: PromotionFaultPoint): Promis
   const recorded = JSON.parse(await readFile(signal, "utf8")) as { point: string };
   expect(recorded.point).toBe(point);
   child.kill("SIGKILL");
-  await new Promise((resolveWait) => setTimeout(resolveWait, 25));
+  await expect(waitForChildExit(child)).resolves.toEqual({ code: null, signal: "SIGKILL" });
+}
+
+async function writeDeadOwnershipRecord(root: string): Promise<void> {
+  const token = randomUUID();
+  const lockPath = join(root, lockRelativePath);
+  await mkdir(lockPath, { recursive: true });
+  await writeFile(join(lockPath, `owner-${token}.json`), `${JSON.stringify({
+    schemaVersion: 1,
+    pid: 2_147_000_000,
+    token,
+    rootFingerprint: sha256(resolve(root)),
+  })}\n`, "utf8");
+}
+
+async function killAfterOwnershipPublication(root: string): Promise<void> {
+  const signal = join(root, "ownership-sync.json");
+  const child = spawn(process.execPath, [join(packageRoot, "dist", "cli", "main.js"), "init", "--agent", "codex"], {
+    cwd: root,
+    env: { ...process.env, EXSPECSO_TEST_OWNERSHIP_SYNC_FILE: signal, EXSPECSO_TEST_WAIT_FOR_OWNERSHIP_KILL: "1" },
+    stdio: "ignore",
+  });
+  try {
+    await waitForFile(signal);
+    const recorded = JSON.parse(await readFile(signal, "utf8")) as { point: string; pid: number };
+    expect(recorded.point).toBe("after-ownership-publication");
+    expect(recorded.pid).toBeGreaterThan(0);
+    child.kill("SIGKILL");
+    await expect(waitForChildExit(child)).resolves.toEqual({ code: null, signal: "SIGKILL" });
+  } finally {
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill("SIGKILL");
+      await waitForChildExit(child);
+    }
+  }
 }
 
 describe("journaled init transaction", () => {
@@ -177,6 +220,58 @@ describe("journaled init transaction", () => {
 
     releaseWriter?.();
     await expect(writer).resolves.toMatchObject({ kind: "committed" });
+  });
+
+  it("ownership race: competing stale reclaimers cannot remove a newer live owner", async () => {
+    const fixture = await useFixture();
+    await writeDeadOwnershipRecord(fixture.root);
+    let arrivals = 0;
+    let releaseReclaimers: (() => void) | undefined;
+    const bothObserved = new Promise<void>((resolveBoth) => { releaseReclaimers = resolveBoth; });
+    let bothReached: (() => void) | undefined;
+    const bothReachedStaleObservation = new Promise<void>((resolveBoth) => { bothReached = resolveBoth; });
+    const onStaleOwnerObserved = async () => {
+      arrivals += 1;
+      if (arrivals === 2) bothReached?.();
+      await bothObserved;
+    };
+
+    const first = acquireInitOwnership(fixture.root, { onStaleOwnerObserved });
+    const second = acquireInitOwnership(fixture.root, { onStaleOwnerObserved });
+    await bothReachedStaleObservation;
+    releaseReclaimers?.();
+
+    const outcomes = await Promise.all([first, second]);
+    const acquired = outcomes.filter((outcome) => outcome.kind === "acquired");
+    const blocked = outcomes.filter((outcome) => outcome.kind === "busy");
+    expect(acquired).toHaveLength(1);
+    expect(blocked).toHaveLength(1);
+    await expect(readdir(join(fixture.root, lockRelativePath))).resolves.toEqual([
+      `owner-${acquired[0].ownership.token}.json`,
+    ]);
+    await releaseInitOwnership(acquired[0].ownership);
+  });
+
+  it("reclaims ownership only after a killed process has actually exited", async () => {
+    const fixture = await useFixture();
+    await new Promise<void>((resolveBuild, rejectBuild) => {
+      const build = spawn("npm", ["run", "build"], { cwd: packageRoot, stdio: "ignore" });
+      build.once("close", (code) => code === 0 ? resolveBuild() : rejectBuild(new Error(`build failed: ${code}`)));
+    });
+    await killAfterOwnershipPublication(fixture.root);
+
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toEqual({ kind: "none" });
+    await expect(readdir(join(fixture.root, ".exspecso"))).rejects.toThrow();
+  }, 20_000);
+
+  it("preserves legacy regular-file ownership markers for manual inspection", async () => {
+    const fixture = await useFixture();
+    const lockPath = join(fixture.root, lockRelativePath);
+    await mkdir(join(fixture.root, ".exspecso"), { recursive: true });
+    await writeFile(lockPath, "1\n", "utf8");
+
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
+    await expect(readFile(lockPath, "utf8")).resolves.toBe("1\n");
   });
 
   it("stages, hashes, journals deterministic promotion order, and retains evidence after each injected promotion fault", async () => {
