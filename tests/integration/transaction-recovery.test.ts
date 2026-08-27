@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
@@ -59,7 +59,7 @@ async function waitForFile(path: string): Promise<void> {
 async function waitForChildExit(child: ReturnType<typeof spawn>): Promise<{ code: number | null; signal: NodeJS.Signals | null }> {
   return new Promise((resolveExit, rejectExit) => {
     child.once("error", rejectExit);
-    child.once("close", (code, signal) => resolveExit({ code, signal }));
+    child.once("exit", (code, signal) => resolveExit({ code, signal }));
   });
 }
 
@@ -70,23 +70,28 @@ async function killAtPromotion(root: string, point: PromotionFaultPoint): Promis
     env: { ...process.env, EXSPECSO_TEST_SYNC_FILE: signal, EXSPECSO_TEST_WAIT_FOR_KILL: "1", EXSPECSO_TEST_FAULT_POINT: point },
     stdio: "ignore",
   });
+  const exited = waitForChildExit(child);
   await waitForFile(signal);
   const recorded = JSON.parse(await readFile(signal, "utf8")) as { point: string };
   expect(recorded.point).toBe(point);
   child.kill("SIGKILL");
-  await expect(waitForChildExit(child)).resolves.toEqual({ code: null, signal: "SIGKILL" });
+  await expect(exited).resolves.toEqual({ code: null, signal: "SIGKILL" });
+}
+
+async function writeOwnershipRecord(root: string, container: string, pid: number): Promise<string> {
+  const token = randomUUID();
+  await mkdir(container, { recursive: true });
+  await writeFile(join(container, `owner-${token}.json`), `${JSON.stringify({
+    schemaVersion: 1,
+    pid,
+    token,
+    rootFingerprint: sha256(await realpath(root)),
+  })}\n`, "utf8");
+  return token;
 }
 
 async function writeDeadOwnershipRecord(root: string): Promise<void> {
-  const token = randomUUID();
-  const lockPath = join(root, lockRelativePath);
-  await mkdir(lockPath, { recursive: true });
-  await writeFile(join(lockPath, `owner-${token}.json`), `${JSON.stringify({
-    schemaVersion: 1,
-    pid: 2_147_000_000,
-    token,
-    rootFingerprint: sha256(resolve(root)),
-  })}\n`, "utf8");
+  await writeOwnershipRecord(root, join(root, lockRelativePath), 2_147_000_000);
 }
 
 async function killAfterOwnershipPublication(root: string): Promise<void> {
@@ -96,17 +101,18 @@ async function killAfterOwnershipPublication(root: string): Promise<void> {
     env: { ...process.env, EXSPECSO_TEST_OWNERSHIP_SYNC_FILE: signal, EXSPECSO_TEST_WAIT_FOR_OWNERSHIP_KILL: "1" },
     stdio: "ignore",
   });
+  const exited = waitForChildExit(child);
   try {
     await waitForFile(signal);
     const recorded = JSON.parse(await readFile(signal, "utf8")) as { point: string; pid: number };
     expect(recorded.point).toBe("after-ownership-publication");
     expect(recorded.pid).toBeGreaterThan(0);
     child.kill("SIGKILL");
-    await expect(waitForChildExit(child)).resolves.toEqual({ code: null, signal: "SIGKILL" });
+    await expect(exited).resolves.toEqual({ code: null, signal: "SIGKILL" });
   } finally {
     if (child.exitCode === null && child.signalCode === null) {
       child.kill("SIGKILL");
-      await waitForChildExit(child);
+      await exited;
     }
   }
 }
@@ -272,6 +278,41 @@ describe("journaled init transaction", () => {
 
     await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
     await expect(readFile(lockPath, "utf8")).resolves.toBe("1\n");
+  });
+
+  it("preserves partial candidates and unexpected owner entries without treating them as stale", async () => {
+    const fixture = await useFixture();
+    const candidate = join(fixture.root, ".exspecso", ".init.lock.candidate-partial");
+    await mkdir(candidate, { recursive: true });
+
+    await expect(acquireInitOwnership(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
+    await expect(readdir(candidate)).resolves.toEqual([]);
+
+    await rm(candidate, { recursive: true });
+    await writeDeadOwnershipRecord(fixture.root);
+    await writeFile(join(fixture.root, lockRelativePath, "unexpected"), "evidence\n", "utf8");
+
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
+    await expect(readFile(join(fixture.root, lockRelativePath, "unexpected"), "utf8")).resolves.toBe("evidence\n");
+  });
+
+  it("treats a live PID as busy even when a dead owner record is otherwise well formed", async () => {
+    const fixture = await useFixture();
+    await writeOwnershipRecord(fixture.root, join(fixture.root, lockRelativePath), process.pid);
+
+    await expect(acquireInitOwnership(fixture.root)).resolves.toMatchObject({ kind: "busy" });
+  });
+
+  it("removes a complete dead private candidate only after publishing its own lease", async () => {
+    const fixture = await useFixture();
+    const candidateToken = randomUUID();
+    const candidate = join(fixture.root, ".exspecso", `.init.lock.candidate-${candidateToken}`);
+    await writeOwnershipRecord(fixture.root, candidate, 2_147_000_000);
+
+    const acquisition = await acquireInitOwnership(fixture.root);
+    expect(acquisition.kind).toBe("acquired");
+    await expect(readdir(join(fixture.root, ".exspecso"))).resolves.toEqual([".init.lock"]);
+    if (acquisition.kind === "acquired") await releaseInitOwnership(acquisition.ownership);
   });
 
   it("stages, hashes, journals deterministic promotion order, and retains evidence after each injected promotion fault", async () => {
