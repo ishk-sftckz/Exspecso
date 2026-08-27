@@ -1,13 +1,18 @@
+import { spawn } from "node:child_process";
 import { mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { join, resolve } from "node:path";
+import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import { sha256 } from "../../src/adapters/managed-file.js";
 import { buildInitPlan } from "../../src/init/plan.js";
 import { assertSafeTransactionPaths } from "../../src/filesystem/safe-path.js";
 import { commitTransaction, readTransactionJournal, stagingRelativePath, type PromotionFaultPoint } from "../../src/filesystem/transaction.js";
+import { recoverInterruptedTransaction } from "../../src/filesystem/recovery.js";
+import { runInit } from "../../src/init/run-init.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 
 const fixtures: GitFixture[] = [];
+const packageRoot = resolve(import.meta.dirname, "../..");
 
 afterEach(async () => {
   await Promise.all(fixtures.splice(0).map((fixture) => fixture.dispose()));
@@ -17,6 +22,40 @@ async function useFixture(): Promise<GitFixture> {
   const fixture = await createGitFixture();
   fixtures.push(fixture);
   return fixture;
+}
+
+function output(): { stream: Writable; read: () => string } {
+  let value = "";
+  return {
+    stream: new Writable({ write(chunk, _encoding, callback) { value += chunk.toString(); callback(); } }),
+    read: () => value,
+  };
+}
+
+async function waitForFile(path: string): Promise<void> {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    try {
+      await readFile(path, "utf8");
+      return;
+    } catch {
+      await new Promise((resolveWait) => setTimeout(resolveWait, 10));
+    }
+  }
+  throw new Error("timed out waiting for transaction synchronization signal");
+}
+
+async function killAtPromotion(root: string, point: PromotionFaultPoint): Promise<void> {
+  const signal = join(root, "transaction-sync.json");
+  const child = spawn(process.execPath, [join(packageRoot, "dist", "cli", "main.js"), "init", "--agent", "codex"], {
+    cwd: root,
+    env: { ...process.env, EXSPECSO_TEST_SYNC_FILE: signal, EXSPECSO_TEST_WAIT_FOR_KILL: "1", EXSPECSO_TEST_FAULT_POINT: point },
+    stdio: "ignore",
+  });
+  await waitForFile(signal);
+  const recorded = JSON.parse(await readFile(signal, "utf8")) as { point: string };
+  expect(recorded.point).toBe(point);
+  child.kill("SIGKILL");
+  await new Promise((resolveWait) => setTimeout(resolveWait, 25));
 }
 
 describe("journaled init transaction", () => {
@@ -61,6 +100,10 @@ describe("journaled init transaction", () => {
     const first = commitTransaction(firstPlan, { onReadyToPromote: async () => { entered?.(); await ready; } });
     await enteredReady;
     await expect(commitTransaction(secondPlan)).resolves.toEqual({ kind: "busy" });
+    const stdout = output();
+    const stderr = output();
+    await expect(runInit({ selectedAgents: ["codex"], cwd: fixture.root, stdin: new PassThrough(), stdout: stdout.stream, stderr: stderr.stream })).resolves.toBe(1);
+    expect(stderr.read()).toContain("EXSPECSO_INIT_TRANSACTION_BUSY");
     release?.();
     await expect(first).resolves.toMatchObject({ kind: "committed" });
   });
@@ -84,5 +127,74 @@ describe("journaled init transaction", () => {
       await rm(join(fixture.root, ".exspecso"), { recursive: true, force: true });
       await rm(join(fixture.root, ".agents"), { recursive: true, force: true });
     }
+  });
+
+  it("recovers every promotion step after injected exception and controlled interruption without accepting a mixed set", async () => {
+    const seed = await useFixture();
+    const points = (await buildInitPlan({ repositoryRoot: seed.root, selectedAgents: ["codex"] })).writes
+      .map((write) => `after-promotion:${write.relativePath}` as PromotionFaultPoint);
+    await seed.dispose();
+    fixtures.splice(fixtures.indexOf(seed), 1);
+
+    for (const faultMode of ["throw", "interrupt"] as const) {
+      for (const point of points) {
+        const fixture = await useFixture();
+        const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });
+        await expect(commitTransaction(plan, { faultAt: point, faultMode })).resolves.toMatchObject({ kind: "failed" });
+        await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "recovered", disposition: "restored-prior" });
+        await expect(readdir(join(fixture.root, ".exspecso"))).rejects.toThrow();
+        await expect(readFile(join(fixture.root, ".exspecso", ".init.lock"), "utf8")).rejects.toThrow();
+      }
+    }
+  });
+
+  it("recovers every promotion step after an externally killed CLI child", async () => {
+    const probe = await useFixture();
+    const points = (await buildInitPlan({ repositoryRoot: probe.root, selectedAgents: ["codex"] })).writes
+      .map((write) => `after-promotion:${write.relativePath}` as PromotionFaultPoint);
+    await probe.dispose();
+    fixtures.splice(fixtures.indexOf(probe), 1);
+    await new Promise<void>((resolveBuild, rejectBuild) => {
+      const build = spawn("npm", ["run", "build"], { cwd: packageRoot, stdio: "ignore" });
+      build.once("close", (code) => code === 0 ? resolveBuild() : rejectBuild(new Error(`build failed: ${code}`)));
+    });
+
+    for (const point of points) {
+      const fixture = await useFixture();
+      await killAtPromotion(fixture.root, point);
+      const stdout = output();
+      const stderr = output();
+      await expect(runInit({ selectedAgents: ["codex"], cwd: fixture.root, stdin: new PassThrough(), stdout: stdout.stream, stderr: stderr.stream })).resolves.toBe(0);
+      expect(stderr.read()).toContain("EXSPECSO_INIT_RECOVERED");
+      await expect(readFile(join(fixture.root, ".exspecso", "exspecso.config.json"), "utf8")).resolves.toContain("unclassified");
+      await expect(readdir(join(fixture.root, ".exspecso"))).resolves.toEqual(["constitution.md", "exspecso.config.json"]);
+    }
+  }, 20_000);
+
+  it("fails closed for tampered journal, hash, and symlink evidence", async () => {
+    const fixture = await useFixture();
+    const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });
+    const point = `after-promotion:${plan.writes[0].relativePath}` as PromotionFaultPoint;
+    await commitTransaction(plan, { faultAt: point });
+    const staging = join(fixture.root, stagingRelativePath);
+    const [transactionId] = await readdir(staging);
+    const journal = await readTransactionJournal(join(staging, transactionId));
+    await writeFile(join(staging, transactionId, "journal.json"), "{ bad", "utf8");
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
+    await expect(readFile(join(staging, transactionId, "journal.json"), "utf8")).resolves.toBe("{ bad");
+
+    await writeFile(join(staging, transactionId, "journal.json"), `${JSON.stringify(journal)}\n`, "utf8");
+    await writeFile(join(staging, transactionId, "files", journal.entries[0].relativePath), "tampered", "utf8");
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
+    await expect(readFile(join(staging, transactionId, "files", journal.entries[0].relativePath), "utf8")).resolves.toBe("tampered");
+
+    await rm(join(staging, transactionId, "files", journal.entries[0].relativePath));
+    await symlink(join(fixture.root, "outside"), join(staging, transactionId, "files", journal.entries[0].relativePath));
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
+
+    await rm(join(staging, transactionId, "files", journal.entries[0].relativePath));
+    await writeFile(join(staging, transactionId, "files", journal.entries[0].relativePath), plan.writes[0].content, "utf8");
+    await writeFile(join(fixture.root, journal.entries[0].relativePath), "external change", "utf8");
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
   });
 });

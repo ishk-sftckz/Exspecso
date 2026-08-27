@@ -131,12 +131,19 @@ async function releaseLock(lock: LockHandle | undefined): Promise<void> {
 }
 
 async function removeKnownTransaction(stageRoot: string, journal: TransactionJournal): Promise<void> {
+  const directories = new Set<string>([join(stageRoot, "files"), join(stageRoot, "backups"), stageRoot]);
   for (const entry of journal.entries) {
-    await rm(stageFile(stageRoot, entry.relativePath), { force: true });
-    if (entry.backupPath !== null) await rm(join(stageRoot, entry.backupPath), { force: true });
+    const staged = stageFile(stageRoot, entry.relativePath);
+    await rm(staged, { force: true });
+    for (let current = dirname(staged); current.startsWith(stageRoot); current = dirname(current)) directories.add(current);
+    if (entry.backupPath !== null) {
+      const backup = join(stageRoot, entry.backupPath);
+      await rm(backup, { force: true });
+      for (let current = dirname(backup); current.startsWith(stageRoot); current = dirname(current)) directories.add(current);
+    }
   }
   await rm(journalPath(stageRoot), { force: true });
-  for (const directory of [join(stageRoot, "files"), join(stageRoot, "backups"), stageRoot]) {
+  for (const directory of [...directories].sort((left, right) => right.length - left.length)) {
     await rmdir(directory).catch(() => undefined);
   }
   await rmdir(dirname(stageRoot)).catch(() => undefined);
@@ -150,7 +157,7 @@ async function updateJournal(stageRoot: string, journal: TransactionJournal): Pr
 
 async function signalExternalFault(point: PromotionFaultPoint): Promise<void> {
   const signalPath = process.env.EXSPECSO_TEST_SYNC_FILE;
-  if (signalPath === undefined) return;
+  if (signalPath === undefined || process.env.EXSPECSO_TEST_FAULT_POINT !== point) return;
   await writeFile(signalPath, `${JSON.stringify({ point, pid: process.pid })}\n`, "utf8");
   if (process.env.EXSPECSO_TEST_WAIT_FOR_KILL === "1") {
     await new Promise<void>(() => undefined);
@@ -274,6 +281,13 @@ export function transactionStageRoot(root: string, transactionId: string): strin
 export async function removeRecoveredTransaction(root: string, stageRoot: string, journal: TransactionJournal): Promise<void> {
   await removeKnownTransaction(stageRoot, journal);
   await unlink(join(root, lockRelativePath)).catch(() => undefined);
+  for (const entry of journal.entries.filter((candidate) => candidate.preimageHash === null)) {
+    let current = dirname(join(root, entry.relativePath));
+    while (current !== root) {
+      await rmdir(current).catch(() => undefined);
+      current = dirname(current);
+    }
+  }
 }
 
 export async function isRegularFile(path: string): Promise<boolean> {
