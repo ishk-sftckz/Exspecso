@@ -3,9 +3,10 @@ import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises"
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
 import { findGitRoot } from "../filesystem/git-root.js";
+import type { AgentId } from "./runtime-selection.js";
 
 export interface InitInput {
-  argv: string[];
+  selectedAgents: readonly AgentId[];
   cwd: string;
   stdin: NodeJS.ReadableStream;
   stdout: NodeJS.WritableStream;
@@ -19,7 +20,7 @@ const projectConfigSchema = z.object({
     title: z.string().min(1),
   }),
   mode: z.literal("unclassified"),
-  selectedAgents: z.array(z.literal("codex")).length(1),
+  selectedAgents: z.array(z.enum(["claude", "codex", "opencode"])).min(1),
   onboardingStatus: z.literal("not-started"),
 });
 
@@ -65,13 +66,6 @@ function writeError(output: NodeJS.WritableStream, code: string, message: string
   output.write(`${code}: ${message}\n`);
 }
 
-function parseAgents(argv: string[]): "codex" | null {
-  if (argv.length !== 2 || argv[0] !== "--agent" || argv[1] !== "codex") {
-    return null;
-  }
-  return "codex";
-}
-
 async function hasSymlinkedAncestor(root: string, target: string): Promise<boolean> {
   let current = dirname(target);
   while (current !== root) {
@@ -94,12 +88,6 @@ async function hasSymlinkedAncestor(root: string, target: string): Promise<boole
 }
 
 export async function runInit(input: InitInput): Promise<number> {
-  const agent = parseAgents(input.argv);
-  if (agent === null) {
-    writeError(input.stderr, "EXSPECSO_INIT_USAGE", "Use `exspecso init --agent codex`.");
-    return 1;
-  }
-
   const searchedPath = resolve(input.cwd);
   const repositoryRoot = await findGitRoot(searchedPath);
   if (repositoryRoot === null) {
@@ -118,7 +106,7 @@ export async function runInit(input: InitInput): Promise<number> {
       title: basename(repositoryRoot),
     },
     mode: "unclassified" as const,
-    selectedAgents: [agent] as const,
+    selectedAgents: [...input.selectedAgents],
     onboardingStatus: "not-started" as const,
   };
   const targets = [
@@ -130,10 +118,14 @@ export async function runInit(input: InitInput): Promise<number> {
       target: resolve(repositoryRoot, ".exspecso", "constitution.md"),
       content: constitution,
     },
-    {
-      target: resolve(repositoryRoot, ".agents", "skills", "exspecso-start", "SKILL.md"),
-      content: managedCodexSkill(),
-    },
+    ...(input.selectedAgents.includes("codex")
+      ? [
+          {
+            target: resolve(repositoryRoot, ".agents", "skills", "exspecso-start", "SKILL.md"),
+            content: managedCodexSkill(),
+          },
+        ]
+      : []),
   ];
 
   if (targets.some(({ target }) => !isWithinRoot(repositoryRoot, target))) {
@@ -183,7 +175,9 @@ export async function runInit(input: InitInput): Promise<number> {
     }
 
     input.stdout.write("/exspecso-start\n");
-    input.stdout.write("For Codex, invoke $exspecso-start\n");
+    if (input.selectedAgents.includes("codex")) {
+      input.stdout.write("For Codex, invoke $exspecso-start\n");
+    }
     return 0;
   } catch (error) {
     writeError(input.stderr, "EXSPECSO_INIT_WRITE_FAILED", "Initialization could not complete; no completion guidance was printed.");

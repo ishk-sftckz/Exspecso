@@ -103,11 +103,11 @@ describe("packed Codex initializer tracer", () => {
     const fixture = await useFixture(createGitFixture);
     const repositoryRoot = fixture.root;
 
-    const result = await packAndRun(repositoryRoot, ["init", "--agent", "claude"]);
+    const result = await packAndRun(repositoryRoot, ["init", "--agent", "unknown"]);
 
     expect(result.exitCode).not.toBe(0);
     expect(result.stdout).toBe("");
-    expect(result.stderr).toContain("EXSPECSO_INIT_USAGE");
+    expect(result.stderr).toContain("EXSPECSO_INIT_INVALID_AGENT");
     await expect(readFile(join(repositoryRoot, ".exspecso", "exspecso.config.json"), "utf8")).rejects.toThrow();
     await expect(readFile(join(repositoryRoot, ".agents", "skills", "exspecso-start", "SKILL.md"), "utf8")).rejects.toThrow();
   });
