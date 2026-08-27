@@ -1,16 +1,21 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
+import { findGitRoot } from "../../src/filesystem/git-root.js";
+import { createGitFixture, createNoGitFixture, type GitFixture } from "../helpers/git-fixture.js";
+import { runCli } from "../helpers/run-cli.js";
 
 const execFileAsync = promisify(execFile);
 const temporaryPaths: string[] = [];
+const fixtures: GitFixture[] = [];
 const packageRoot = resolve(import.meta.dirname, "../..");
 
 afterEach(async () => {
   await Promise.all(temporaryPaths.splice(0).map((path) => rm(path, { force: true, recursive: true })));
+  await Promise.all(fixtures.splice(0).map((fixture) => fixture.dispose()));
 });
 
 async function createTemporaryDirectory(prefix: string): Promise<string> {
@@ -19,10 +24,10 @@ async function createTemporaryDirectory(prefix: string): Promise<string> {
   return path;
 }
 
-async function createGitRepository(): Promise<string> {
-  const root = await createTemporaryDirectory("exspecso-init-");
-  await mkdir(join(root, ".git"));
-  return root;
+async function useFixture(factory: () => Promise<GitFixture>): Promise<GitFixture> {
+  const fixture = await factory();
+  fixtures.push(fixture);
+  return fixture;
 }
 
 async function packAndRun(
@@ -42,22 +47,13 @@ async function packAndRun(
     "npm",
     ["install", "--ignore-scripts", "--no-package-lock", "--prefix", runner, join(packingDirectory, filename)],
   );
-  try {
-    const result = await execFileAsync(join(runner, "node_modules", ".bin", "exspecso"), args, { cwd });
-    return { exitCode: 0, ...result };
-  } catch (error) {
-    const commandError = error as Error & { code?: number; stdout?: string; stderr?: string };
-    return {
-      exitCode: commandError.code ?? 1,
-      stdout: commandError.stdout ?? "",
-      stderr: commandError.stderr ?? "",
-    };
-  }
+  return runCli(join(runner, "node_modules", ".bin", "exspecso"), args, { cwd });
 }
 
 describe("packed Codex initializer tracer", () => {
   it("creates only the canonical foundation and Codex adapter", async () => {
-    const repositoryRoot = await createGitRepository();
+    const fixture = await useFixture(createGitFixture);
+    const repositoryRoot = fixture.root;
 
     const result = await packAndRun(repositoryRoot);
 
@@ -104,7 +100,8 @@ describe("packed Codex initializer tracer", () => {
   });
 
   it("returns an error before writing when the selected agent is unsupported", async () => {
-    const repositoryRoot = await createGitRepository();
+    const fixture = await useFixture(createGitFixture);
+    const repositoryRoot = fixture.root;
 
     const result = await packAndRun(repositoryRoot, ["init", "--agent", "claude"]);
 
@@ -113,5 +110,51 @@ describe("packed Codex initializer tracer", () => {
     expect(result.stderr).toContain("EXSPECSO_INIT_USAGE");
     await expect(readFile(join(repositoryRoot, ".exspecso", "exspecso.config.json"), "utf8")).rejects.toThrow();
     await expect(readFile(join(repositoryRoot, ".agents", "skills", "exspecso-start", "SKILL.md"), "utf8")).rejects.toThrow();
+  });
+
+  it("resolves the containing Git root before initialization", async () => {
+    const fixture = await useFixture(createGitFixture);
+    const nestedDirectory = await fixture.createNestedDirectory("packages", "cli", "deep");
+
+    await expect(findGitRoot(fixture.root)).resolves.toBe(fixture.root);
+    await expect(findGitRoot(nestedDirectory)).resolves.toBe(fixture.root);
+  });
+
+  it("initializes at the nearest containing Git root from a deep nested cwd", async () => {
+    const fixture = await useFixture(createGitFixture);
+    const nestedDirectory = await fixture.createNestedDirectory("packages", "cli", "deep");
+
+    const result = await packAndRun(nestedDirectory);
+
+    expect(result.exitCode).toBe(0);
+    await expect(readFile(join(fixture.root, ".exspecso", "exspecso.config.json"), "utf8")).resolves.toContain("unclassified");
+    await expect(readFile(join(nestedDirectory, ".exspecso", "exspecso.config.json"), "utf8")).rejects.toThrow();
+  });
+
+  it("uses a nested Git repository instead of its parent repository", async () => {
+    const fixture = await useFixture(createGitFixture);
+    const nestedRepository = await fixture.createNestedRepository("packages", "module");
+    const nestedDirectory = await fixture.createNestedDirectory("packages", "module", "src", "deep");
+
+    const result = await packAndRun(nestedDirectory);
+
+    expect(result.exitCode).toBe(0);
+    await expect(readFile(join(nestedRepository, ".exspecso", "exspecso.config.json"), "utf8")).resolves.toContain("unclassified");
+    await expect(readFile(join(fixture.root, ".exspecso", "exspecso.config.json"), "utf8")).rejects.toThrow();
+  });
+
+  it("reports a repairable no-repository diagnostic without writes", async () => {
+    const fixture = await useFixture(createNoGitFixture);
+    const nestedDirectory = await fixture.createNestedDirectory("work", "deep");
+
+    const result = await packAndRun(nestedDirectory);
+
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toContain("EXSPECSO_INIT_NO_GIT_ROOT");
+    expect(result.stderr).toContain(resolve(nestedDirectory));
+    expect(result.stderr).toContain("git init");
+    expect(result.stderr).toContain("move into the intended repository");
+    await expect(readFile(join(nestedDirectory, ".exspecso", "exspecso.config.json"), "utf8")).rejects.toThrow();
   });
 });
