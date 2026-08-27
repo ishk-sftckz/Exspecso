@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, readlink, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { PassThrough, Writable } from "node:stream";
@@ -33,7 +33,10 @@ async function snapshot(root: string, directory = root): Promise<Record<string, 
     }
     const path = join(directory, entry.name);
     if (entry.isDirectory()) {
+      files[`${relative(root, path)}/`] = "[directory]";
       Object.assign(files, await snapshot(root, path));
+    } else if (entry.isSymbolicLink()) {
+      files[relative(root, path)] = `[symlink] ${await readlink(path)}`;
     } else if (entry.isFile()) {
       files[relative(root, path)] = await readFile(path, "utf8");
     }
@@ -45,7 +48,47 @@ function memoryOutput(): Writable {
   return new Writable({ write(_chunk, _encoding, callback) { callback(); } });
 }
 
+function capturedOutput(): { readonly output: Writable; read(): string } {
+  const chunks: Buffer[] = [];
+  return {
+    output: new Writable({
+      write(chunk, _encoding, callback) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        callback();
+      },
+    }),
+    read: () => Buffer.concat(chunks).toString("utf8"),
+  };
+}
+
 describe("direct-edit validation", () => {
+  it("rejects an invalid JSON parent before init writes anything", async () => {
+    const fixture = await useFixture();
+    await write(fixture.root, ".exspecso/definition.json", JSON.stringify({ id: "SPEC-001", parent: "REQUIREMENT-001" }));
+    await write(fixture.root, ".exspecso/valid-definition.json", JSON.stringify({ id: "SPEC-002", parent: "PHASE-001" }));
+    const before = await snapshot(fixture.root);
+    const stdout = capturedOutput();
+    const stderr = capturedOutput();
+
+    const exitCode = await runInit({
+      selectedAgents: ["codex"],
+      cwd: fixture.root,
+      stdin: new PassThrough(),
+      stdout: stdout.output,
+      stderr: stderr.output,
+    });
+
+    expect(exitCode).not.toBe(0);
+    expect(stderr.read()).toContain("EXSPECSO_ARTIFACT_INVALID_ID");
+    expect(stderr.read()).toContain(".exspecso/definition.json (parent)");
+    expect(stderr.read()).toContain("REQUIREMENT-001");
+    expect(stderr.read()).toContain("Expected:");
+    expect(stderr.read()).toContain("Actual:");
+    expect(stderr.read()).toContain("Repair:");
+    expect(stdout.read()).toBe("");
+    await expect(snapshot(fixture.root)).resolves.toEqual(before);
+  });
+
   it("returns every independent config schema error with actionable diagnostics", async () => {
     const path = join(await mkdtemp(join(tmpdir(), "exspecso-invalid-config-")), "exspecso.config.json");
     await writeFile(path, JSON.stringify({
