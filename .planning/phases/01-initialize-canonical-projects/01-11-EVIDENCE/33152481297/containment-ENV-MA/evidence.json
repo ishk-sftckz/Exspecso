@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "matrixRevision": "01-09-approved-2026-08-28",
+  "rowId": "ENV-MA",
+  "stage": "tracer",
+  "status": "passed",
+  "evidenceMode": "release",
+  "sourceCommit": "795f3fc342d335529ae026c9da7c4d07e1781ea5",
+  "provider": {
+    "sha256": "0f96f9185b7caedb8f355c7a8440b074e8b0c6f51c6efc99e1c46b6e4ede990e",
+    "buildSHA256": "0f96f9185b7caedb8f355c7a8440b074e8b0c6f51c6efc99e1c46b6e4ede990e"
+  },
+  "tracer": {
+    "requiredTestIds": [
+      "installed-native-promotion"
+    ],
+    "reachedTestIds": [
+      "installed-native-promotion"
+    ],
+    "exitCode": 0
+  },
+  "environment": {
+    "native": true,
+    "cpu": "arm64",
+    "os": "15.7.7",
+    "kernel": "24G720",
+    "filesystem": "apfs",
+    "libc": "system",
+    "node": {
+      "version": "20.19.0",
+      "napi": 9
+    },
+    "compiler": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "toolchain": "Xcode 16.4 (16F6); Apple clang 17.0.0 clang-1700.0.13.5; SDK 15.5 (24F74)",
+    "image": "20260727.0256.1"
+  }
+}
