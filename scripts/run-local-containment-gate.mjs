@@ -99,7 +99,7 @@ try {
     fullSuite: { exitCode: test.status, passed: vitest.numPassedTests, total: vitest.numTotalTests, failed: vitest.numFailedTests, skipped: vitest.numPendingTests, todo: vitest.numTodoTests },
   };
   writeFileSync(join(evidenceDir, "evidence.json"), JSON.stringify(evidence, null, 2) + "\n");
-  execFileSync(process.execPath, ["scripts/containment-evidence.mjs", "--stage", "prerequisite", "--evidence-dir", evidenceDir], { cwd: root, stdio: "inherit" });
+  execFileSync(process.execPath, ["scripts/containment-evidence.mjs", "--stage", "prerequisite", "--evidence-dir", evidenceDir, "--source-commit", sourceCommit], { cwd: root, stdio: "inherit" });
   console.log(JSON.stringify({ plan_complete: true, rowId, sourceCommit, provider: provider.sha256, manifest: sha256(manifestBytes), fullSuite: evidence.fullSuite }));
 } finally {
   rmSync(work, { recursive: true, force: true });

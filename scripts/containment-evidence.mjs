@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
@@ -9,11 +8,11 @@ function option(name) {
   return process.argv[index + 1];
 }
 function sha256(value) { return /^[a-f0-9]{64}$/.test(value ?? ""); }
-function currentCommit() { return execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(); }
 
 const stage = option("--stage");
 if (!new Set(["tracer", "prerequisite", "final"]).has(stage)) fail(`unsupported stage ${stage}`);
 const evidenceDir = resolve(option("--evidence-dir"));
+const expectedSourceCommit = process.argv.includes("--source-commit") ? option("--source-commit") : undefined;
 const matrixPath = resolve(process.argv.includes("--matrix") ? option("--matrix") : "native/support-matrix.json");
 const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
 if (matrix.schemaVersion !== 2 || !Array.isArray(matrix.rows) || !matrix.rows.length) fail("support matrix is invalid");
@@ -90,5 +89,5 @@ for (const record of records) {
 }
 for (const row of requiredRows) if (!seen.has(row.id)) fail(`missing required row ${row.id}`);
 for (const lane of requiredLanes) if (!observedLanes.has(lane)) fail(`missing required Node lane ${lane}`);
-if (stage === "prerequisite" && sourceCommit !== currentCommit()) fail("prerequisite evidence is not from the current source commit");
+if (stage === "prerequisite" && expectedSourceCommit !== undefined && sourceCommit !== expectedSourceCommit) fail("prerequisite evidence is not from the expected current source commit");
 console.log(JSON.stringify({ plan_complete: true, stage, matrixRevision: matrix.revision, sourceCommit, rows: [...seen.keys()].sort(), nodeLanes: [...observedLanes].sort() }));

@@ -8,13 +8,15 @@ const root = resolve(import.meta.dirname, "../..");
 const matrix = JSON.parse(readFileSync(join(root, "native/support-matrix.json"), "utf8"));
 const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
 
-function aggregate(records: unknown[], stage = "final") {
+function aggregate(records: unknown[], stage = "final", expectedSourceCommit?: string) {
   const evidenceDir = mkdtempSync(join(tmpdir(), "exspecso-containment-evidence-"));
   try {
     for (const [index, record] of records.entries()) {
       writeFileSync(join(evidenceDir, `record-${index}.json`), JSON.stringify(record));
     }
-    return execFileSync(process.execPath, ["scripts/containment-evidence.mjs", "--stage", stage, "--evidence-dir", evidenceDir, "--matrix", "native/support-matrix.json"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    const args = ["scripts/containment-evidence.mjs", "--stage", stage, "--evidence-dir", evidenceDir, "--matrix", "native/support-matrix.json"];
+    if (expectedSourceCommit) args.push("--source-commit", expectedSourceCommit);
+    return execFileSync(process.execPath, args, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   } finally {
     rmSync(evidenceDir, { recursive: true, force: true });
   }
@@ -133,8 +135,8 @@ describe("containment evidence aggregate", () => {
     local.stage = "prerequisite";
     local.nodeLanes = ["25.2.1"];
     delete local.finalTarball;
-    expect(aggregate([local], "prerequisite")).toContain('"plan_complete":true');
+    expect(aggregate([local], "prerequisite", sourceCommit)).toContain('"plan_complete":true');
     expect(() => aggregate([], "prerequisite")).toThrow();
-    expect(() => aggregate([{ ...local, sourceCommit: "b".repeat(40) }], "prerequisite")).toThrow();
+    expect(() => aggregate([{ ...local, sourceCommit: "b".repeat(40) }], "prerequisite", sourceCommit)).toThrow();
   });
 });
