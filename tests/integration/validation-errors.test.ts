@@ -63,6 +63,25 @@ function capturedOutput(): { readonly output: Writable; read(): string } {
 }
 
 describe("direct-edit validation", () => {
+  it("reports an actual provider failure before any ownership or staging write", async () => {
+    const fixture = await useFixture();
+    const before = await snapshot(fixture.root);
+    const stderr = capturedOutput();
+
+    const exitCode = await runInit({
+      selectedAgents: ["codex"],
+      cwd: fixture.root,
+      stdin: new PassThrough(),
+      stdout: memoryOutput(),
+      stderr: stderr.output,
+    });
+
+    expect(exitCode).toBe(1);
+    expect(stderr.read()).toContain("EXSPECSO_INIT_PREFLIGHT_FAILED");
+    expect(stderr.read()).toContain("EXSPECSO_CONTAINMENT_UNAVAILABLE");
+    await expect(snapshot(fixture.root)).resolves.toEqual(before);
+  });
+
   it("rejects an invalid JSON parent before init writes anything", async () => {
     const fixture = await useFixture();
     await write(fixture.root, ".exspecso/definition.json", JSON.stringify({ id: "SPEC-001", parent: "REQUIREMENT-001" }));
