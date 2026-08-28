@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: Resolved portable repair proposal awaiting approval
-stopped_at: 01-09 exact repair proposal recorded; explicit human decision pending
-last_updated: "2026-08-28T04:33:03.485Z"
+status: Executing approved native POSIX tracer
+stopped_at: 01-09 approved; beginning 01-10 Task 1
+last_updated: "2026-08-28T04:39:00.197Z"
 last_activity: 2026-08-28
-last_activity_desc: Recorded the resolved native repair proposal using the runner inventory and public musl image/package metadata; no implementation approval, installation or new CI run.
+last_activity_desc: User approved the resolved contract; 01-09 decision complete; native implementation and tests begin in 01-10.
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 20
-  completed_plans: 8
+  total_plans: 18
+  completed_plans: 9
 ---
 
 # Project State
@@ -28,21 +28,19 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 9 of 18; revised 01-09 Task 1 blocking-human decision; 0/1 task complete
-Status: Awaiting portable contract approval
-Last activity: 2026-08-28 — Completed the proposed support/provider/Node/evidence ledger, including immutable musl image inputs and explicit modern-OS/Node-floor dispositions. Awaiting the user decision; no implementation or application verification ran.
+Plan: 10 of 18; Task 1 POSIX native tracer; 0/3 tasks complete
+Status: Approved contract; implementing first tracer
+Last activity: 2026-08-28 — User replied approve to the resolved contract; 01-09 summary committed. Beginning 01-10 Task 1 with its existing tracer review gate.
 
-Plan execution: 8 completed plans preserved; 10 revised/new plans pending (18 total). The larger denominator reflects the portable replan, not lost completed work. Phase completion remains blocked by verification gaps and human/security gates.
+Plan execution: 9 completed plans; 9 pending plans (18 total). Contract approval is complete; native repair and phase verification remain incomplete.
 
-### Active Execution Checkpoint — revised portable contract
+### Active Execution — approved portable contract
 
-- The resolved 2026-08-28 proposal is appended to `01-CONTAINMENT-SUPPORT.md`. It preserves eight platform rows and three adapters, proposes exact modern acceptance environments (not the older researched OS floors), nine Node lanes and an explicit engine correction, C Node-API 8 with pinned headers/toolchains, same-package prebuilts, Mode B evidence, journal schema-2 compatibility and bounded free CI authorization. All are proposed, not approved. Public registry manifests confirm both musl architectures are published; no image was pulled or executed. Do not reinterpret the earlier metadata-only approval as acceptance.
-
-- The user authorized replanning for Windows, macOS, Linux, all three agent adapters, and comprehensive tests; implementation remains paused.
-- On 2026-08-28 the user replied `i approve` to metadata-only GitHub inspection, then `done` after granting the missing workflow scope. Run 33141513892 completed on native Mac/Windows/Linux x64 and arm64 runners. Logs and exact observed inputs are in `01-CONTAINMENT-PREFLIGHT.json`, `.yml`, and `01-CONTAINMENT-PREFLIGHT-LOGS/`; the SUPPORT proposal has a readable inventory. Neither musl target was inspected or installed. No application tests or native build ran. The full contract is still unapproved and 01-10 remains blocked; plan order and all eight platform obligations are unchanged.
-- See `01-CONTAINMENT-REPLAN.md` and `01-CONTAINMENT-RESEARCH.md`. Proposed same-package prebuilts remove end-user compiler/header needs; the exact provider, OS/CPU/Node/libc/filesystem matrix and infrastructure still need approval.
-- Every already-open directory can be relocated. The object-authority versus strict lexical-containment boundary requires an explicit decision, never a silent reduction in the safety claim.
-- Ten serial plans (01-09–18) and 42 test families passed independent plan checking after revision; see 01-CONTAINMENT-PLAN-CHECK.md. All implementation and new test results remain pending. Do not resume the superseded source-install contract or count this planning request as native implementation approval.
+- On 2026-08-28 the user replied `approve` to the resolved proposal in `59d99e9`. Approval record: `8f160dc`; completed decision summary: `4072370` / `01-09-SUMMARY.md`.
+- All eight exact modern OS/CPU/libc rows, three adapters, nine Node lanes and the explicit engine correction, C Node-API 8 and pinned tools/headers, same-package prebuilts, Mode B evidence, journal schema-2 compatibility and bounded free CI work are approved. Scope exclusions and safety assumptions remain in SUPPORT.
+- The earlier `i approve` / `done` applied only to metadata inspection and workflow authorization. That history is preserved; the new response is the native approval.
+- Plan 01-10 Task 1 must prove a real installed POSIX promotion tracer and required provider tests, then stop at its tracer feedback checkpoint before expansion. Local macOS 26.5.1 is development-only; approved hosted macOS supplies acceptance evidence with the pinned tools.
+- No native implementation, build/load or application matrix result is established by the decision. Missing or failed required evidence blocks expansion. All 42 test families and later human/security gates remain required.
 
 ### Superseded Execution Checkpoint — history only
 
@@ -73,7 +71,7 @@ Plan execution: 8 completed plans preserved; 10 revised/new plans pending (18 to
 
 **Velocity:**
 
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -141,8 +139,8 @@ None yet.
 - CR-01 invalid canonical JSON declarations are repaired by Plan 01-07; independent phase re-verification remains required before closing the recorded verifier gap.
 - The live-writer recovery and stale-owner races are repaired and tested in 01-08; CR-02 still requires independent phase re-verification before it is closed.
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
-- Plan 01-08 is complete. User requested replanning of the remaining serial containment work; revised approval and evidence gates must pass before implementation.
-- Next: `$gsd-execute-phase 1 --gaps-only` resolves the read-only exact support/provider/Node/evidence proposal in revised 01-09 Task 1 and asks for its explicit approval. No implementation before that approval. After execution, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
+- Plan 01-09 is complete. The revised contract is approved; implementation starts at the 01-10 POSIX tracer. Evidence gates remain mandatory.
+- Next: execute 01-10 Task 1 and obtain tracer feedback before expansion. After the remaining serial plans, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
 ### Quick Tasks Completed
@@ -161,6 +159,6 @@ Research note: `docs/research/initialization-runtime-comparison.md` records a ge
 
 ## Session Continuity
 
-Last session: 2026-08-28T04:33:03.485Z
-Stopped at: 01-09 resolved proposal complete; awaiting explicit approval of its scope and safety limits
-Resume file: .planning/phases/01-initialize-canonical-projects/01-09-PLAN.md
+Last session: 2026-08-28T04:39:00.197Z
+Stopped at: 01-09 approved; beginning 01-10 Task 1
+Resume file: .planning/phases/01-initialize-canonical-projects/01-10-PLAN.md
