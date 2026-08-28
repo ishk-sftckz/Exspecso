@@ -92,6 +92,22 @@ export async function installVulnerablePackage() {
       delete process.env.EXSPECSO_TEST_HISTORICAL;
     }
 ${boundary}`);
+    // The frozen baseline opens the copied destination read-only before fsync.
+    // Windows rejects that durability call with EPERM before the copy boundary;
+    // this test-only compatibility patch leaves copyFile and all path resolution
+    // untouched so the historical external-write regression can be observed.
+    const windowsFsync = `  const handle = await open(destination, "r");
+  try {
+    await handle.sync();
+  } finally {
+    await handle.close();
+  }`;
+    if (process.platform === "win32") {
+      if (source.split(windowsFsync).length !== 2) throw new Error("Historical Windows fsync boundary changed");
+      source = source.replace(windowsFsync, `  if (process.platform !== "win32") {
+${windowsFsync}
+  }`);
+    }
     await writeFile(transaction, source);
     const { stdout } = await runNpm(["pack", "--json", "--pack-destination", directory], { cwd: staged });
     const [{ filename }] = JSON.parse(stdout);
@@ -100,7 +116,7 @@ ${boundary}`);
     const installed = join(runner, "node_modules/exspecso");
     const module = join(installed, "dist/filesystem/transaction.js");
     return { directory, cli: join(installed, "dist/cli/main.js"), module,
-      provenance: { baselineCommit: ledger.baselineCommit, sources: ledger.sources, instrumentedModuleSHA256: createHash("sha256").update(await readFile(module)).digest("hex"), tarballSHA256: createHash("sha256").update(await readFile(join(directory, filename))).digest("hex") } };
+      provenance: { baselineCommit: ledger.baselineCommit, sources: ledger.sources, instrumentedModuleSHA256: createHash("sha256").update(await readFile(module)).digest("hex"), tarballSHA256: createHash("sha256").update(await readFile(join(directory, filename))).digest("hex"), fixtureAdaptations: process.platform === "win32" ? ["Windows-only skip of the baseline read-handle fsync after copy; copyFile and path resolution stay frozen"] : [] } };
   } catch (error) { await rm(directory, { recursive: true, force: true }); throw error; }
 }
 
