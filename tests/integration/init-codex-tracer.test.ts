@@ -56,7 +56,8 @@ describe("packed Codex initializer tracer", () => {
     const before = await readdir(fixture.root);
     const installed = await installContainedPackage("release");
     temporaryPaths.push(installed.directory);
-    expect((await readFile(installed.provider)).includes(Buffer.from("EXSPECSO_TEST_NATIVE_OPERATION"))).toBe(false);
+    const releaseBytes = await readFile(installed.provider);
+    for (const marker of ["EXSPECSO_CONTAINMENT_TEST_OPERATION", "EXSPECSO_CONTAINMENT_TEST_CHANNEL_ID", "EXSPECSO_CONTAINMENT_TEST_CONTROLLER_PID", "exspecso-containment-", "BCryptGenRandom"]) expect(releaseBytes.includes(Buffer.from(marker))).toBe(false);
     await rename(installed.provider, `${installed.provider}.removed`);
     const result = await runCli(process.execPath, [installed.cli, "init", "--agent", "codex"], { cwd: fixture.root });
     expect(result.exitCode).not.toBe(0);
@@ -110,11 +111,11 @@ describe("packed Codex initializer tracer", () => {
       }
       if (!installed || !release) throw new Error("Missing installed package");
       expect(installed.packageInventory).toEqual(release.installed.packageInventory);
-      const result = await runAtNativeReplacement(installed.cli, fixture.root, attack);
-      expect(result.record.operation).toBe("replace:before");
+      const result = await runAtNativeReplacement(installed.cli, fixture.root, attack, installed);
+      expect(result.record.op).toBe("replace:before");
       expect(await readFile(externalTarget, "utf8")).toBe("external sentinel\n");
       expect(installed.provider).toContain(join("node_modules", "exspecso", "dist", "native"));
-      expect(await realpath(result.record.providerPath)).toBe(installed.provider);
+      expect(await realpath(result.record.providerpath)).toBe(installed.provider);
       if (site === "leaf") {
         expect(result.exitCode).not.toBe(0);
         expect(result.stderr).toContain("EXSPECSO_CONTAINMENT");
@@ -128,6 +129,23 @@ describe("packed Codex initializer tracer", () => {
       console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", limitation: site !== "leaf", provider: installed.provider, providerSHA256: installed.sha256, providerManifest: installed.manifest, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, packageInventory: installed.packageInventory, reached: result.record, exitCode: result.exitCode }));
     }, 60_000);
   }
+
+  it("contained promotion tracer rejects incomplete test activation before replacement", async () => {
+    const fixture = await useFixture(createGitFixture);
+    const release = await packAndRun(fixture.root);
+    const installed = await installContainedPackage("test");
+    temporaryPaths.push(installed.directory);
+    const adapter = join(fixture.root, ".agents/skills/exspecso-start/SKILL.md");
+    await writeFile(adapter, "user-modified adapter\n");
+    const child = await runCli(process.execPath, [installed.cli, "init", "--agent", "codex", "--replace-agent", "codex"], {
+      cwd: fixture.root,
+      env: { ...process.env, EXSPECSO_CONTAINMENT_TEST_OPERATION: "replace:before" },
+    });
+    expect(release.exitCode).toBe(0);
+    expect(child.exitCode).not.toBe(0);
+    expect(child.stderr).toContain("EXSPECSO_CONTAINMENT");
+    expect(await readFile(adapter, "utf8")).toBe("user-modified adapter\n");
+  }, 60_000);
 
   it("contained promotion tracer preserves an external hardlink during an additive rerun", async () => {
     const fixture = await useFixture(createGitFixture);

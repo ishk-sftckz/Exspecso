@@ -2,12 +2,17 @@
 #define NOMINMAX
 #include <windows.h>
 #include <winternl.h>
+#if defined(EXSPECSO_CONTAINMENT_TEST)
+#include <bcrypt.h>
+#include <sddl.h>
+#endif
 #include <array>
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
 #include <cwchar>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <system_error>
 #include <vector>
@@ -191,64 +196,152 @@ std::vector<std::string> list(Handle& h) {
   }
   return names;
 }
-void barrier() {
 #if defined(EXSPECSO_CONTAINMENT_TEST)
-  const auto inherited = [](unsigned int descriptor) {
-    STARTUPINFOW startup{};
-    GetStartupInfoW(&startup);
-    const auto* bytes = startup.lpReserved2;
-    require(bytes != nullptr && startup.cbReserved2 >= sizeof(unsigned int), "test channel table missing");
-    unsigned int count = 0;
-    std::memcpy(&count, bytes, sizeof(count));
-    require(count <= 255 && descriptor < count, "test channel descriptor missing");
-    const size_t offset = sizeof(unsigned int) + count + sizeof(uintptr_t) * descriptor;
-    require(offset + sizeof(uintptr_t) <= startup.cbReserved2, "test channel table truncated");
-    uintptr_t raw = 0;
-    std::memcpy(&raw, bytes + offset, sizeof(raw));
-    const auto handle = reinterpret_cast<HANDLE>(raw);
-    require(handle != nullptr && handle != INVALID_HANDLE_VALUE, "test channel handle invalid");
-    return handle;
-  };
-  static bool reached = false;
-  const char* point = std::getenv("EXSPECSO_TEST_NATIVE_OPERATION");
-  if (reached || !point || std::strcmp(point, "replace:before") != 0) return;
-  reached = true;
-  const HANDLE traceDescriptor = inherited(3);
-  const HANDLE acknowledgementDescriptor = inherited(4);
-  HMODULE image{};
-  require(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-    reinterpret_cast<LPCWSTR>(&barrier), &image) != 0, "cannot identify loaded test provider");
-  std::array<wchar_t, 32768> providerPath{};
-  const DWORD length = GetModuleFileNameW(image, providerPath.data(), static_cast<DWORD>(providerPath.size()));
-  require(length > 0 && length < providerPath.size(), "cannot read loaded test provider path");
-  const auto path = utf8(providerPath.data(), static_cast<int>(length));
+struct WinHandle {
+  HANDLE value = INVALID_HANDLE_VALUE;
+  explicit WinHandle(HANDLE handle = INVALID_HANDLE_VALUE) : value(handle) {}
+  ~WinHandle() { if (value != INVALID_HANDLE_VALUE && value != nullptr) CloseHandle(value); }
+  WinHandle(const WinHandle&) = delete;
+  WinHandle& operator=(const WinHandle&) = delete;
+};
+struct LocalAllocation {
+  void* value = nullptr;
+  ~LocalAllocation() { if (value) LocalFree(value); }
+};
+std::optional<std::string> testEnvironment(const char* name) {
+  SetLastError(ERROR_SUCCESS);
+  const DWORD size = GetEnvironmentVariableA(name, nullptr, 0);
+  if (!size && GetLastError() == ERROR_ENVVAR_NOT_FOUND) return std::nullopt;
+  require(size > 1 && size <= 256, "invalid containment test activation");
+  std::vector<char> bytes(size);
+  require(GetEnvironmentVariableA(name, bytes.data(), size) == size - 1, "cannot read containment test activation");
+  return std::string(bytes.data(), size - 1);
+}
+std::string jsonString(const std::string& value) {
   std::string escaped;
-  for (const unsigned char c : path) {
+  for (const unsigned char c : value) {
     require(c >= 32, "unsupported control character in test provider path");
     if (c == '\\' || c == '\"') escaped += '\\';
     escaped += static_cast<char>(c);
   }
-  const std::string message = "{\"operation\":\"replace:before\",\"pid\":" + std::to_string(GetCurrentProcessId()) + ",\"providerPath\":\"" + escaped + "\"}\\n";
-  size_t offset = 0;
-  while (offset < message.size()) {
-    DWORD written = 0;
-    require(WriteFile(traceDescriptor, message.data() + offset,
-      static_cast<DWORD>(message.size() - offset), &written, nullptr) != 0 && written > 0, "test channel write failed");
-    offset += written;
-  }
-  DWORD available = 0;
-  const ULONGLONG deadline = GetTickCount64() + 10'000;
-  do {
-    if (!PeekNamedPipe(acknowledgementDescriptor, nullptr, 0, nullptr, &available, nullptr)) fail("test acknowledgement probe");
-    if (available > 0) break;
-    Sleep(10);
-  } while (GetTickCount64() < deadline);
-  require(available > 0, "test barrier timeout");
-  char acknowledgement{};
-  DWORD read = 0;
-  require(ReadFile(acknowledgementDescriptor, &acknowledgement, 1, &read, nullptr) != 0 && read == 1 && acknowledgement == '1', "invalid test acknowledgement");
-#endif
+  return escaped;
 }
+std::wstring sidText(PSID sid) {
+  LPWSTR text = nullptr;
+  require(ConvertSidToStringSidW(sid, &text) != 0, "cannot format containment test SID");
+  LocalAllocation holder{ text };
+  return text;
+}
+std::wstring pipeSecurityDescriptor() {
+  WinHandle token;
+  require(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token.value) != 0, "cannot inspect containment test token");
+  DWORD size = 0;
+  GetTokenInformation(token.value, TokenUser, nullptr, 0, &size);
+  require(GetLastError() == ERROR_INSUFFICIENT_BUFFER && size > 0, "cannot size containment test user SID");
+  std::vector<unsigned char> user(size);
+  require(GetTokenInformation(token.value, TokenUser, user.data(), size, &size) != 0, "cannot read containment test user SID");
+  const auto userSid = sidText(reinterpret_cast<TOKEN_USER*>(user.data())->User.Sid);
+  size = 0;
+  GetTokenInformation(token.value, TokenGroups, nullptr, 0, &size);
+  require(GetLastError() == ERROR_INSUFFICIENT_BUFFER && size > 0, "cannot size containment test logon SID");
+  std::vector<unsigned char> groups(size);
+  require(GetTokenInformation(token.value, TokenGroups, groups.data(), size, &size) != 0, "cannot read containment test logon SID");
+  const auto* entries = reinterpret_cast<TOKEN_GROUPS*>(groups.data());
+  PSID logon = nullptr;
+  for (DWORD index = 0; index < entries->GroupCount; ++index) if (entries->Groups[index].Attributes & SE_GROUP_LOGON_ID) { logon = entries->Groups[index].Sid; break; }
+  require(logon != nullptr, "containment test logon SID missing");
+  const auto logonSid = sidText(logon);
+  return L"D:P(A;;GA;;;SY)(A;;GA;;;" + userSid + L")(A;;GA;;;" + logonSid + L")";
+}
+struct Deadline {
+  ULONGLONG expires = GetTickCount64() + 10'000;
+  DWORD remaining() const { const auto now = GetTickCount64(); return now >= expires ? 0 : static_cast<DWORD>(std::min<ULONGLONG>(expires - now, MAXDWORD)); }
+};
+DWORD finishOverlapped(HANDLE pipe, OVERLAPPED& operation, const Deadline& deadline, const char* label) {
+  const DWORD wait = WaitForSingleObject(operation.hEvent, deadline.remaining());
+  if (wait != WAIT_OBJECT_0) {
+    CancelIoEx(pipe, &operation);
+    DWORD drained = 0;
+    GetOverlappedResult(pipe, &operation, &drained, TRUE); // completion is drained before OVERLAPPED storage dies
+    require(false, "containment test pipe deadline exceeded");
+  }
+  DWORD count = 0;
+  if (!GetOverlappedResult(pipe, &operation, &count, FALSE)) fail(label);
+  return count;
+}
+void pipeWrite(HANDLE pipe, const std::string& frame, const Deadline& deadline) {
+  require(!frame.empty() && frame.size() <= 1024, "invalid containment test event frame");
+  WinHandle event(CreateEventW(nullptr, TRUE, FALSE, nullptr)); require(event.value != nullptr, "cannot create containment test write event");
+  OVERLAPPED operation{}; operation.hEvent = event.value;
+  DWORD written = 0;
+  if (!WriteFile(pipe, frame.data(), static_cast<DWORD>(frame.size()), &written, &operation)) {
+    const auto error = GetLastError();
+    if (error != ERROR_IO_PENDING) fail("containment test event write", error);
+    written = finishOverlapped(pipe, operation, deadline, "containment test event write");
+  }
+  require(written == frame.size(), "truncated containment test event frame");
+}
+std::string pipeRead(HANDLE pipe, const Deadline& deadline) {
+  std::array<char, 1024> bytes{};
+  WinHandle event(CreateEventW(nullptr, TRUE, FALSE, nullptr)); require(event.value != nullptr, "cannot create containment test acknowledgement event");
+  OVERLAPPED operation{}; operation.hEvent = event.value;
+  DWORD count = 0;
+  if (!ReadFile(pipe, bytes.data(), static_cast<DWORD>(bytes.size()), &count, &operation)) {
+    const auto error = GetLastError();
+    require(error != ERROR_MORE_DATA, "oversized containment test acknowledgement");
+    if (error != ERROR_IO_PENDING) fail("containment test acknowledgement read", error);
+    count = finishOverlapped(pipe, operation, deadline, "containment test acknowledgement read");
+  }
+  require(count > 0 && count < bytes.size(), "truncated containment test acknowledgement");
+  return std::string(bytes.data(), count);
+}
+void barrier() {
+  static bool reached = false;
+  const auto operation = testEnvironment("EXSPECSO_CONTAINMENT_TEST_OPERATION");
+  const auto channel = testEnvironment("EXSPECSO_CONTAINMENT_TEST_CHANNEL_ID");
+  const auto controller = testEnvironment("EXSPECSO_CONTAINMENT_TEST_CONTROLLER_PID");
+  if (!operation && !channel && !controller) return;
+  require(operation && channel && controller && !reached, "incomplete containment test activation");
+  require(*operation == "replace:before" && channel->size() == 64 && std::all_of(channel->begin(), channel->end(), [](unsigned char c) { return std::isdigit(c) || (c >= 'a' && c <= 'f'); }), "invalid containment test activation");
+  require(!controller->empty() && controller->size() <= 10 && controller->front() != '0' && std::all_of(controller->begin(), controller->end(), [](unsigned char c) { return std::isdigit(c); }), "invalid containment test controller PID");
+  unsigned long long parsed = 0; try { parsed = std::stoull(*controller); } catch (...) { require(false, "invalid containment test controller PID"); }
+  require(parsed > 0 && parsed <= MAXDWORD, "invalid containment test controller PID");
+  reached = true;
+  HMODULE image{};
+  require(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, reinterpret_cast<LPCWSTR>(&barrier), &image) != 0, "cannot identify loaded test provider");
+  std::array<wchar_t, 32768> providerPath{};
+  const DWORD length = GetModuleFileNameW(image, providerPath.data(), static_cast<DWORD>(providerPath.size()));
+  require(length > 0 && length < providerPath.size(), "cannot read loaded test provider path");
+  std::array<unsigned char, 32> entropy{};
+  require(BCryptGenRandom(nullptr, entropy.data(), static_cast<ULONG>(entropy.size()), BCRYPT_USE_SYSTEM_PREFERRED_RNG) == 0, "cannot generate containment test nonce");
+  static constexpr char hex[] = "0123456789abcdef";
+  std::string nonce; nonce.reserve(entropy.size() * 2); for (const auto byte : entropy) { nonce += hex[byte >> 4]; nonce += hex[byte & 15]; }
+  const auto security = pipeSecurityDescriptor();
+  PSECURITY_DESCRIPTOR rawSecurity = nullptr;
+  require(ConvertStringSecurityDescriptorToSecurityDescriptorW(security.c_str(), SDDL_REVISION_1, &rawSecurity, nullptr) != 0, "cannot create containment test pipe DACL");
+  LocalAllocation securityOwner{ rawSecurity };
+  SECURITY_ATTRIBUTES attributes{}; attributes.nLength = sizeof(attributes); attributes.lpSecurityDescriptor = rawSecurity;
+  const auto endpoint = L"\\\\.\\pipe\\exspecso-containment-" + wide(*channel);
+  WinHandle pipe(CreateNamedPipeW(endpoint.c_str(), PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,
+    PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS, 1, 1024, 1024, 0, &attributes));
+  require(pipe.value != INVALID_HANDLE_VALUE, "cannot create containment test pipe");
+  Deadline deadline;
+  WinHandle connectEvent(CreateEventW(nullptr, TRUE, FALSE, nullptr)); require(connectEvent.value != nullptr, "cannot create containment test connect event");
+  OVERLAPPED connect{}; connect.hEvent = connectEvent.value;
+  if (!ConnectNamedPipe(pipe.value, &connect)) {
+    const auto error = GetLastError();
+    if (error == ERROR_IO_PENDING) finishOverlapped(pipe.value, connect, deadline, "containment test pipe connect");
+    else require(error == ERROR_PIPE_CONNECTED, "containment test pipe connect failed");
+  }
+  ULONG client = 0; require(GetNamedPipeClientProcessId(pipe.value, &client) != 0 && client == static_cast<DWORD>(parsed), "unexpected containment test pipe client");
+  const std::string event = "{\"op\":\"replace:before\",\"childpid\":" + std::to_string(GetCurrentProcessId()) + ",\"providerpath\":\"" + jsonString(utf8(providerPath.data(), static_cast<int>(length))) + "\",\"nonce\":\"" + nonce + "\"}";
+  pipeWrite(pipe.value, event, deadline);
+  const auto acknowledgement = pipeRead(pipe.value, deadline);
+  require(acknowledgement == "{\"ack\":\"" + nonce + "\"}", "invalid containment test acknowledgement");
+}
+#else
+void barrier() {}
+#endif
 void replace(Handle& parent, Handle& source, const std::string& target) {
   directory(parent); active(source);
   require(!source.directory && source.writable && !source.consumed && parent.authority == source.authority && sameIdentity(identity(parent), source.parentIdentity), "private sibling from this parent required");

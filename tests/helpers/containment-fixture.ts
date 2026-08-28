@@ -1,11 +1,10 @@
 import { execFile, spawn } from "node:child_process";
-import { createHash, randomUUID } from "node:crypto";
-import { createConnection, createServer, type Socket } from "node:net";
+import { createHash, randomBytes } from "node:crypto";
+import { createConnection, type Socket } from "node:net";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
-import type { Writable } from "node:stream";
 
 const exec = promisify(execFile);
 const root = resolve(import.meta.dirname, "../..");
@@ -152,75 +151,73 @@ export async function runAtHistoricalReplacement(cli: string, cwd: string, attac
   } finally { clearTimeout(timer); if (child.exitCode === null && child.signalCode === null) { child.kill("SIGKILL"); await exited; } }
 }
 
-async function createWindowsBarrierSocket() {
-  const endpoint = `\\\\.\\pipe\\exspecso-containment-${process.pid}-${randomUUID()}`;
-  const server = createServer();
-  const connected = new Promise<Socket>((resolveConnection, rejectConnection) => {
-    server.once("connection", resolveConnection);
-    server.once("error", rejectConnection);
-  });
-  await new Promise<void>((resolveListen, rejectListen) => {
-    server.once("error", rejectListen);
-    server.listen(endpoint, resolveListen);
-  });
-  const childSocket = createConnection(endpoint);
-  try {
-    await new Promise<void>((resolveConnection, rejectConnection) => {
-      childSocket.once("connect", resolveConnection);
-      childSocket.once("error", rejectConnection);
+async function connectNativeWindowsPipe(endpoint: string, childExited: Promise<number | null>, deadline: number): Promise<Socket> {
+  let childExit: number | null | undefined;
+  void childExited.then((code) => { childExit = code; });
+  for (;;) {
+    if (childExit !== undefined) throw new Error(`native barrier child exited before pipe connection: ${childExit}`);
+    if (Date.now() >= deadline) throw new Error("native barrier pipe connection deadline exceeded");
+    const socket = createConnection(endpoint);
+    const outcome = await new Promise<"connected" | NodeJS.ErrnoException>((resolveOutcome) => {
+      socket.once("connect", () => resolveOutcome("connected"));
+      socket.once("error", (error) => resolveOutcome(error));
     });
-    const controllerSocket = await connected;
-    return {
-      childSocket,
-      controllerSocket,
-      async dispose() {
-        childSocket.destroy();
-        controllerSocket.destroy();
-        await new Promise<void>((resolveClose, rejectClose) => server.close((error) => error ? rejectClose(error) : resolveClose()));
-      },
-    };
-  } catch (error) {
-    childSocket.destroy();
-    await new Promise<void>((resolveClose) => server.close(() => resolveClose()));
-    throw error;
+    if (outcome === "connected") return socket;
+    socket.destroy();
+    if (outcome.code !== "ENOENT" && outcome.code !== "EBUSY") throw outcome;
+    await new Promise((resolveRetry) => setTimeout(resolveRetry, 25));
   }
 }
 
-export async function runAtNativeReplacement(cli: string, cwd: string, attack: () => Promise<void>) {
-  // Node creates stdio entries above fd 2 as child-writable output pipes on
-  // Windows. Private duplex named-pipe sockets preserve the fixed fd3 trace
-  // and fd4 acknowledgement contract. They are test-harness transport only:
-  // per-process, unexposed to production code, and absent from release builds.
-  const traceChannel = process.platform === "win32" ? await createWindowsBarrierSocket() : undefined;
-  const acknowledgement = process.platform === "win32" ? await createWindowsBarrierSocket() : undefined;
+type NativeBarrierExpectation = { provider: string; sha256: string; manifest: { targets: Array<{ sha256: string }> } };
+type NativeBarrierOptions = { acknowledgement?: "valid" | "wrong" | "missing"; controllerPid?: number };
+
+function validateNativeEvent(value: unknown, childPid: number | undefined, expected: NativeBarrierExpectation) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("native barrier event must be an object");
+  const record = value as Record<string, unknown>;
+  if (Object.keys(record).sort().join(",") !== "childpid,nonce,op,providerpath") throw new Error("native barrier event keys are not exact");
+  if (record.op !== "replace:before" || record.childpid !== childPid || typeof record.providerpath !== "string" || typeof record.nonce !== "string" || !/^[a-f0-9]{64}$/.test(record.nonce)) throw new Error("native barrier event values are invalid");
+  return record as { op: "replace:before"; childpid: number; providerpath: string; nonce: string };
+}
+
+export async function runAtNativeReplacement(cli: string, cwd: string, attack: () => Promise<void>, expected: NativeBarrierExpectation, options: NativeBarrierOptions = {}) {
+  const channelId = randomBytes(32).toString("hex");
+  const controllerPid = options.controllerPid ?? process.pid;
+  const endpoint = `\\\\.\\pipe\\exspecso-containment-${channelId}`;
   const child = spawn(process.execPath, [cli, "init", "--agent", "codex", "--replace-agent", "codex"], {
-    cwd, env: { ...process.env, EXSPECSO_TEST_NATIVE_OPERATION: "replace:before" },
-    stdio: ["ignore", "pipe", "pipe", traceChannel?.childSocket ?? "pipe", acknowledgement?.childSocket ?? "pipe"],
+    cwd,
+    env: { ...process.env, EXSPECSO_CONTAINMENT_TEST_OPERATION: "replace:before", EXSPECSO_CONTAINMENT_TEST_CHANNEL_ID: channelId, EXSPECSO_CONTAINMENT_TEST_CONTROLLER_PID: String(controllerPid) },
+    stdio: process.platform === "win32" ? ["ignore", "pipe", "pipe"] : ["ignore", "pipe", "pipe", "pipe", "pipe"],
   });
   let stdout = "", stderr = "", trace = "";
   child.stdout!.on("data", (bytes: Buffer) => { stdout += bytes.toString(); });
   child.stderr!.on("data", (bytes: Buffer) => { stderr += bytes.toString(); });
   const exited = new Promise<number | null>((resolveExit, reject) => { child.once("error", reject); child.once("close", resolveExit); });
-  const timer = setTimeout(() => child.kill("SIGKILL"), 15_000);
+  const timer = setTimeout(() => child.kill("SIGKILL"), 12_000); // Controller deadline intentionally exceeds native's 10s deadline.
+  let controller: Socket | undefined;
   try {
-    const reached = new Promise<{ operation: string; pid: number; providerPath: string }>((resolveReach, reject) => {
-      (traceChannel?.controllerSocket ?? child.stdio[3]!).on("data", (bytes: Buffer) => {
+    controller = process.platform === "win32" ? await connectNativeWindowsPipe(endpoint, exited, Date.now() + 11_000) : undefined;
+    const reached = new Promise<{ op: "replace:before"; childpid: number; providerpath: string; nonce: string }>((resolveReach, reject) => {
+      const source = controller ?? child.stdio[3]!;
+      source.on("data", (bytes: Buffer) => {
         trace += bytes.toString();
-        if (trace.includes("\n")) { try { resolveReach(JSON.parse(trace.trim())); } catch (error) { reject(error); } }
+        if (trace.length > 1024) return reject(new Error("native barrier event exceeds bounded frame"));
+        try { resolveReach(validateNativeEvent(JSON.parse(trace), child.pid, expected)); } catch (error) { if (trace.endsWith("}")) reject(error); }
       });
       child.once("error", reject);
       child.once("close", () => reject(new Error(`native barrier not reached: ${stderr}`)));
     });
     const record = await reached;
-    if (record.operation !== "replace:before" || record.pid !== child.pid) throw new Error("unexpected native barrier");
+    if (await realpath(record.providerpath) !== expected.provider || createHash("sha256").update(await readFile(record.providerpath)).digest("hex") !== expected.sha256 || expected.manifest.targets[0]?.sha256 !== expected.sha256) throw new Error("native barrier provider provenance mismatch");
     await attack();
-    (acknowledgement?.controllerSocket ?? child.stdio[4] as Writable).write("1");
+    if (options.acknowledgement === "missing") return { exitCode: await exited, stdout, stderr, record };
+    const acknowledgement = JSON.stringify({ ack: options.acknowledgement === "wrong" ? channelId : record.nonce });
+    await new Promise<void>((resolveWrite, rejectWrite) => (controller ?? child.stdio[4]!).write(acknowledgement, (error?: Error | null) => error ? rejectWrite(error) : resolveWrite()));
     const exitCode = await exited;
     return { exitCode, stdout, stderr, record };
   } finally {
     clearTimeout(timer);
     if (child.exitCode === null && child.signalCode === null) { child.kill("SIGKILL"); await exited; }
-    if (traceChannel) await traceChannel.dispose();
-    if (acknowledgement) await acknowledgement.dispose();
+    controller?.destroy();
   }
 }
