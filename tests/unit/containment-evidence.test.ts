@@ -6,14 +6,15 @@ import { describe, expect, it } from "vitest";
 
 const root = resolve(import.meta.dirname, "../..");
 const matrix = JSON.parse(readFileSync(join(root, "native/support-matrix.json"), "utf8"));
+const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
 
-function aggregate(records: unknown[]) {
+function aggregate(records: unknown[], stage = "final") {
   const evidenceDir = mkdtempSync(join(tmpdir(), "exspecso-containment-evidence-"));
   try {
     for (const [index, record] of records.entries()) {
       writeFileSync(join(evidenceDir, `record-${index}.json`), JSON.stringify(record));
     }
-    return execFileSync(process.execPath, ["scripts/containment-evidence.mjs", "--stage", "tracer", "--evidence-dir", evidenceDir, "--matrix", "native/support-matrix.json"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    return execFileSync(process.execPath, ["scripts/containment-evidence.mjs", "--stage", stage, "--evidence-dir", evidenceDir, "--matrix", "native/support-matrix.json"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   } finally {
     rmSync(evidenceDir, { recursive: true, force: true });
   }
@@ -21,24 +22,30 @@ function aggregate(records: unknown[]) {
 
 function completeRecord(row: (typeof matrix.rows)[number]) {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     matrixRevision: matrix.revision,
     rowId: row.id,
-    stage: "tracer",
+    stage: "final",
     status: "passed",
     evidenceMode: "release",
-    sourceCommit: "a".repeat(40),
-    provider: { sha256: "a".repeat(64), buildSHA256: "a".repeat(64) },
+    sourceCommit,
+    provider: { sha256: "a".repeat(64), buildSHA256: "a".repeat(64), napi: 8 },
+    manifest: { sha256: "b".repeat(64) },
+    finalTarball: { sha256: "c".repeat(64) },
+    nodeLanes: matrix.nodePolicy.testedVersions,
+    toolchain: { headerSha256: "d".repeat(64) },
     tracer: { requiredTestIds: ["installed-native-promotion"], reachedTestIds: ["installed-native-promotion"], exitCode: 0 },
     environment: {
       native: true,
       cpu: row.cpu,
-      os: row.os,
+      os: row.os.family,
+      osVersion: row.os.version,
+      osBuild: row.os.build ?? row.os.kernel ?? "observed-build",
       kernel: row.os.kernel ?? "observed-kernel",
       filesystem: row.filesystem,
       libc: row.libc,
       libcObserved: row.libc === "glibc-2.39" ? "glibc 2.39" : row.libc,
-      node: { version: row.node.baseline, napi: 8 },
+      node: { version: row.node.baseline, liveNapi: 10 },
       compiler: "approved compiler",
       toolchain: "approved toolchain",
       operationRootFilesystem: row.os.family === "linux" ? {
@@ -55,10 +62,11 @@ function completeRecord(row: (typeof matrix.rows)[number]) {
 }
 
 describe("containment evidence aggregate", () => {
-  it("materializes all eight approved rows with exact tested-version policy", () => {
+  it("materializes every declared support row and named Node lane", () => {
     expect(matrix.revision).toMatch(/^01-19-/);
     expect(matrix.rows.map((row: { id: string }) => row.id)).toEqual(["ENV-MA", "ENV-MX", "ENV-WX", "ENV-WA", "ENV-LGX", "ENV-LGA", "ENV-LMX", "ENV-LMA", "ENV-MA25"]);
-    expect(matrix.rows.filter((row: { runnerKind: string }) => row.runnerKind === "ci")).toHaveLength(8);
+    expect(matrix.rows.filter((row: { runnerKind: string }) => row.runnerKind === "ci")).toHaveLength(matrix.rows.length - 1);
+    expect(matrix.nodePolicy.testedVersions).toHaveLength(10);
     for (const row of matrix.rows) {
       expect(row.node.baseline).toBe(row.id === "ENV-MA25" ? "25.2.1" : "20.19.0");
       expect(row.node.testedVersion).toBeTruthy();
@@ -91,18 +99,25 @@ describe("containment evidence aggregate", () => {
   });
 
   it.each([
-    ["missing", (records: unknown[]) => records.slice(1)],
+    ["missing prior row", (records: unknown[]) => records.slice(1)],
+    ["missing ENV-MA25", (records: any[]) => records.filter((record) => record.rowId !== "ENV-MA25")],
+    ["missing Node 25.2.1 lane", (records: any[]) => records.map((record) => ({ ...record, nodeLanes: record.nodeLanes.filter((lane: string) => lane !== "25.2.1") }))],
+    ["Node 25.2.0", (records: any[]) => records.map((record) => record.rowId === "ENV-MA25" ? { ...record, environment: { ...record.environment, node: { ...record.environment.node, version: "25.2.0" } } } : record)],
+    ["Node 25.2.2", (records: any[]) => records.map((record) => record.rowId === "ENV-MA25" ? { ...record, environment: { ...record.environment, node: { ...record.environment.node, version: "25.2.2" } } } : record)],
     ["failed", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, status: "failed" } : record)],
     ["skipped", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, status: "skipped" } : record)],
     ["cancelled", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, status: "cancelled" } : record)],
     ["stale commit", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, sourceCommit: "b".repeat(40) } : record)],
     ["wrong hash", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, provider: { ...record.provider, buildSHA256: "f".repeat(64) } } : record)],
+    ["wrong provider N-API", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, provider: { ...record.provider, napi: 9 } } : record)],
+    ["wrong live Node-API", (records: any[]) => records.map((record) => record.rowId === "ENV-MA25" ? { ...record, environment: { ...record.environment, node: { ...record.environment.node, liveNapi: 9 } } } : record)],
     ["emulated", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, environment: { ...record.environment, native: false } } : record)],
     ["wrong libc observation", (records: any[]) => records.map((record) => record.rowId === "ENV-LGX" ? { ...record, environment: { ...record.environment, libcObserved: "glibc 2.38" } } : record)],
     ["missing operation-root filesystem evidence", (records: any[]) => records.map((record) => record.rowId === "ENV-LMX" ? { ...record, environment: { ...record.environment, operationRootFilesystem: undefined } } : record)],
     ["overlay operation-root filesystem", (records: any[]) => records.map((record) => record.rowId === "ENV-LMX" ? { ...record, environment: { ...record.environment, operationRootFilesystem: { ...record.environment.operationRootFilesystem, rawMagicDecimal: "2035054128", normalizedMagicDecimal: "2035054128", normalizedMagicHex: "0x794c7630", mapping: "overlay" } } } : record)],
     ["mismatched operation-root filesystem hexadecimal observation", (records: any[]) => records.map((record) => record.rowId === "ENV-LMX" ? { ...record, environment: { ...record.environment, operationRootFilesystem: { ...record.environment.operationRootFilesystem, normalizedMagicHex: "0x00000000" } } } : record)],
-  ])("rejects %s tracer evidence", (_name, mutate) => {
+    ["environment paired with another row manifest", (records: any[]) => records.map((record) => record.rowId === "ENV-MA25" ? { ...record, environment: { ...record.environment, cpu: "x64" } } : record)],
+  ])("rejects %s final evidence", (_name, mutate) => {
     const records = matrix.rows.map(completeRecord);
     expect(() => aggregate(mutate(records))).toThrow();
   });
@@ -111,5 +126,15 @@ describe("containment evidence aggregate", () => {
     const records = matrix.rows.map(completeRecord);
     expect(() => aggregate([...records, { ...records[0], environment: { ...records[0].environment, kernel: "different" } }])).toThrow();
     expect(aggregate(records)).toContain('"plan_complete":true');
+  });
+
+  it("requires the current ENV-MA25 local record at the prerequisite stage", () => {
+    const local = completeRecord(matrix.rows.find((row: { id: string }) => row.id === "ENV-MA25")!);
+    local.stage = "prerequisite";
+    local.nodeLanes = ["25.2.1"];
+    delete local.finalTarball;
+    expect(aggregate([local], "prerequisite")).toContain('"plan_complete":true');
+    expect(() => aggregate([], "prerequisite")).toThrow();
+    expect(() => aggregate([{ ...local, sourceCommit: "b".repeat(40) }], "prerequisite")).toThrow();
   });
 });
