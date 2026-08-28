@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { cp, link, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+import { basename, delimiter, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { findGitRoot } from "../../src/filesystem/git-root.js";
@@ -84,7 +84,7 @@ async function installPackedRelease(): Promise<{ installed: Awaited<ReturnType<t
     ...process.env,
     NODE_OPTIONS: "",
     NODE_PATH: "",
-    PATH: dirname(process.execPath),
+    PATH: [dirname(process.execPath), process.env.PATH ?? ""].filter(Boolean).join(delimiter),
     EXSPECSO_NODE_HEADERS: join(packingDirectory, "compiler-and-headers-unavailable"),
     npm_config_userconfig: userconfig,
   };
@@ -105,7 +105,7 @@ async function packAndRun(
     ...process.env,
     NODE_OPTIONS: "",
     NODE_PATH: "",
-    PATH: dirname(process.execPath),
+    PATH: [dirname(process.execPath), process.env.PATH ?? ""].filter(Boolean).join(delimiter),
     EXSPECSO_NODE_HEADERS: join(tmpdir(), "compiler-and-headers-unavailable"),
   };
   const result = await runCli(process.execPath, [join(packed.installed.installed, "dist/cli/main.js"), ...args], { cwd, env: isolatedEnvironment });
