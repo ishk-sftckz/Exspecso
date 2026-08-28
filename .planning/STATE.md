@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
-status: Plan 01-15 complete; resume Plan 01-16
-stopped_at: Completed 01-15-PLAN.md
-last_updated: "2026-08-28T13:04:42.549Z"
+status: Plan 01-16 complete; resume Plan 01-17
+stopped_at: Completed 01-16-PLAN.md
+last_updated: "2026-08-28T13:19:50.068Z"
 last_activity: 2026-08-28
-last_activity_desc: Plan 01-15 made journal cleanup restartable and added bounded native address-diagnostic CI coverage.
+last_activity_desc: Plan 01-16 added row-qualified package assembly and isolated offline installed-CLI verification.
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 20
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 16 of 20; Plan 01-15 is complete
-Status: Resume Plan 01-16 package assembly and loader verification
-Last activity: 2026-08-28 — Plan 01-15 made journal cleanup restartable and added bounded native address-diagnostic CI coverage.
+Plan: 17 of 20; Plan 01-16 is complete
+Status: Resume Plan 01-17 all-row evidence and Node-lane execution
+Last activity: 2026-08-28 — Plan 01-16 added row-qualified package assembly and isolated offline installed-CLI verification.
 
-Plan execution: 17 plans are implementation-complete and 3 remain pending (20 total). Plan 01-15 completed conservative cleanup and native safety checks; Plan 01-16 may now continue package assembly and loader verification.
+Plan execution: 18 plans are implementation-complete and 2 remain pending (20 total). Plan 01-16 completed row-qualified package assembly and isolated offline installed-CLI verification; Plan 01-17 may now collect all-row evidence and named Node-lane execution.
 
 ### Active Execution — Native target matrix
 
@@ -117,6 +117,7 @@ Plan execution: 17 plans are implementation-complete and 3 remain pending (20 to
 | Phase 01 P13 | 55m | 2 tasks | 8 files |
 | Phase 01 P14 | 15m | 2 tasks | 4 files |
 | Phase 01 P15 | 5min | 2 tasks | 6 files |
+| Phase 01 P16 | 25min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -161,6 +162,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Schema-1 recovery cleans only an untouched complete-prior journal; all replacement gaps remain ambiguous.
 - [Phase ?]: Cleanup validates journal-identified staging inventory before removing recovery authority.
 - [Phase ?]: Address diagnostics run the native safety suite before release evidence capture.
+- [Phase ?]: Retain distinct supportRowId paths when rows share a native target.
+- [Phase ?]: Use release-only npm shrinkwrap with a dedicated prefetched cache for offline package installs.
+- [Phase ?]: Require independent missing, corrupt, and manifest-swap package negatives to preserve repository bytes exactly.
 
 ### Pending Todos
 
@@ -192,6 +196,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-28T13:04:42.541Z
-Stopped at: Completed 01-15-PLAN.md
+Last session: 2026-08-28T13:19:50.055Z
+Stopped at: Completed 01-16-PLAN.md
 Resume file: None
