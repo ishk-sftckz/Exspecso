@@ -22,7 +22,7 @@ function aggregate(records: unknown[], stage = "final", expectedSourceCommit?: s
   }
 }
 
-function completeRecord(row: (typeof matrix.rows)[number]) {
+function completeRecord(row: (typeof matrix.rows)[number], nodeLane = row.node.testedVersion) {
   return {
     schemaVersion: 2,
     matrixRevision: matrix.revision,
@@ -34,7 +34,7 @@ function completeRecord(row: (typeof matrix.rows)[number]) {
     provider: { sha256: "a".repeat(64), buildSHA256: "a".repeat(64), napi: 8 },
     manifest: { sha256: "b".repeat(64) },
     finalTarball: { sha256: "c".repeat(64) },
-    nodeLanes: matrix.nodePolicy.testedVersions,
+    nodeLanes: [nodeLane],
     toolchain: { headerSha256: "d".repeat(64) },
     tracer: { requiredTestIds: ["installed-native-promotion"], reachedTestIds: ["installed-native-promotion"], exitCode: 0 },
     environment: {
@@ -47,7 +47,7 @@ function completeRecord(row: (typeof matrix.rows)[number]) {
       filesystem: row.filesystem,
       libc: row.libc,
       libcObserved: row.libc === "glibc-2.39" ? "glibc 2.39" : row.libc,
-      node: { version: row.node.baseline, liveNapi: 10 },
+      node: { version: nodeLane, liveNapi: 10 },
       compiler: "approved compiler",
       toolchain: "approved toolchain",
       operationRootFilesystem: row.os.family === "linux" ? {
@@ -61,6 +61,13 @@ function completeRecord(row: (typeof matrix.rows)[number]) {
       } : undefined,
     },
   };
+}
+
+function completeMatrixRecords() {
+  return matrix.rows.flatMap((row: (typeof matrix.rows)[number]) => {
+    const lanes = row.id === "ENV-MA25" ? [row.node.testedVersion] : matrix.nodePolicy.testedVersions;
+    return lanes.map((lane: string) => completeRecord(row, lane));
+  });
 }
 
 describe("containment evidence aggregate", () => {
@@ -120,12 +127,12 @@ describe("containment evidence aggregate", () => {
     ["mismatched operation-root filesystem hexadecimal observation", (records: any[]) => records.map((record) => record.rowId === "ENV-LMX" ? { ...record, environment: { ...record.environment, operationRootFilesystem: { ...record.environment.operationRootFilesystem, normalizedMagicHex: "0x00000000" } } } : record)],
     ["environment paired with another row manifest", (records: any[]) => records.map((record) => record.rowId === "ENV-MA25" ? { ...record, environment: { ...record.environment, cpu: "x64" } } : record)],
   ])("rejects %s final evidence", (_name, mutate) => {
-    const records = matrix.rows.map(completeRecord);
+    const records = completeMatrixRecords();
     expect(() => aggregate(mutate(records))).toThrow();
   });
 
-  it("rejects duplicate/conflicting rows and accepts a complete exact native matrix", () => {
-    const records = matrix.rows.map(completeRecord);
+  it("rejects duplicate/conflicting row-lane evidence and accepts a complete exact native matrix", () => {
+    const records = completeMatrixRecords();
     expect(() => aggregate([...records, { ...records[0], environment: { ...records[0].environment, kernel: "different" } }])).toThrow();
     expect(aggregate(records)).toContain('"plan_complete":true');
   });
