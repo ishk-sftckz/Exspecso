@@ -3,8 +3,8 @@ phase: 01-initialize-canonical-projects
 plan: 12
 subsystem: contained artifact and initializer reads
 tags: [native-containment, bound-reader, artifact-validation, init-preflight]
-status: halted
-plan_complete: false
+status: complete
+plan_complete: true
 dependency_graph:
   requires: [01-11]
   provides: [bound-read-facade, root-bound-artifact-scan, pre-mutation-provider-preflight]
@@ -56,10 +56,10 @@ coverage:
     description: All Plan 12 focused suites and the full regression suite run against the final source snapshot on an approved provider host.
     verification:
       - kind: other
-        ref: npm test -- --run tests/unit/artifacts.test.ts; npm test -- --run tests/integration/validation-errors.test.ts tests/integration/init-rerun.test.ts tests/integration/minimal-artifacts.test.ts; npm test -- --run
-        status: unknown
-    human_judgment: true
-    rationale: The local host is intentionally rejected by the provider gate, and the available approved workflow only runs the installed tracer suite.
+        ref: 01-20-EVIDENCE/local/full-suite.json; 01-20-EVIDENCE/local/evidence.json; 01-20-EVIDENCE/local/provider-manifest.json
+        status: pass
+    human_judgment: false
+    rationale: Plan 01-20 built the declared ENV-MA25 release provider and retained a passing unfiltered 123/123 local full-suite report with row-bound source, provider, manifest, Node-API, and CLT/SDK provenance.
 ---
 
 # Phase 01 Plan 12: Bound Artifact Reads Summary
@@ -96,6 +96,12 @@ The current local macOS 26.5.1 / 25F80 host is deliberately outside the approved
 
 The explicit plan-level focused and full regression commands remain unverified on the final source snapshot. The existing approved POSIX full-regression workflow is pinned to a branch that rejects a non-force update, while the all-target workflow runs only the installed tracer suite. This plan is therefore halted for verification rather than complete.
 
+## Resolution — 2026-08-28
+
+Plan 01-20 is the approved closing route for this historical halt. It built the real `ENV-MA25` Node-API 8 release provider from checksum-verified Node 20.19.0 headers, then ran `npm run build` and the complete unfiltered `npm test -- --run --testTimeout 60000` suite under Node 25.2.1 / live Node-API 10. The retained local evidence reports 123/123 passing tests, no failures/skips/todos, source snapshot `2fe9a678e9ba9b03c7753f921263afae13c95a84`, provider hash `dba77dba8c0d15dfe1cf20ee512d86e0b915038b6ccd8666a0296dede07bfc98`, and manifest hash `d7786781cb1fc6b12ab1280458b51ff2786dfec60c5b85b904af28ab590f48dd`.
+
+This completes D4 without weakening the original regression contract. The earlier hosted records, completed work, task commits, limitations, and halted narrative above remain preserved history. Plan 01-13 may now begin through completed Plan 01-20; later package, cross-product, same-final-tarball, independent verification, TTY, acknowledgement, and security gates remain pending.
+
 ## Files Created/Modified
 
 - `src/filesystem/contained-fs.ts` — exposes `BoundReader` over opaque native capabilities.
@@ -130,4 +136,4 @@ None.
 
 ## Next Phase Readiness
 
-**Blocked:** Run the plan's focused and full regression commands on an approved provider host, either by enabling an existing approved full-regression workflow for the guarded snapshot without changing its test contract, or by explicitly accepting the all-target installed-tracer evidence as the scoped substitute. The native provider remains fail-closed on hosts outside the approved support matrix; no fallback was introduced.
+**Ready for Plan 01-13:** Plan 01-20 has completed the local provider and unfiltered full-suite evidence route and formally resolved this halt. Do not treat this as Phase 1 closure: Plans 16–18, independent phase verification, real-TTY UAT, descriptor-less prohibition acknowledgement, and the security audit remain pending.
