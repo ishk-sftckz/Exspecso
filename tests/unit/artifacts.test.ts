@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { renderConstitution, renderProjectConfig } from "../../src/artifacts/templates.js";
 import { resolveArtifact, scanArtifactDefinitions, scanArtifacts } from "../../src/artifacts/resolve.js";
 import { ARTIFACT_ID_PATTERNS, projectConfigSchema } from "../../src/artifacts/schema.js";
+import type { BoundReader } from "../../src/filesystem/contained-fs.js";
 import { runInit } from "../../src/init/run-init.js";
 
 const temporaryPaths: string[] = [];
@@ -188,6 +189,37 @@ describe("canonical artifact contracts", () => {
     ]));
     expect(scan.diagnostics).not.toEqual(expect.arrayContaining([
       expect.objectContaining({ path: ".exspecso/exspecso.config.json", code: "EXSPECSO_ARTIFACT_INVALID_ID" }),
+    ]));
+  });
+
+  it("reports substituted artifact entries without reading their external bytes", async () => {
+    const reader: BoundReader = {
+      list(components) {
+        if (components.length === 0) return [".exspecso", "redirect"];
+        if (components.join("/") === ".exspecso") return ["definition.json", "broken.json"];
+        throw new Error("EXSPECSO_CONTAINMENT_ENOENT: absent directory");
+      },
+      metadata(components) {
+        const path = components.join("/");
+        if (path === ".exspecso") return "directory";
+        if ([".exspecso/definition.json", ".exspecso/broken.json"].includes(path)) return "file";
+        if (path === "redirect") throw new Error("EXSPECSO_CONTAINMENT_IO: symbolic link rejected");
+        throw new Error("EXSPECSO_CONTAINMENT_ENOENT: absent path");
+      },
+      read(components) {
+        const path = components.join("/");
+        if (path === ".exspecso/definition.json") return Buffer.from('{"id":"SPEC-001","parent":"PHASE-001"}');
+        if (path === ".exspecso/broken.json") return Buffer.from("{ malformed");
+        throw new Error("external bytes must not be read");
+      },
+    };
+
+    const scan = await scanArtifacts("/repository", reader);
+
+    expect(scan.definitions).toEqual([expect.objectContaining({ id: "SPEC-001", path: ".exspecso/definition.json" })]);
+    expect(scan.diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "EXSPECSO_ARTIFACT_PARSE", path: ".exspecso/broken.json" }),
+      expect.objectContaining({ code: "EXSPECSO_ARTIFACT_UNSAFE_READ", path: "redirect" }),
     ]));
   });
 
