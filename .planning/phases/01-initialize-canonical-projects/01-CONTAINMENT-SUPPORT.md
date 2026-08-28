@@ -48,11 +48,32 @@ The user replied `i approve` after clarification that the pending request was pe
 
 Scope exclusions remain explicit: no application-source changes or checkout, package/tool installation, native compilation, new credentials, secrets output, paid resources, publishing, or approval of the native safety contract. The workflow receives no repository-token permissions and runs no external actions. It is based on the remote default branch so unrelated local work is not uploaded. The plan order and all eight platform obligations remain unchanged.
 
-Inspection status: **blocked before dispatch**. The prepared workflow passed YAML round-trip, Bash syntax and static scope checks. Its upload through `POST /repos/ishk-sftckz/exspecso/git/trees` returned HTTP 404. Read-only inspection confirmed repository push/admin access and the `repo` OAuth scope, but no `workflow` scope. GitHub requires `workflow` to add workflow files; the 404 response itself did not identify its cause. No temporary branch or workflow run exists. Do not try another credential or route around this permission boundary.
+Initial inspection attempt was **blocked before dispatch**. The prepared workflow passed YAML round-trip, Bash syntax and static scope checks. Its upload through `POST /repos/ishk-sftckz/exspecso/git/trees` returned HTTP 404. Read-only inspection confirmed repository push/admin access and the `repo` OAuth scope, but no `workflow` scope. No temporary branch or workflow run existed at that point. The user subsequently replied `done` after the requested interactive scope refresh; a fresh header check confirmed `workflow` was present before retrying with the same prepared workflow. No alternate credential or permission bypass was used.
 
-The exact prepared workflow is saved as `01-CONTAINMENT-PREFLIGHT.yml` in this phase directory (not installed under `.github/workflows`). Sanitized observations and its SHA-256 are in `01-CONTAINMENT-PREFLIGHT.json`. The only requested authentication change is the user's interactive `gh auth refresh --hostname github.com --scopes workflow`, after which scopes and remote state must be rechecked before retrying. No token or credential is saved in these artifacts.
+The exact workflow is saved as `01-CONTAINMENT-PREFLIGHT.yml` in this phase directory (not installed under `.github/workflows` on the local/default branch). Sanitized observations, the initial failure history, workflow SHA-256, run/commit/job identities and evidence limits are in `01-CONTAINMENT-PREFLIGHT.json`; actual metadata output is preserved in `01-CONTAINMENT-PREFLIGHT-LOGS/`. No token or credential is saved in these artifacts.
 
-Missing musl environments will be reported, not installed or treated as passing. No actual runner, build or application-test results were obtained. Plan 01-09 remains incomplete and 01-10 remains blocked pending the complete contract decision. This limited inspection approval does not approve later native implementation, platform exclusions, a Node engine change, a weaker safety boundary or paid infrastructure.
+Inspection status: **six metadata jobs completed; support verification remains pending**. The successful [GitHub run 33141513892](https://github.com/ishk-sftckz/exspecso/actions/runs/33141513892) executed workflow commit `cb3654dc7cc30c1407e2f3c67bc4ef2babff4535` on the temporary branch. Its sole change from remote `main` was the workflow file. No application checkout, installation, compilation, application test, race/recovery test or adapter invocation ran. No native implementation or support claim follows from a successful inventory job. After saving the evidence and verifying the remote workflow hash, the temporary branch was deleted; remote `main` remained at `571a1905a1345b9792acf137b5dc4f6b5454bc15`. The run and its job logs remain linked in the evidence record.
+
+### Observed inventory — 2026-08-28
+
+These are observed execution inputs, not approved platform minimums or immutable image pins. A listed default Node process ran only a metadata expression; other cached versions were merely listed.
+
+| Required row | Runner label | Observed OS / filesystem | Image version | Default Node |
+|---|---|---|---|---|
+| ENV-MA | `macos-15` | macOS 15.7.7 (24G720), arm64, APFS | `20260727.0256.1` | 22.23.1 arm64 |
+| ENV-MX | `macos-15-intel` | macOS 15.7.9 (24G830), x64, APFS | `20260824.0482.1` | 22.23.2 x64 |
+| ENV-WX | `windows-2025` | Windows Server 2025 Datacenter, base build 26100, x64, NTFS | `20260818.207.1` (`win25-vs2026`) | 22.23.2 x64 |
+| ENV-WA | `windows-11-arm` | Windows 11 Enterprise, base build 26200, arm64, NTFS | `20260823.149.1` | 24.19.0 arm64 |
+| ENV-LGX | `ubuntu-24.04` | Ubuntu 24.04.4, kernel 6.17.0-1022-azure, glibc 2.39, x64, ext4 | `20260823.283.1` | 22.23.2 x64 |
+| ENV-LGA | `ubuntu-24.04-arm` | Ubuntu 24.04.4, kernel 6.17.0-1022-azure, glibc 2.39, arm64, ext4 | `20260823.101.1` | 22.23.2 arm64 |
+| ENV-LMX | No musl environment inspected | x64 Ubuntu had no musl packages or loader at either inspected standard path | Not obtained | Not obtained |
+| ENV-LMA | No musl environment inspected | arm64 Ubuntu had no musl packages or loader at either inspected standard path | Not obtained | Not obtained |
+
+Both Mac runners reported Xcode 16.4 (16F6), Apple clang 17.0.0 (`clang-1700.0.13.5`), and macOS SDK 15.5 (24F74). Both Ubuntu runners reported GCC/G++ 13.3.0 and Clang 18.1.3. Windows x64 reported Visual Studio 2026 `18.9.12112.369`, MSVC directories `14.29.30133`, `14.44.35207`, `14.51.36231`, and SDK include directory `10.0.26100.0`. Windows arm64 reported Visual Studio 2022 `17.14.37614.0`, MSVC directories `14.29.30133`, `14.44.35207`, and SDK include directories `10.0.10240.0`, `10.0.19041.0`, `10.0.22621.0`, `10.0.26100.0`. Installed directory names do not prove a usable target toolchain; no compile or header-compatibility probe ran.
+
+The Windows x64 runner resolved to a different image/toolchain variant from the earlier published candidate. macOS CPU variants also resolved to different OS/image patches. Future builds must check and record their actual environment instead of treating a rolling label as a fixed image. Windows UBR patch revisions were not queried. The Linux package query returned exit 1 for missing package names, including musl; the independently observed Clang executable remains valid inventory evidence despite the missing unversioned `clang` package name.
+
+The remaining proposal still needs exact musl distribution/runtime/build provenance, compatibility-floor and recommended Node policies, filesystem and OS-floor dispositions, build/header pins, evidence-mode approval, and the explicit object-authority versus stronger-boundary decision. Missing environments are not dropped or counted as passing. Plan 01-09 remains incomplete and 01-10 remains blocked. This limited inspection approval does not approve later native implementation, platform exclusions, a Node engine change, a weaker safety boundary or paid infrastructure.
 
 ## Recommended decision defaults, to resolve before approval
 

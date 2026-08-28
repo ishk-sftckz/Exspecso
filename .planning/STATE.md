@@ -4,11 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: Approved metadata inspection blocked on GitHub workflow scope
-stopped_at: 01-09 approved metadata-only preflight blocked on GitHub workflow scope; native contract remains pending
-last_updated: "2026-08-28T04:15:07.107Z"
+status: Metadata inspection complete; portable contract approval pending
+stopped_at: 01-09 inventory recorded for six runners; musl proposal and native contract remain pending
+last_updated: "2026-08-28T04:24:11.998Z"
 last_activity: 2026-08-28
-last_activity_desc: Completed quick research 260828-ffa comparing GSD/BMAD initialization and runtime support; Phase 1 containment approval and execution remain pending.
+last_activity_desc: Completed the approved six-runner metadata inspection after user-granted workflow permission; musl setup and the full native/safety contract remain unapproved.
 progress:
   total_phases: 1
   completed_phases: 0
@@ -30,14 +30,14 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
 Plan: 9 of 18; revised 01-09 Task 1 blocking-human decision; 0/1 task complete
 Status: Awaiting portable contract approval
-Last activity: 2026-08-28 — completed quick task 260828-ffa researching GSD/BMAD initialization and runtime support; the portable containment contract remains awaiting explicit approval.
+Last activity: 2026-08-28 — GitHub run 33141513892 completed six metadata-only jobs; no implementation or application verification ran. The portable containment contract remains awaiting explicit approval.
 
 Plan execution: 8 completed plans preserved; 10 revised/new plans pending (18 total). The larger denominator reflects the portable replan, not lost completed work. Phase completion remains blocked by verification gaps and human/security gates.
 
 ### Active Execution Checkpoint — revised portable contract
 
 - The user authorized replanning for Windows, macOS, Linux, all three agent adapters, and comprehensive tests; implementation remains paused.
-- On 2026-08-28 the user replied `i approve` to metadata-only GitHub environment inspection. The prepared workflow upload returned HTTP 404; the current GitHub CLI credential has repository access but lacks the required `workflow` scope. No remote branch or jobs were created. See `01-CONTAINMENT-PREFLIGHT.json` and `.yml`. Resume only after the user grants that scope; the full native/safety contract is still unapproved and 01-10 remains blocked. This does not change the plan order or the eight platform obligations.
+- On 2026-08-28 the user replied `i approve` to metadata-only GitHub inspection, then `done` after granting the missing workflow scope. Run 33141513892 completed on native Mac/Windows/Linux x64 and arm64 runners. Logs and exact observed inputs are in `01-CONTAINMENT-PREFLIGHT.json`, `.yml`, and `01-CONTAINMENT-PREFLIGHT-LOGS/`; the SUPPORT proposal has a readable inventory. Neither musl target was inspected or installed. No application tests or native build ran. The full contract is still unapproved and 01-10 remains blocked; plan order and all eight platform obligations are unchanged.
 - See `01-CONTAINMENT-REPLAN.md` and `01-CONTAINMENT-RESEARCH.md`. Proposed same-package prebuilts remove end-user compiler/header needs; the exact provider, OS/CPU/Node/libc/filesystem matrix and infrastructure still need approval.
 - Every already-open directory can be relocated. The object-authority versus strict lexical-containment boundary requires an explicit decision, never a silent reduction in the safety claim.
 - Ten serial plans (01-09–18) and 42 test families passed independent plan checking after revision; see 01-CONTAINMENT-PLAN-CHECK.md. All implementation and new test results remain pending. Do not resume the superseded source-install contract or count this planning request as native implementation approval.
@@ -159,6 +159,6 @@ Research note: `docs/research/initialization-runtime-comparison.md` records a ge
 
 ## Session Continuity
 
-Last session: 2026-08-28T04:15:07.095Z
-Stopped at: 01-09 approved metadata-only preflight blocked on GitHub workflow scope; native contract remains pending
-Resume file: .planning/phases/01-initialize-canonical-projects/01-CONTAINMENT-PREFLIGHT.json
+Last session: 2026-08-28T04:24:11.998Z
+Stopped at: 01-09 six-runner metadata inspection complete; musl proposal and full native contract remain pending
+Resume file: .planning/phases/01-initialize-canonical-projects/01-09-PLAN.md

@@ -1,0 +1,164 @@
+RUNNER_OS=macOS
+RUNNER_ARCH=X64
+ImageOS=macos15
+ImageVersion=20260824.0482.1
+
+METADATA_COMMAND uname -smr
+Darwin 24.6.0 x86_64
+METADATA_EXIT 0
+
+METADATA_COMMAND node --input-type=module -e console.log(JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,napi:process.versions.napi,execPath:process.execPath}))
+{"node":"v22.23.2","platform":"darwin","arch":"x64","napi":"10","execPath":"/usr/local/Cellar/node@22/22.23.2_1/bin/node"}
+METADATA_EXIT 0
+
+METADATA_COMMAND python3 --version
+Python 3.14.7
+METADATA_EXIT 0
+
+METADATA_COMMAND clang --version
+Apple clang version 17.0.0 (clang-1700.0.13.5)
+Target: x86_64-apple-darwin24.6.0
+Thread model: posix
+InstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
+METADATA_EXIT 0
+
+METADATA_COMMAND sw_vers
+ProductName:		macOS
+ProductVersion:		15.7.9
+BuildVersion:		24G830
+METADATA_EXIT 0
+
+METADATA_COMMAND xcodebuild -version
+Xcode 16.4
+Build version 16F6
+METADATA_EXIT 0
+
+METADATA_COMMAND xcrun --show-sdk-version
+15.5
+METADATA_EXIT 0
+
+METADATA_COMMAND xcrun --show-sdk-build-version
+24F74
+METADATA_EXIT 0
+
+METADATA_COMMAND xcrun --find clang
+/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+METADATA_EXIT 0
+FILESYSTEM_PATH=/Users/runner/work/exspecso/exspecso
+
+METADATA_COMMAND diskutil info /dev/disk1s1
+Device Identifier:         disk1s1
+Device Node:               /dev/disk1s1
+Whole:                     No
+Part of Whole:             disk1
+
+Volume Name:               Macintosh HD - Data
+Mounted:                   Yes
+Mount Point:               /System/Volumes/Data
+
+Partition Type:            41504653-0000-11AA-AA11-00306543ECAC
+File System Personality:   APFS
+Type (Bundle):             apfs
+Name (User Visible):       APFS
+Owners:                    Enabled
+
+OS Can Be Installed:       Yes
+Booter Disk:               disk1s2
+Recovery Disk:             disk1s3
+Media Type:                Generic
+Protocol:                  SATA
+SMART Status:              Not Supported
+Volume UUID:               563A508F-BDCD-3143-B445-B195B273307C
+Disk / Partition UUID:     563A508F-BDCD-3143-B445-B195B273307C
+
+Disk Size:                 348.6 GB (348622118912 Bytes) (exactly 680902576 512-Byte-Units)
+Device Block Size:         4096 Bytes
+
+Volume Used Space:         216.4 GB (216363507712 Bytes) (exactly 422584976 512-Byte-Units)
+Container Total Space:     348.6 GB (348622118912 Bytes) (exactly 680902576 512-Byte-Units)
+Container Free Space:      116.8 GB (116837965824 Bytes) (exactly 228199152 512-Byte-Units)
+Allocation Block Size:     4096 Bytes
+
+Media OS Use Only:         No
+Media Read-Only:           No
+Volume Read-Only:          No
+
+Device Location:           Internal
+Removable Media:           Fixed
+
+Solid State:               No
+Hardware AES Support:      No
+
+This disk is an APFS Volume.  APFS Information:
+APFS Container:            disk1
+APFS Physical Store:       disk0s2
+Fusion Drive:              No
+APFS Volume Group:         563A508F-BDCD-3143-B445-B195B273307C
+Encrypted:                 No
+FileVault:                 No
+Sealed:                    No
+Locked:                    No
+
+METADATA_EXIT 0
+FILESYSTEM_PATH=/Users/runner/work/_temp
+
+METADATA_COMMAND diskutil info /dev/disk1s1
+Device Identifier:         disk1s1
+Device Node:               /dev/disk1s1
+Whole:                     No
+Part of Whole:             disk1
+
+Volume Name:               Macintosh HD - Data
+Mounted:                   Yes
+Mount Point:               /System/Volumes/Data
+
+Partition Type:            41504653-0000-11AA-AA11-00306543ECAC
+File System Personality:   APFS
+Type (Bundle):             apfs
+Name (User Visible):       APFS
+Owners:                    Enabled
+
+OS Can Be Installed:       Yes
+Booter Disk:               disk1s2
+Recovery Disk:             disk1s3
+Media Type:                Generic
+Protocol:                  SATA
+SMART Status:              Not Supported
+Volume UUID:               563A508F-BDCD-3143-B445-B195B273307C
+Disk / Partition UUID:     563A508F-BDCD-3143-B445-B195B273307C
+
+Disk Size:                 348.6 GB (348622118912 Bytes) (exactly 680902576 512-Byte-Units)
+Device Block Size:         4096 Bytes
+
+Volume Used Space:         216.4 GB (216363507712 Bytes) (exactly 422584976 512-Byte-Units)
+Container Total Space:     348.6 GB (348622118912 Bytes) (exactly 680902576 512-Byte-Units)
+Container Free Space:      116.8 GB (116837965824 Bytes) (exactly 228199152 512-Byte-Units)
+Allocation Block Size:     4096 Bytes
+
+Media OS Use Only:         No
+Media Read-Only:           No
+Volume Read-Only:          No
+
+Device Location:           Internal
+Removable Media:           Fixed
+
+Solid State:               No
+Hardware AES Support:      No
+
+This disk is an APFS Volume.  APFS Information:
+APFS Container:            disk1
+APFS Physical Store:       disk0s2
+Fusion Drive:              No
+APFS Volume Group:         563A508F-BDCD-3143-B445-B195B273307C
+Encrypted:                 No
+FileVault:                 No
+Sealed:                    No
+Locked:                    No
+
+METADATA_EXIT 0
+PREINSTALLED_NODE_CACHE
+/Users/runner/hostedtoolcache/node
+/Users/runner/hostedtoolcache/node/22.23.2
+/Users/runner/hostedtoolcache/node/22.23.2/x64
+/Users/runner/hostedtoolcache/node/24.19.0
+/Users/runner/hostedtoolcache/node/24.19.0/x64
