@@ -18,7 +18,6 @@ $metadata = [ordered]@{
 }
 New-Item -ItemType Directory -Force windows-preflight | Out-Null
 $metadata | ConvertTo-Json -Depth 5 | Tee-Object -FilePath windows-preflight/environment.json
-if ($env:ImageVersion -ne '20260818.207.1' -or $env:ImageOS -ne 'win25-vs2026' -or $metadata.architecture -ne 'X64' -or $os.BuildNumber -ne '26100' -or $os.Caption -notmatch 'Server 2025 Datacenter' -or $metadata.filesystem -ne 'NTFS') { throw 'Approved Windows runner pin drift' }
 if (!$vs) { throw 'Approved Visual Studio installation missing' }
 $compiler = Join-Path $vs.installationPath 'VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe'
 if (!(Test-Path $compiler)) { throw 'Approved native target compiler missing' }
@@ -42,3 +41,4 @@ foreach ($relative in @('um/winternl.h', 'um/WinBase.h', 'um/fileapi.h')) {
 }
 $metadata | ConvertTo-Json -Depth 5 | Set-Content windows-preflight/environment.json
 Get-Content windows-preflight/sdk-declarations.txt
+if ($env:ImageVersion -ne '20260818.207.1' -or $env:ImageOS -ne 'win25-vs2026' -or $metadata.architecture -ne 'X64' -or $os.BuildNumber -ne '26100' -or $os.Caption -notmatch 'Server 2025 Datacenter' -or $metadata.filesystem -ne 'NTFS') { throw 'Approved Windows runner pin drift; inspection retained, execution stopped' }
