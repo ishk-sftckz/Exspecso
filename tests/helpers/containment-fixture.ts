@@ -152,7 +152,7 @@ export async function runAtHistoricalReplacement(cli: string, cwd: string, attac
   } finally { clearTimeout(timer); if (child.exitCode === null && child.signalCode === null) { child.kill("SIGKILL"); await exited; } }
 }
 
-async function createWindowsAcknowledgementSocket() {
+async function createWindowsBarrierSocket() {
   const endpoint = `\\\\.\\pipe\\exspecso-containment-${process.pid}-${randomUUID()}`;
   const server = createServer();
   const connected = new Promise<Socket>((resolveConnection, rejectConnection) => {
@@ -187,15 +187,15 @@ async function createWindowsAcknowledgementSocket() {
 }
 
 export async function runAtNativeReplacement(cli: string, cwd: string, attack: () => Promise<void>) {
-  // Node creates stdio entries above fd 2 as child-writable output pipes. On
-  // Windows fd 4 therefore cannot carry an acknowledgement back to the child.
-  // Supplying this private duplex named-pipe socket at fd 4 preserves the
-  // fixed fd3/fd4 native contract; it is test-harness transport only and is
-  // neither packaged nor present in release provider builds.
-  const acknowledgement = process.platform === "win32" ? await createWindowsAcknowledgementSocket() : undefined;
+  // Node creates stdio entries above fd 2 as child-writable output pipes on
+  // Windows. Private duplex named-pipe sockets preserve the fixed fd3 trace
+  // and fd4 acknowledgement contract. They are test-harness transport only:
+  // per-process, unexposed to production code, and absent from release builds.
+  const traceChannel = process.platform === "win32" ? await createWindowsBarrierSocket() : undefined;
+  const acknowledgement = process.platform === "win32" ? await createWindowsBarrierSocket() : undefined;
   const child = spawn(process.execPath, [cli, "init", "--agent", "codex", "--replace-agent", "codex"], {
     cwd, env: { ...process.env, EXSPECSO_TEST_NATIVE_OPERATION: "replace:before" },
-    stdio: ["ignore", "pipe", "pipe", "pipe", acknowledgement?.childSocket ?? "pipe"],
+    stdio: ["ignore", "pipe", "pipe", traceChannel?.childSocket ?? "pipe", acknowledgement?.childSocket ?? "pipe"],
   });
   let stdout = "", stderr = "", trace = "";
   child.stdout!.on("data", (bytes: Buffer) => { stdout += bytes.toString(); });
@@ -204,7 +204,7 @@ export async function runAtNativeReplacement(cli: string, cwd: string, attack: (
   const timer = setTimeout(() => child.kill("SIGKILL"), 15_000);
   try {
     const reached = new Promise<{ operation: string; pid: number; providerPath: string }>((resolveReach, reject) => {
-      child.stdio[3]!.on("data", (bytes: Buffer) => {
+      (traceChannel?.controllerSocket ?? child.stdio[3]!).on("data", (bytes: Buffer) => {
         trace += bytes.toString();
         if (trace.includes("\n")) { try { resolveReach(JSON.parse(trace.trim())); } catch (error) { reject(error); } }
       });
@@ -220,6 +220,7 @@ export async function runAtNativeReplacement(cli: string, cwd: string, attack: (
   } finally {
     clearTimeout(timer);
     if (child.exitCode === null && child.signalCode === null) { child.kill("SIGKILL"); await exited; }
+    if (traceChannel) await traceChannel.dispose();
     if (acknowledgement) await acknowledgement.dispose();
   }
 }
