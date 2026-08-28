@@ -34,7 +34,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 12/18 plans executed
+**Plans**: 12/20 plans executed
 
 Plans:
 **Wave 1**
@@ -85,31 +85,39 @@ Plans:
 
 - [x] 01-12-PLAN.md — Bind artifact validation and initializer reads
 
-**Wave 13** *(gap closure; depends on 01-12)*
+**Wave 13** *(gap closure; depends on completed 01-12)*
+
+- [ ] 01-19-PLAN.md — Add the current Mac and Node 25.2.1 through data-driven support rows
+
+**Wave 14** *(gap closure; depends on 01-19)*
+
+- [ ] 01-20-PLAN.md — Pass the complete local native regression/evidence gate and propagate support
+
+**Wave 15** *(gap closure; depends on 01-20)*
 
 - [ ] 01-13-PLAN.md — Bind ownership and staging operations
 
-**Wave 14** *(gap closure; depends on 01-13)*
+**Wave 16** *(gap closure; depends on 01-13)*
 
 - [ ] 01-14-PLAN.md — Make promotion and recovery restartable through bound operations
 
-**Wave 15** *(gap closure; depends on 01-14)*
+**Wave 17** *(gap closure; depends on 01-14)*
 
 - [ ] 01-15-PLAN.md — Complete conservative cleanup and native safety checks
 
-**Wave 16** *(gap closure; depends on 01-15)*
+**Wave 18** *(gap closure; depends on 01-15)*
 
 - [ ] 01-16-PLAN.md — Prove the same-package prebuilt installation contract
 
-**Wave 17** *(gap closure; depends on 01-16)*
+**Wave 19** *(gap closure; depends on 01-16)*
 
 - [ ] 01-17-PLAN.md — Run the complete installed containment test matrix
 
-**Wave 18** *(gap closure; depends on 01-17)*
+**Wave 20** *(gap closure; depends on 01-17)*
 
 - [ ] 01-18-PLAN.md — Gate the final package candidate on platform evidence and review
 
-**Cross-cutting constraints:** Preserve all completed contracts and all three agent adapters; no unapproved support/Node/authority change; same-package prebuilts; no unsafe pathname fallback; evidence distinguishes test and release binaries; missing native matrix rows block support; no publishing or Phase 2 advancement before independent closure.
+**Cross-cutting constraints:** Preserve all completed contracts and all three agent adapters; the corrected macOS 26.5.1 / arm64 / local APFS / Node 25.2.1 tuple is a real supported row, not a development-only exception; support matching is matrix-driven and unlisted tuples fail before mutation; the existing eight rows and nine Node lanes remain required alongside the new row/lane; same-package row-qualified prebuilts; no unsafe pathname fallback; evidence distinguishes test and release binaries; missing native matrix rows or Node lanes block support; no publishing or Phase 2 advancement before independent closure.
 
 ### Phase 2: Build the Project Truth Engine
 
