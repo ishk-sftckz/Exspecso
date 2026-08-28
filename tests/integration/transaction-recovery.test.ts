@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
+import { link, mkdir, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
@@ -377,6 +377,28 @@ describe("journaled init transaction", () => {
       await rm(join(fixture.root, ".exspecso"), { recursive: true, force: true });
       await rm(join(fixture.root, ".agents"), { recursive: true, force: true });
     }
+  });
+
+  it("records write-ahead promotion intent and leaves an external hard-link alias on the old inode", async () => {
+    const fixture = await useFixture();
+    const target = join(fixture.root, "target.txt");
+    const alias = join(fixture.root, "external-alias.txt");
+    await writeFile(target, "prior", "utf8");
+    await link(target, alias);
+
+    const result = await commitTransaction({
+      repositoryRoot: fixture.root,
+      writes: [{ target, relativePath: "target.txt", content: "staged", expectedExists: true, expectedPreimageHash: sha256("prior") }],
+    }, { faultAt: "before-promotion:target.txt" as PromotionFaultPoint });
+
+    expect(result).toMatchObject({ kind: "failed" });
+    const [transactionId] = await readdir(join(fixture.root, stagingRelativePath));
+    const journal = await readTransactionJournal(join(fixture.root, stagingRelativePath, transactionId!));
+    expect(journal.schemaVersion).toBe(2);
+    expect(journal.state).toBe("promoting");
+    expect(journal.inFlight).toMatchObject({ relativePath: "target.txt", operation: "replace" });
+    await expect(readFile(target, "utf8")).resolves.toBe("prior");
+    await expect(readFile(alias, "utf8")).resolves.toBe("prior");
   });
 
   it("recovers every promotion step after injected exception and controlled interruption without accepting a mixed set", async () => {
