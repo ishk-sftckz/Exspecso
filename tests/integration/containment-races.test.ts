@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { containmentOperationGrid, type ContainmentOperationCase } from "../helpers/containment-fixture.js";
 
@@ -15,5 +17,19 @@ describe("installed containment operation grid", () => {
     expect(containmentOperationGrid).toEqual(requiredOperations);
     expect(new Set(containmentOperationGrid.map((entry) => entry.caseId))).toHaveLength(requiredOperations.length);
     expect(new Set(containmentOperationGrid.map((entry) => entry.operationId))).toHaveLength(requiredOperations.length);
+  });
+
+  it("requires one real observed Node lane per matrix record instead of stamping unrun lanes", async () => {
+    const root = resolve(import.meta.dirname, "../..");
+    const [writer, workflow] = await Promise.all([
+      readFile(resolve(root, "scripts/write-containment-evidence.mjs"), "utf8"),
+      readFile(resolve(root, ".github/workflows/containment.yml"), "utf8"),
+    ]);
+
+    expect(writer).toContain("EXSPECSO_OBSERVED_NODE_LANE");
+    expect(writer).toContain("process.version.slice(1) !== observedNodeLane");
+    expect(writer).toContain("nodeLanes: [observedNodeLane]");
+    expect(workflow).toContain("EXSPECSO_OBSERVED_NODE_LANE");
+    expect(workflow).not.toContain("nodeLanes: stage === \"final\" ? matrix.nodePolicy.testedVersions");
   });
 });
