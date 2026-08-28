@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: false
 jobs:
   native:
-    if: inputs.mode == 'full' || matrix.family == 'musl'
     name: ${{ matrix.id }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
@@ -31,6 +30,7 @@ jobs:
           - {id: ENV-LMA, runner: ubuntu-24.04-arm, family: musl, target: linux-arm64}
     steps:
       - name: Fetch only the reviewed temporary snapshot
+        if: inputs.mode == 'full' || matrix.family == 'musl'
         shell: bash
         run: |
           git init .
@@ -38,7 +38,7 @@ jobs:
           git fetch --depth=1 origin "$GITHUB_SHA"
           git checkout --detach FETCH_HEAD
       - name: Fetch checksum-verified Node 20.19.0 inputs
-        if: matrix.family == 'macos' || matrix.family == 'glibc'
+        if: (inputs.mode == 'full' || matrix.family == 'musl') && (matrix.family == 'macos' || matrix.family == 'glibc')
         shell: bash
         env:
           TARGET: ${{ matrix.target }}
@@ -54,7 +54,7 @@ jobs:
           echo "$PWD/node-v20.19.0-$TARGET/bin" >> "$GITHUB_PATH"
           echo "EXSPECSO_NODE_HEADERS=$PWD/node-v20.19.0-headers.tar.gz" >> "$GITHUB_ENV"
       - name: Build and run the real installed tracer natively
-        if: matrix.family == 'macos' || matrix.family == 'glibc'
+        if: (inputs.mode == 'full' || matrix.family == 'musl') && (matrix.family == 'macos' || matrix.family == 'glibc')
         shell: bash
         env:
           EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
@@ -70,7 +70,7 @@ jobs:
           node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json
           node scripts/write-containment-evidence.mjs
       - name: Fetch checksum-verified native Node inputs for Windows
-        if: matrix.family == 'windows'
+        if: (inputs.mode == 'full' || matrix.family == 'musl') && matrix.family == 'windows'
         shell: pwsh
         env:
           TARGET: ${{ matrix.target }}
@@ -90,7 +90,7 @@ jobs:
           "EXSPECSO_NODE_HEADERS=$(Join-Path $env:RUNNER_TEMP 'node-v20.19.0-headers.tar.gz')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "EXSPECSO_NODE_LIB=$(Join-Path $env:RUNNER_TEMP 'node.lib')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Build and run the real installed Windows tracer
-        if: matrix.family == 'windows'
+        if: (inputs.mode == 'full' || matrix.family == 'musl') && matrix.family == 'windows'
         shell: pwsh
         env:
           EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
@@ -103,7 +103,7 @@ jobs:
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
           node scripts/write-containment-evidence.mjs
       - name: Build and run the real native musl tracer in the pinned Alpine userland
-        if: matrix.family == 'musl'
+        if: (inputs.mode == 'full' || matrix.family == 'musl') && matrix.family == 'musl'
         shell: bash
         env:
           EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
@@ -134,7 +134,7 @@ jobs:
             test "$tracer_status" -eq 0
             node scripts/write-containment-evidence.mjs'
       - name: Upload actual target evidence and binaries
-        if: always()
+        if: (inputs.mode == 'full' || matrix.family == 'musl') && always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: containment-${{ matrix.id }}
