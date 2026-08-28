@@ -96,6 +96,21 @@ describe("contained filesystem provider", () => {
 
       expect(result.status).not.toBe(0);
       expect(`${result.stdout}\n${result.stderr}`).toContain("missing release artifact for support row ENV-B");
+
+      const completed = join(input, "ENV-B", "darwin-arm64");
+      await mkdir(completed, { recursive: true });
+      await writeFile(join(completed, "contained-fs.node"), "release-ENV-B");
+      await writeFile(join(completed, "build-provenance.json"), JSON.stringify({ supportRowId: "ENV-B", target: "darwin-arm64", variant: "release", buildCommit: "a".repeat(40), toolchain: "test" }));
+      await writeFile(join(artifact, "duplicate-contained-fs.node"), "duplicate");
+      const duplicate = spawnSync(process.execPath, [
+        join(import.meta.dirname, "../../scripts/assemble-containment-package.mjs"),
+        "--matrix", matrixPath,
+        "--input", input,
+        "--out", join(directory, "duplicate-package"),
+        "--build-commit", "a".repeat(40),
+      ], { encoding: "utf8" });
+      expect(duplicate.status).not.toBe(0);
+      expect(`${duplicate.stdout}\n${duplicate.stderr}`).toContain("duplicate release artifact for support row ENV-A");
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
