@@ -61,7 +61,13 @@ function loadProvider(): { native: NativeProvider; provenance: ProviderProvenanc
     } else if (process.platform === "linux" && ["x64", "arm64"].includes(process.arch) && entry.filesystem === "ext4" && entry.osVersion === "Alpine 3.24" && entry.libc === "musl-1.2.6-r2") {
       const kernel = execFileSync("uname", ["-r"], { encoding: "utf8" }).trim();
       const filesystem = execFileSync("stat", ["-f", "-c", "%T", packageRoot], { encoding: "utf8" }).trim();
-      const libc = execFileSync("ldd", ["--version"], { encoding: "utf8" }).toString();
+      let libc: string;
+      try {
+        libc = execFileSync("ldd", ["--version"], { encoding: "utf8" }).toString();
+      } catch (error: any) {
+        if (typeof error?.stderr !== "string" || !error.stderr.includes("musl libc")) throw error;
+        libc = error.stderr;
+      }
       if (!kernel || filesystem !== "ext2/ext3" || !libc.includes("Version 1.2.6")) unavailable("unverified Alpine Linux/filesystem/libc; no project changes made");
     } else unavailable("this tracer has no verified provider for the host");
     const binary = join(packageRoot, "dist/native", entry.path);
