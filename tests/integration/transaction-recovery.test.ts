@@ -434,6 +434,41 @@ describe("journaled init transaction", () => {
     await expect(readdir(fixture.root)).resolves.toEqual([".git"]);
   });
 
+  it("restarts identified cleanup after an already-removed staged copy", async () => {
+    const fixture = await useFixture();
+    const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });
+    const point = `before-promotion:${plan.writes[0]!.relativePath}` as PromotionFaultPoint;
+
+    await expect(commitTransaction(plan, { faultAt: point, faultMode: "interrupt" })).resolves.toMatchObject({ kind: "failed" });
+    const staging = join(fixture.root, stagingRelativePath);
+    const [transactionId] = await readdir(staging);
+    const stage = join(staging, transactionId!);
+    const journal = await readTransactionJournal(stage);
+    await rm(join(stage, "files", journal.entries[0]!.relativePath));
+    await writeFile(join(stage, "journal.json"), `${JSON.stringify({ ...journal, state: "cleaning", inFlight: null })}\n`, "utf8");
+
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "recovered", disposition: "restored-prior" });
+    await expect(readdir(fixture.root)).resolves.toEqual([".git"]);
+  });
+
+  it("preserves a cleaning journal when its stage contains an unlisted entry", async () => {
+    const fixture = await useFixture();
+    const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });
+    const point = `before-promotion:${plan.writes[0]!.relativePath}` as PromotionFaultPoint;
+
+    await expect(commitTransaction(plan, { faultAt: point, faultMode: "interrupt" })).resolves.toMatchObject({ kind: "failed" });
+    const staging = join(fixture.root, stagingRelativePath);
+    const [transactionId] = await readdir(staging);
+    const stage = join(staging, transactionId!);
+    const journal = await readTransactionJournal(stage);
+    await writeFile(join(stage, "unlisted-evidence"), "preserve", "utf8");
+    await writeFile(join(stage, "journal.json"), `${JSON.stringify({ ...journal, state: "cleaning", inFlight: null })}\n`, "utf8");
+
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
+    await expect(readFile(join(stage, "journal.json"), "utf8")).resolves.toContain("\"cleaning\"");
+    await expect(readFile(join(stage, "unlisted-evidence"), "utf8")).resolves.toBe("preserve");
+  });
+
   it("recovers every promotion step after an externally killed CLI child", async () => {
     const probe = await useFixture();
     const points = (await buildInitPlan({ repositoryRoot: probe.root, selectedAgents: ["codex"] })).writes
