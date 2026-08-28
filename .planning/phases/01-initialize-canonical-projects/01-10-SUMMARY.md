@@ -4,8 +4,8 @@ plan: 10
 subsystem: filesystem
 tags: [node-api, posix, containment, tracer, checkpoint]
 status: halted
-halt_reason: required-tracer-human-verification
-checkpoint_type: human-verify
+halt_reason: incomplete-plan-resumed-at-task-2
+checkpoint_type: execution-continuity
 tasks_completed: 1
 tasks_total: 3
 plan_complete: false
@@ -59,12 +59,12 @@ The real hardlink overwrite was observed against the old installed CLI before co
 1. **Rule 2 — Missing critical preflight:** added the minimal provider availability check to `src/init/run-init.ts`. The outer initializer acquires ownership before `commitTransaction`; a check only inside the transaction could not satisfy Task 1's no-mutation behavior for a missing provider. This does not migrate reads or ownership to native operations.
 2. **Rule 3 — Required execution environment:** added the scoped CI workflow now, because the local Mac is development-only and lacks the approved acceptance OS/toolchain. The approved hosted Mac supplies Task 1 evidence. Plan 11 still owns the full matrix and evidence gate.
 3. **Rule 1 — Workflow authoring error:** the first CI submission used an unavailable runner context at job-level env and was rejected before jobs. Corrected the variable setup; later jobs passed. No support assertion or test was weakened.
-4. A `status: halted` checkpoint summary is committed because GSD requires a summary after production commits. It deliberately records 1/3 tasks and blocks downstream plans; it is not a completion marker. Resume this plan at its human tracer gate, not at Plan 11.
+4. A `status: halted` checkpoint summary is committed because GSD requires a summary after production commits. It deliberately records 1/3 tasks and blocks downstream plans; it is not a completion marker. Resume this incomplete plan at Task 2, not at Plan 11.
 
 ## Remaining Work / Stop Condition
 
-The execute-plan workflow requires human tracer feedback before expansion. Await approval of the verified Task 1 slice. Task 2 (native Windows parity) and Task 3 (expanded installed tracer, including complete historical vulnerable-CLI grid reproduction) have not run. The partial host package is not release-ready. Reads/staging/ownership/journal/recovery/cleanup still include pathname operations and remain Plans 12–15 work. Linux and other platforms, the full Node matrix, diagnostics, packaging and closure gates remain pending.
+The user replied exactly `approve` on 2026-08-28 to the verified Task 1 slice; the required tracer feedback gate is satisfied. Task 2 (native Windows parity) and Task 3 (expanded installed tracer, including complete historical vulnerable-CLI grid reproduction) have not run. The partial host package is not release-ready. Reads/staging/ownership/journal/recovery/cleanup still include pathname operations and remain Plans 12–15 work. Linux and other platforms, the full Node matrix, diagnostics, packaging and closure gates remain pending.
 
 ## Resume
 
-Read `.continue-here.md`, `01-10-TRACER-REVIEW.md`, the approved SUPPORT contract and `01-10-PLAN.md`. If the user approves this tracer, record that exact response and continue Task 2 without redoing Task 1 or re-requesting native design approval. Preserve the halted summary until the plan is actually complete; explicitly resume the current checkpoint rather than relying on summary-file counts.
+Read `.continue-here.md`, `01-10-TRACER-REVIEW.md`, the approved SUPPORT contract and `01-10-PLAN.md`. The tracer approval is recorded. Continue Task 2 without redoing Task 1 or re-requesting either approval. Preserve the halted summary until the plan is actually complete; explicitly resume the current checkpoint rather than relying on summary-file counts.

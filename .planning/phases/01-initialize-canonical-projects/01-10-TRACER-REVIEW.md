@@ -1,6 +1,6 @@
 # Plan 01-10 Task 1 — POSIX tracer review
 
-Status: Task 1 verified; awaiting the required human tracer feedback checkpoint. Plan 01-10 is incomplete (1/3 tasks); Phase 1 is incomplete (9/18 plans complete).
+Status: Task 1 verified and approved by the user (`approve`, 2026-08-28). Plan 01-10 is incomplete (1/3 tasks); Phase 1 is incomplete (9/18 plans complete).
 
 ## What now works
 
@@ -43,6 +43,6 @@ The first workflow submission was rejected before jobs because `runner.temp` was
 - The exact initial platform policy rejects the local macOS 26.5.1 for mutation. It is development-only under the approved contract; the passing acceptance evidence comes from the approved hosted Mac.
 - Phase 1 still needs all remaining serial repair plans, independent verification, real-TTY/agent-host observations, judgment acknowledgements and security audit.
 
-## Required next decision
+## Tracer approval
 
-Approve the verified POSIX tracer to continue with Plan 01-10 Task 2 (Windows handle-relative parity), or report an issue with this slice. This checkpoint is required by the `gsd-execute-phase` tracer workflow. It does not request more configuration or repeat the already-granted native design approval.
+On 2026-08-28 the user replied exactly `approve` to this verified POSIX tracer checkpoint. The required human feedback gate is satisfied. Continue Plan 01-10 Task 2 (Windows handle-relative parity), then Task 3 within the unchanged approved contract. Do not request this approval or the native design approval again.
