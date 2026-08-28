@@ -4,15 +4,15 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
-status: Plan 01-14 complete; resume Plan 01-15
+status: Plan 01-15 complete; resume Plan 01-16
 stopped_at: Completed 01-15-PLAN.md
 last_updated: "2026-08-28T13:04:42.549Z"
 last_activity: 2026-08-28
-last_activity_desc: Plan 01-20 retained ENV-MA25's local Node-API 8 provider and 123/123 full-suite evidence, formally resolving the Plan 01-12 halt.
+last_activity_desc: Plan 01-15 made journal cleanup restartable and added bounded native address-diagnostic CI coverage.
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 22
+  total_plans: 20
   completed_plans: 17
 ---
 
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 16 of 20; Plan 01-14 is complete
-Status: Resume Plan 01-15 conservative cleanup and native safety checks
-Last activity: 2026-08-28 — Plan 01-14 added schema-2 write-ahead promotion evidence and capability-bound restartable recovery.
+Plan: 16 of 20; Plan 01-15 is complete
+Status: Resume Plan 01-16 package assembly and loader verification
+Last activity: 2026-08-28 — Plan 01-15 made journal cleanup restartable and added bounded native address-diagnostic CI coverage.
 
-Plan execution: 16 plans are implementation-complete and 4 remain pending (20 total). Plan 01-14 completed restartable recovery work; Plan 01-15 may now continue conservative cleanup and native safety checks.
+Plan execution: 17 plans are implementation-complete and 3 remain pending (20 total). Plan 01-15 completed conservative cleanup and native safety checks; Plan 01-16 may now continue package assembly and loader verification.
 
 ### Active Execution — Native target matrix
 

@@ -86,7 +86,15 @@ Journal cleanup now remains restartable after known staged files have already be
 
 ## Deviations from Plan
 
-None - plan execution stayed within its cleanup/recovery and diagnostic CI scope.
+### Auto-fixed Issues
+
+1. **[Rule 1 - Bug] Corrected noncanonical planning-artifact progress accounting**
+   - **Found during:** Plan close-out.
+   - **Issue:** State advancement counted two containment planning references as executable plans, reporting 17/22 despite the canonical 20-plan roadmap.
+   - **Fix:** Restored STATE.md to the roadmap-authoritative 17/20 count and Plan 16 resume position.
+   - **Files modified:** `.planning/STATE.md`
+
+**Impact on plan:** Documentation-only correction; Task scope and implementation remain unchanged.
 
 ## Known Stubs
 
