@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { lstat, readFile, rm, rmdir, writeFile } from "node:fs/promises";
+import { lstat, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import type { PlannedWrite } from "../init/plan.js";
@@ -94,23 +94,46 @@ function removeEmptyDirectories(root: DirectoryCapability, path: readonly string
     try { withDirectory(root, path.slice(0, length - 1), false, (parent) => parent.removeDirectory(path[length - 1]!)); } catch { break; }
   }
 }
-async function removeKnownTransaction(stageRoot: string, journal: TransactionJournal): Promise<void> {
-  const directories = new Set<string>([join(stageRoot, "files"), join(stageRoot, "backups"), stageRoot]);
+function key(path: readonly string[]): string { return path.join("/"); }
+function knownTransactionEntries(journal: TransactionJournal): Map<string, Set<string>> {
+  const known = new Map<string, Set<string>>();
+  const add = (path: readonly string[]) => {
+    for (let index = 0; index < path.length; index += 1) {
+      const parent = key(path.slice(0, index));
+      const entries = known.get(parent) ?? new Set<string>();
+      entries.add(path[index]!);
+      known.set(parent, entries);
+    }
+  };
+  add(["journal.json"]);
   for (const entry of journal.entries) {
-    const staged = stageFile(stageRoot, entry.relativePath);
-    await rm(staged, { force: true });
-    for (let current = dirname(staged); current.startsWith(stageRoot); current = dirname(current)) directories.add(current);
-    if (entry.backupPath !== null) {
-      const backup = join(stageRoot, entry.backupPath);
-      await rm(backup, { force: true });
-      for (let current = dirname(backup); current.startsWith(stageRoot); current = dirname(current)) directories.add(current);
+    add(["files", ...components(entry.relativePath)]);
+    if (entry.backupPath !== null) add(components(entry.backupPath));
+  }
+  return known;
+}
+/** Refuse cleanup before mutation if the stage contains evidence the journal did not identify. */
+function hasOnlyKnownTransactionEntries(directory: DirectoryCapability, path: readonly string[], known: ReadonlyMap<string, ReadonlySet<string>>): boolean {
+  const expected = known.get(key(path)) ?? new Set<string>();
+  const actual = directory.list();
+  if (actual.some((name) => !expected.has(name))) return false;
+  for (const name of actual) {
+    const childPath = [...path, name];
+    if (known.has(key(childPath))) {
+      let child: DirectoryCapability;
+      try { child = directory.openDirectory(name); } catch { return false; }
+      try { if (!hasOnlyKnownTransactionEntries(child, childPath, known)) return false; }
+      finally { child.close(); }
+    } else {
+      try { directory.openFile(name).close(); } catch { return false; }
     }
   }
-  await rm(journalPath(stageRoot), { force: true });
-  for (const directory of [...directories].sort((left, right) => right.length - left.length)) await rmdir(directory).catch(() => undefined);
-  await rmdir(dirname(stageRoot)).catch(() => undefined);
+  return true;
 }
 function cleanupBoundTransaction(stage: DirectoryCapability, staging: DirectoryCapability, journal: TransactionJournal): void {
+  if (!hasOnlyKnownTransactionEntries(stage, [], knownTransactionEntries(journal))) {
+    throw new Error("EXSPECSO_TRANSACTION_CLEANUP_UNKNOWN_EVIDENCE");
+  }
   for (const entry of journal.entries) {
     const staged = ["files", ...components(entry.relativePath)]; removeBound(stage, staged); removeEmptyDirectories(stage, staged.slice(0, -1));
     if (entry.backupPath !== null) { const backup = components(entry.backupPath); removeBound(stage, backup); removeEmptyDirectories(stage, backup.slice(0, -1)); }
@@ -312,17 +335,6 @@ export async function transactionIsActive(root: string): Promise<boolean> {
 
 export function transactionStageRoot(root: string, transactionId: string): string {
   return join(root, stagingRelativePath, transactionId);
-}
-
-export async function removeRecoveredTransaction(root: string, stageRoot: string, journal: TransactionJournal): Promise<void> {
-  await removeKnownTransaction(stageRoot, journal);
-  for (const entry of journal.entries.filter((candidate) => candidate.preimageHash === null)) {
-    let current = dirname(join(root, entry.relativePath));
-    while (current !== root) {
-      await rmdir(current).catch(() => undefined);
-      current = dirname(current);
-    }
-  }
 }
 
 export async function isRegularFile(path: string): Promise<boolean> {

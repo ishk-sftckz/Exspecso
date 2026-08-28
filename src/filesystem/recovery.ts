@@ -52,6 +52,11 @@ function allowedHashes(journal: TransactionJournal, entry: TransactionJournalEnt
 function evidenceError(root: DirectoryCapability, stage: DirectoryCapability, journal: TransactionJournal): string | null {
   for (const entry of journal.entries) {
     const target = readOptionalBound(root, components(entry.relativePath));
+    if (journal.state === "cleaning") {
+      const terminalHash = journal.completedPromotions.length === journal.entries.length ? entry.stagedHash : priorHash(entry);
+      if (hash(target) !== terminalHash) return `canonical hash mismatch for ${entry.relativePath}`;
+      continue;
+    }
     const staged = readOptionalBound(stage, ["files", ...components(entry.relativePath)]);
     if (hash(staged) !== entry.stagedHash) return `staged hash mismatch for ${entry.relativePath}`;
     const backup = entry.backupPath === null ? undefined : readOptionalBound(stage, components(entry.backupPath));
