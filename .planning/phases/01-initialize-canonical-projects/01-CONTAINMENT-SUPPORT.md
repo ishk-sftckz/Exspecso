@@ -1,6 +1,6 @@
-# Containment support contract — proposed
+# Containment support contract — approved 2026-08-28
 
-Status: pending explicit human decisions in 01-09. This file authorizes no implementation, dependency, engine change, runner purchase, or publication.
+Status: approved by the user on 2026-08-28, after presentation of the resolved proposal recorded in commit `59d99e9`. The approval record below is authoritative. Earlier proposal/inspection paragraphs preserve history; no implementation or support test is implied by approval.
 
 ## Safety boundary requiring approval
 
@@ -40,7 +40,17 @@ The research's OS/libc minimums are proposal inputs, not automatically approved 
 
 ## Approval record
 
-Pending. Record the exact user response, date, accepted boundary, each target tuple/version, Node policy, evidence mode, tool infrastructure authorizations, decisions declined, and unresolved blockers. A generic previous tracer approval does not satisfy this record.
+### Resolved contract approval — 2026-08-28
+
+**Exact user response:** `approve`.
+
+The response directly followed the question “Do you approve this proposal, including those limits, so I can begin?” and a link to the complete proposal in commit `59d99e9`. This is a new full-contract approval, distinct from the earlier metadata-only `i approve` and authorization `done`.
+
+Accepted: the complete “Resolved proposal for the next human decision — 2026-08-28” below, including all eight exact modern platform rows and three adapters; the nine named Node lanes and `^20.19.0 || ^22.13.0 || ^24.0.0 || ^26.0.0` engine correction; C Node-API 8, selected compiler/SDK/header pins and same-package prebuilts; the trusted-namespace/cooperative-writer object-authority boundary (including relocation and non-atomic entry comparison limits); Mode B evidence and all 42 test families; journal schema-2/legacy recovery compatibility; and the bounded edits, downloads, disposable builds and free CI authorization.
+
+Not included: the older OS-floor research defaults, other filesystems or unverified tuples, arbitrary hostile concurrent mutation protection, literal-release deterministic proof, physical power-loss guarantees, new npm dependencies, paid resources, new credentials, global installations, signing or publication. No request for those alternatives was made. Existing tracer, feasibility, independent verification and human/security gates remain mandatory.
+
+**01-09 decision gate: satisfied.** Plan 01-10 may begin. Build/load feasibility, actual musl execution, Windows patch observations, native matrix tests, all later repairs and Phase 1 closure remain unverified. No further configuration is required merely to begin the authorized work.
 
 ### Limited infrastructure approval — 2026-08-28
 
@@ -171,4 +181,4 @@ The selected GCC package source commit is `423a8ad043d07f2c7546c8ec3e2b0384cda36
 
 ### Decision status
 
-**Awaiting the user's explicit response to this resolved proposal.** The previous `i approve` and `done` concerned metadata inspection and GitHub authorization only. They do not approve this proposal. No 01-09 summary or completion is created; 01-10 remains blocked. If the user requires older OS floors, broader filesystems, literal-release deterministic proof, or protection against arbitrary simultaneous external mutation, revise the design and obtain the missing environments rather than treating this proposal as accepted.
+**Approved on 2026-08-28 by the subsequent exact response `approve`; see the authoritative approval record above.** The earlier `i approve` and `done` remain metadata-only history. Plan 01-09 closes the decision task only. Any change to the approved boundary or environment/Node/toolchain scope still requires its own explicit disposition; native test evidence and Phase 1 completion are not established by this approval.
