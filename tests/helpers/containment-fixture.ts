@@ -96,17 +96,20 @@ ${boundary}`);
     // Windows rejects that durability call with EPERM before the copy boundary;
     // this test-only compatibility patch leaves copyFile and all path resolution
     // untouched so the historical external-write regression can be observed.
-    const windowsFsync = /  const handle = await open\(destination, ["']r["']\);\r?\n  try \{\r?\n    await handle\.sync\(\);\r?\n  \} finally \{\r?\n    await handle\.close\(\);\r?\n  \}/;
     if (process.platform === "win32") {
-      if (!windowsFsync.test(source) || windowsFsync.test(source.replace(windowsFsync, ""))) throw new Error("Historical Windows fsync boundary changed");
-      source = source.replace(windowsFsync, `  if (process.platform !== "win32") {
+      const copyOffset = source.indexOf(boundary);
+      const directorySync = "  await syncDirectory(dirname(destination));";
+      const syncOffset = source.indexOf(directorySync, copyOffset + boundary.length);
+      const copiedFileSync = source.slice(copyOffset + boundary.length, syncOffset);
+      if (copyOffset < 0 || syncOffset < 0 || !copiedFileSync.includes("open(destination") || !copiedFileSync.includes("handle.sync()") || source.indexOf(directorySync, syncOffset + directorySync.length) !== -1) throw new Error("Historical Windows fsync boundary changed");
+      source = `${source.slice(0, copyOffset + boundary.length)}\n  if (process.platform !== "win32") {
     const handle = await open(destination, "r");
     try {
       await handle.sync();
     } finally {
       await handle.close();
     }
-  }`);
+  }\n${source.slice(syncOffset)}`;
     }
     await writeFile(transaction, source);
     const { stdout } = await runNpm(["pack", "--json", "--pack-destination", directory], { cwd: staged });
