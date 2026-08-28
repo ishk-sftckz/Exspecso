@@ -26,6 +26,9 @@ function readOperationRootFilesystem() {
   return observation;
 }
 const operationRootFilesystem = readOperationRootFilesystem();
+const libcObserved = provider.libc ?? "system";
+const expectedObservedLibc = row.libc === "glibc-2.39" ? "glibc 2.39" : row.libc;
+if (libcObserved !== expectedObservedLibc) throw new Error(`provider libc observation ${libcObserved} does not match approved ${row.libc}`);
 const sourceCommit = process.env.EXSPECSO_SOURCE_COMMIT ?? command("git", ["rev-parse", "HEAD"]);
 if (!/^[a-f0-9]{40}$/.test(sourceCommit)) throw new Error("evidence source commit must be the exact 40-hex snapshot");
 writeFileSync("evidence.json", JSON.stringify({
@@ -44,7 +47,8 @@ writeFileSync("evidence.json", JSON.stringify({
     os: provider.osVersion,
     kernel: provider.osBuild,
     filesystem: provider.filesystem,
-    libc: provider.libc ?? "system",
+    libc: row.libc,
+    libcObserved,
     node: { version: process.version.slice(1), napi: provider.napiVersion, runtimeNapi: Number(process.versions.napi) },
     compiler: build.compilerVersion,
     toolchain: row.toolchain,

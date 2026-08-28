@@ -32,6 +32,10 @@ function verifyOperationRootFilesystem(record, row) {
   if (observation.normalizedMagicDecimal !== normalized.toString() || observation.normalizedMagicHex !== normalizedHex(normalized)) fail(`${record.rowId} operation-root filesystem magic encoding mismatches`);
   if (normalized !== approvedLinuxFilesystemMagic || observation.mapping !== "ext2/ext3") fail(`${record.rowId} operation-root filesystem is unapproved (${observation.mapping ?? "UNKNOWN"}/${observation.normalizedMagicHex ?? "UNKNOWN"})`);
 }
+function verifyLibcObservation(record, row) {
+  const expected = row.libc === "glibc-2.39" ? "glibc 2.39" : row.libc;
+  if (record.environment?.libcObserved !== expected) fail(`${record.rowId} libc observation does not match approved policy`);
+}
 for (const record of records) {
   if (record.schemaVersion !== 1 || record.stage !== stage) fail("record schema or stage is invalid");
   if (record.matrixRevision !== matrix.revision) fail(`wrong matrix revision for ${record.rowId}`);
@@ -43,6 +47,7 @@ for (const record of records) {
   if (record.evidenceMode !== "release") fail(`${record.rowId} evidence mode is not release`);
   if (record.environment?.native !== true) fail(`${record.rowId} is emulated or not native`);
   if (record.environment?.cpu !== row.cpu || record.environment?.filesystem !== row.filesystem || record.environment?.libc !== row.libc) fail(`${record.rowId} environment does not match approved target`);
+  verifyLibcObservation(record, row);
   verifyOperationRootFilesystem(record, row);
   if (record.environment?.node?.version !== row.node.baseline || record.environment?.node?.napi !== matrix.nodePolicy.napi) fail(`${record.rowId} Node/N-API mismatch`);
   if (!record.environment?.os || !record.environment?.kernel || !record.environment?.compiler || !record.environment?.toolchain) fail(`${record.rowId} lacks exact environment observations`);
