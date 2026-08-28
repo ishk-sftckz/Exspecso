@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { link, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -51,6 +51,22 @@ async function packAndRun(
 }
 
 describe("packed Codex initializer tracer", () => {
+  it("contained promotion tracer preserves an external hardlink during an additive rerun", async () => {
+    const fixture = await useFixture(createGitFixture);
+    expect((await packAndRun(fixture.root)).exitCode).toBe(0);
+    const config = join(fixture.root, ".exspecso", "exspecso.config.json");
+    const before = await readFile(config, "utf8");
+    const outside = await createTemporaryDirectory("exspecso-external-");
+    const sentinel = join(outside, "prior-config.json");
+    await link(config, sentinel);
+
+    const result = await packAndRun(fixture.root, ["init", "--agent", "claude"]);
+
+    expect(result.exitCode).toBe(0);
+    expect(await readFile(config, "utf8")).not.toBe(before);
+    expect(await readFile(sentinel, "utf8")).toBe(before);
+  }, 60_000);
+
   it("creates only the canonical foundation and Codex adapter", async () => {
     const fixture = await useFixture(createGitFixture);
     const repositoryRoot = fixture.root;
