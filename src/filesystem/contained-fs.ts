@@ -46,7 +46,9 @@ function loadProvider(): { native: NativeProvider; provenance: ProviderProvenanc
       const approved = process.arch === "arm64" ? ["15.7.7", "24G720"] : ["15.7.9", "24G830"];
       if (entry.osVersion !== approved[0] || entry.osBuild !== approved[1] || osVersion !== entry.osVersion || osBuild !== entry.osBuild) unavailable("unverified OS version; no project changes made");
     } else if (process.platform === "win32" && process.arch === "x64" && entry.filesystem === "ntfs") {
-      const observed = JSON.parse(execFileSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", "$o=Get-CimInstance Win32_OperatingSystem;$r=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion';@{caption=$o.Caption;version=$o.Version;build=$o.BuildNumber;ubr=$r.UBR}|ConvertTo-Json -Compress"], { encoding: "utf8", windowsHide: true })) as { caption: string; version: string; build: string; ubr: number };
+      const powershell = join(process.env.SystemRoot ?? "C:\\Windows", "System32/WindowsPowerShell/v1.0/powershell.exe");
+      const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== "psmodulepath"));
+      const observed = JSON.parse(execFileSync(powershell, ["-NoProfile", "-NonInteractive", "-Command", "$o=Get-CimInstance Win32_OperatingSystem;$r=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion';@{caption=$o.Caption;version=$o.Version;build=$o.BuildNumber;ubr=$r.UBR}|ConvertTo-Json -Compress"], { encoding: "utf8", windowsHide: true, env: environment })) as { caption: string; version: string; build: string; ubr: number };
       if (entry.osVersion !== "10.0.26100" || entry.osBuild !== "26100.33296" || observed.caption !== "Microsoft Windows Server 2025 Datacenter" || observed.version !== entry.osVersion || `${observed.build}.${observed.ubr}` !== entry.osBuild) unavailable("unverified Windows version; no project changes made");
     } else unavailable("this tracer has no verified provider for the host");
     const binary = join(packageRoot, "dist/native", entry.path);

@@ -37,7 +37,7 @@ if (process.platform === "darwin") {
   if (xcode !== "Xcode 16.4\nBuild version 16F6" || sdkVersion !== "15.5" || !compilerVersion.includes("clang-1700.0.13.5")) throw new Error("Compiler/SDK pin drift; update the approved ledger before building");
 } else {
   // Reobserve the machine and SDK for every build, including separately packed variants.
-  execFileSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-File", join(root, "native/windows-preflight.ps1")], { cwd: root, stdio: "inherit" });
+  execFileSync(join(process.env.ProgramFiles, "PowerShell/7/pwsh.exe"), ["-NoProfile", "-NonInteractive", "-File", join(root, "native/windows-preflight.ps1")], { cwd: root, stdio: "inherit" });
   windows = JSON.parse(readFileSync(join(root, "windows-preflight/environment.json"), "utf8").replace(/^\uFEFF/, ""));
   if (windows.ubr !== 33296 || windows.compilerFileVersion !== "19.44.35228.0" || windows.compilerSHA256 !== "88c8344236a27a6e727e0a8edc49aaa2690bdc7a9464b9d18cc7abe70a9f1c0d") throw new Error("Windows OS patch/compiler pin drift");
   const expectedHeaders = { "um/winternl.h": "a43424486349c38f697c009512dfe4eb8fca733d7665afab42f50752170b9785", "um/WinBase.h": "ec538199f5ebe8cec2dfd4f1ba48316ef776c82d37277aed3a677965e494f192", "um/fileapi.h": "f8927178c75de487c0e57f044a215e455522bf6eaa0b660421be09cd06ae05a1" };
