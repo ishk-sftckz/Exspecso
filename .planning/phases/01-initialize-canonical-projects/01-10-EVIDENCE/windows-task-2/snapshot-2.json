@@ -1,0 +1,9 @@
+{
+  "branch": "codex/containment-windows-parity-20260828",
+  "commit": "5a6f7938e27c4864b1138de30b49ce06f1d78741",
+  "files": {
+    "native/windows-preflight.ps1": "7fb363b8ede7a924b2c48bce64b4ac116c1c585c7f4561e3b402d1c9412cc688",
+    ".github/workflows/containment-windows-parity.yml": "02100087e610c53c1b103b971c7409409aff09950bbe640606552e81c8a56bf6",
+    "tests/unit/contained-fs.test.ts": "57ffc9e6df61178260a5ce5c338caf79fda9a4b3097f7499dcdd906adcf81eea"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "imageVersion": "20260818.207.1",
+  "imageOS": "win25-vs2026",
+  "architecture": "X64",
+  "caption": "Microsoft Windows Server 2025 Datacenter",
+  "version": "10.0.26100",
+  "build": "26100",
+  "ubr": 33296,
+  "displayVersion": "24H2",
+  "filesystem": "NTFS",
+  "visualStudio": [
+    {
+      "installationVersion": "18.9.12112.369",
+      "installationPath": "C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise"
+    }
+  ],
+  "sdkVersion": "10.0.26100.0",
+  "msvcVersion": "14.44.35207",
+  "compiler": "C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe",
+  "compilerFileVersion": "19.44.35228.0",
+  "compilerSHA256": "88c8344236a27a6e727e0a8edc49aaa2690bdc7a9464b9d18cc7abe70a9f1c0d",
+  "headers": [
+    {
+      "path": "um/winternl.h",
+      "sha256": "a43424486349c38f697c009512dfe4eb8fca733d7665afab42f50752170b9785"
+    },
+    {
+      "path": "um/WinBase.h",
+      "sha256": "ec538199f5ebe8cec2dfd4f1ba48316ef776c82d37277aed3a677965e494f192"
+    },
+    {
+      "path": "um/fileapi.h",
+      "sha256": "f8927178c75de487c0e57f044a215e455522bf6eaa0b660421be09cd06ae05a1"
+    }
+  ]
+}

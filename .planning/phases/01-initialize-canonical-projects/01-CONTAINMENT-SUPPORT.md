@@ -182,3 +182,12 @@ The selected GCC package source commit is `423a8ad043d07f2c7546c8ec3e2b0384cda36
 ### Decision status
 
 **Approved on 2026-08-28 by the subsequent exact response `approve`; see the authoritative approval record above.** The earlier `i approve` and `done` remain metadata-only history. Plan 01-09 closes the decision task only. Any change to the approved boundary or environment/Node/toolchain scope still requires its own explicit disposition; native test evidence and Phase 1 completion are not established by this approval.
+
+
+## Execution record / Windows image pin refresh — 2026-08-28
+
+The Task 1 tracer was separately approved by exact user response `approve`. Task 2 SDK inspection ran on the originally recorded Windows x64 image in run 33143691447. It observed full OS patch **10.0.26100.33296**, compiler file version **19.44.35228.0** in the approved MSVC 14.44.35207 directory, and saved the compiler/SDK header hashes in `01-10-EVIDENCE/windows-task-2/33143691447/environment.json`.
+
+GitHub subsequently supplied image **20260824.214.3** under the same `windows-2025` label. Runs 33143790594 and 33144108350 stopped the row before build/test execution. The latter retained complete inspection. Comparing every collected environment field against the original inspection found exactly one difference: `imageVersion` (`20260818.207.1` → `20260824.214.3`). OS edition/build/UBR, native x64 architecture, NTFS, Visual Studio version/path, compiler version and SHA-256, SDK version and all three inspected SDK header SHA-256 values match.
+
+**Disposition under the approved documented pin-update rule:** accept both observed image identifiers for ENV-WX, while retaining every existing OS/CPU/filesystem/compiler/SDK pin and additionally checking the observed UBR and input hashes before compilation. This is a maintainer image-record refresh, not a new support-range claim, toolchain substitution, skipped test, or new human approval. Other image identifiers still stop the row. The comparison is limited to the collected inputs; it does not assert that the entire images are byte-identical. Tests must still pass on the actual execution image. ENV-WA and all other rows are unchanged.

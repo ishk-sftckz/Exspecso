@@ -1,0 +1,103 @@
+windows	Set up job	﻿2026-08-28T05:07:10.5645448Z Current runner version: '2.336.0'
+windows	Set up job	2026-08-28T05:07:10.5701226Z ##[group]Runner Image Provisioner
+windows	Set up job	2026-08-28T05:07:10.5702408Z Hosted Compute Agent
+windows	Set up job	2026-08-28T05:07:10.5703268Z Version: 20260819.586
+windows	Set up job	2026-08-28T05:07:10.5704133Z Commit: 3cc4a88dfa507ef76119ad1bb3eccc6378bb2b76
+windows	Set up job	2026-08-28T05:07:10.5705171Z Build Date: 2026-08-18T23:20:18Z
+windows	Set up job	2026-08-28T05:07:10.5706138Z Worker ID: {964bd5a0-89da-4486-b740-0262fda325cc}
+windows	Set up job	2026-08-28T05:07:10.5707119Z Azure Region: eastus2
+windows	Set up job	2026-08-28T05:07:10.5707872Z ##[endgroup]
+windows	Set up job	2026-08-28T05:07:10.5709846Z ##[group]Operating System
+windows	Set up job	2026-08-28T05:07:10.5710789Z Microsoft Windows Server 2025
+windows	Set up job	2026-08-28T05:07:10.5711657Z 10.0.26100
+windows	Set up job	2026-08-28T05:07:10.5712406Z Datacenter
+windows	Set up job	2026-08-28T05:07:10.5713073Z ##[endgroup]
+windows	Set up job	2026-08-28T05:07:10.5713866Z ##[group]Runner Image
+windows	Set up job	2026-08-28T05:07:10.5714683Z Image: windows-2025-vs2026
+windows	Set up job	2026-08-28T05:07:10.5715898Z Version: 20260824.214.3
+windows	Set up job	2026-08-28T05:07:10.5718211Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20260824.214/images/windows/Windows2025-VS2026-Readme.md
+windows	Set up job	2026-08-28T05:07:10.5721262Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20260824.214
+windows	Set up job	2026-08-28T05:07:10.5722855Z ##[endgroup]
+windows	Set up job	2026-08-28T05:07:10.5724456Z ##[group]GITHUB_TOKEN Permissions
+windows	Set up job	2026-08-28T05:07:10.5728230Z Metadata: read
+windows	Set up job	2026-08-28T05:07:10.5729124Z ##[endgroup]
+windows	Set up job	2026-08-28T05:07:10.5732178Z Secret source: Actions
+windows	Set up job	2026-08-28T05:07:10.5733872Z Prepare workflow directory
+windows	Set up job	2026-08-28T05:07:10.6158906Z Prepare all required actions
+windows	Set up job	2026-08-28T05:07:10.6225847Z Getting action download info
+windows	Set up job	2026-08-28T05:07:10.7823739Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+windows	Set up job	2026-08-28T05:07:11.1084553Z Complete job name: windows
+windows	Fetch this exact public task snapshot	﻿2026-08-28T05:07:11.3411648Z ##[group]Run git init .
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:11.3412402Z [36;1mgit init .[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:11.3412941Z [36;1mif ($LASTEXITCODE) { throw 'git init failed' }[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:11.3413820Z [36;1mgit remote add origin https://github.com/ishk-sftckz/exspecso.git[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:11.3414609Z [36;1mgit fetch --depth=1 origin $env:GITHUB_SHA[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:11.3415257Z [36;1mif ($LASTEXITCODE) { throw 'git fetch failed' }[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:11.3415894Z [36;1mgit checkout --detach FETCH_HEAD[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:11.3416531Z [36;1mif ($LASTEXITCODE) { throw 'git checkout failed' }[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:11.5275192Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:11.5276293Z ##[endgroup]
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:12.0643252Z Initialized empty Git repository in D:/a/exspecso/exspecso/.git/
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:12.7700662Z From https://github.com/ishk-sftckz/exspecso
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:12.7702867Z  * branch            5a6f7938e27c4864b1138de30b49ce06f1d78741 -> FETCH_HEAD
+windows	Fetch this exact public task snapshot	2026-08-28T05:07:12.8483488Z HEAD is now at 5a6f793 test(01-10): exercise Windows parity before implementation
+windows	Inspect the pinned native Windows SDK and toolchain	﻿2026-08-28T05:07:12.9986100Z ##[group]Run ./native/windows-preflight.ps1
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:12.9986725Z [36;1m./native/windows-preflight.ps1[0m
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:13.0084498Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:13.0084951Z ##[endgroup]
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4836707Z {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4837323Z   "imageVersion": "20260824.214.3",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4837800Z   "imageOS": "win25-vs2026",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4838694Z   "architecture": "X64",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4839197Z   "caption": "Microsoft Windows Server 2025 Datacenter",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4839742Z   "version": "10.0.26100",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4840044Z   "build": "26100",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4840310Z   "ubr": 33296,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4840604Z   "displayVersion": "24H2",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4841003Z   "filesystem": "NTFS",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4841315Z   "visualStudio": [
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4841953Z     {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4842251Z       "installationVersion": "18.9.12112.369",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4842899Z       "installationPath": "C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise"
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4846446Z     }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4846734Z   ],
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4847017Z   "sdkVersion": "10.0.26100.0",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4847405Z   "msvcVersion": "14.44.35207"
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.4847746Z }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.6239423Z [31;1mException: [0mD:\a\exspecso\exspecso\native\windows-preflight.ps1:21[0m
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.6240210Z [31;1m[0m[36;1mLine |[0m
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.6240982Z [31;1m[0m[36;1m[36;1m  21 | [0m … .filesystem -ne 'NTFS') { [36;1mthrow 'Approved Windows runner pin drift'[0m }[0m
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.6242102Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.6242758Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mApproved Windows runner pin drift[0m
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:07:16.7054969Z ##[error]Process completed with exit code 1.
+windows	Preserve actual Windows observations	﻿2026-08-28T05:07:16.7294039Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7301280Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7301710Z with:
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7301928Z   name: containment-windows-parity
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7302273Z   path: windows-preflight/
+windows	Preserve actual Windows observations	windows-red-results.json
+windows	Preserve actual Windows observations	
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7302600Z   if-no-files-found: error
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7302823Z   retention-days: 7
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7303023Z   compression-level: 6
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7303230Z   overwrite: false
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7303428Z   include-hidden-files: false
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.7303650Z ##[endgroup]
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.9726347Z (node:2336) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.9728057Z (Use `node --trace-deprecation ...` to show where the warning was created)
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.9800638Z Multiple search paths detected. Calculating the least common ancestor of all paths
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.9804581Z The least common ancestor is D:\a\exspecso\exspecso. This will be the root directory of the artifact
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.9805619Z With the provided path, there will be 1 file uploaded
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.9811046Z Artifact name is valid!
+windows	Preserve actual Windows observations	2026-08-28T05:07:16.9813068Z Root directory input is valid!
+windows	Preserve actual Windows observations	2026-08-28T05:07:17.2180431Z Beginning upload of artifact content to blob storage
+windows	Preserve actual Windows observations	2026-08-28T05:07:17.2394266Z (node:2336) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+windows	Preserve actual Windows observations	2026-08-28T05:07:17.2605711Z Uploaded bytes 480
+windows	Preserve actual Windows observations	2026-08-28T05:07:17.2751354Z Finished uploading artifact content to blob storage!
+windows	Preserve actual Windows observations	2026-08-28T05:07:17.2752411Z SHA256 digest of uploaded artifact zip is 48102c0a7ce57e006685591291d737c4a2cac4c85c14295b19ec4621bd9f3b9e
+windows	Preserve actual Windows observations	2026-08-28T05:07:17.2755284Z Finalizing artifact upload
+windows	Preserve actual Windows observations	2026-08-28T05:07:17.4644631Z Artifact containment-windows-parity.zip successfully finalized. Artifact ID 9674970864
+windows	Preserve actual Windows observations	2026-08-28T05:07:17.4646338Z Artifact containment-windows-parity has been successfully uploaded! Final size is 480 bytes. Artifact ID is 9674970864
+windows	Preserve actual Windows observations	2026-08-28T05:07:17.4656931Z Artifact download URL: https://github.com/ishk-sftckz/exspecso/actions/runs/33143790594/artifacts/9674970864
+windows	Complete job	﻿2026-08-28T05:07:17.4944188Z Cleaning up orphan processes
+windows	Complete job	2026-08-28T05:07:17.5305630Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
