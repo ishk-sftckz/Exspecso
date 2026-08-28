@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { link, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
+import { link, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -88,17 +88,24 @@ describe("packed Codex initializer tracer", () => {
       const externalTarget = site === "ancestor" ? join(outside, "exspecso-start", "SKILL.md") : join(outside, "SKILL.md");
       if (site === "ancestor") await mkdir(join(outside, "exspecso-start"));
       await writeFile(externalTarget, "external sentinel\n");
+      const outsideInventory = await readdir(outside, { recursive: true });
       const installed = historical ? undefined : await installContainedPackage("test");
       if (installed) temporaryPaths.push(installed.directory);
       const moved = join(fixture.root, "held-original");
+      const relocationDirectory = site === "leaf" ? undefined : join(fixture.root, site === "parent" ? ".agents/skills/exspecso-start" : ".agents/skills");
       const attack = async () => {
         if (site === "leaf") {
           await rename(adapter, moved);
           await symlink(externalTarget, adapter);
         } else {
-          const directory = join(fixture.root, site === "parent" ? ".agents/skills/exspecso-start" : ".agents/skills");
-          await rename(directory, moved);
-          await symlink(outside, directory, "dir");
+          try {
+            await rename(relocationDirectory!, moved);
+          } catch (error) {
+            const blocked = error as NodeJS.ErrnoException & { stage?: string };
+            blocked.stage = "directory-rename";
+            throw blocked;
+          }
+          await symlink(outside, relocationDirectory!, "dir");
         }
       };
       if (historical) {
@@ -111,7 +118,7 @@ describe("packed Codex initializer tracer", () => {
       }
       if (!installed || !release) throw new Error("Missing installed package");
       expect(installed.packageInventory).toEqual(release.installed.packageInventory);
-      const result = await runAtNativeReplacement(installed.cli, fixture.root, attack, installed);
+      const result = await runAtNativeReplacement(installed.cli, fixture.root, attack, installed, { allowBlockedRelocation: site !== "leaf" });
       expect(result.record.op).toBe("replace:before");
       expect(await readFile(externalTarget, "utf8")).toBe("external sentinel\n");
       expect(installed.provider).toContain(join("node_modules", "exspecso", "dist", "native"));
@@ -125,15 +132,20 @@ describe("packed Codex initializer tracer", () => {
         // relocation. This is recorded as an unscheduled limitation case, not
         // as evidence that a moved object followed the held authority.
         expect(result.attackBlocked.code).toBe("EPERM");
+        expect(result.attackBlocked.stage).toBe("directory-rename");
         expect(result.exitCode).toBe(0);
+        expect((await lstat(relocationDirectory!)).isDirectory()).toBe(true);
+        await expect(lstat(moved)).rejects.toThrow();
         expect(await readFile(externalTarget, "utf8")).toBe("external sentinel\n");
+        expect(await readdir(outside, { recursive: true })).toEqual(outsideInventory);
+        expect(await readFile(adapter, "utf8")).toContain("exspecso-start");
       } else {
         // Approved limitation: the held original object can be written after relocation.
         expect(result.exitCode).toBe(0);
         const heldTarget = site === "parent" ? join(moved, "SKILL.md") : join(moved, "exspecso-start", "SKILL.md");
         expect(await readFile(heldTarget, "utf8")).toContain("exspecso-start");
       }
-      console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", limitation: site !== "leaf", attackScheduled: !result.attackBlocked, attackBlocked: result.attackBlocked, provider: installed.provider, providerSHA256: installed.sha256, providerManifest: installed.manifest, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, packageInventory: installed.packageInventory, reached: result.record, exitCode: result.exitCode }));
+      console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", attackOutcome: result.attackBlocked ? "blocked-before-relocation" : "scheduled", relocationPerformed: !result.attackBlocked, movedObjectOracle: result.attackBlocked ? "not exercised" : site === "leaf" ? "not applicable" : "held-object relocation observed", attackBlocked: result.attackBlocked, provider: installed.provider, providerSHA256: installed.sha256, providerManifest: installed.manifest, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, packageInventory: installed.packageInventory, reached: result.record, exitCode: result.exitCode }));
     }, 60_000);
   }
 
