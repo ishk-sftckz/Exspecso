@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { sha256 } from "../../src/adapters/managed-file.js";
 import { buildInitPlan } from "../../src/init/plan.js";
 import { assertSafeTransactionPaths } from "../../src/filesystem/safe-path.js";
-import { commitTransaction, readTransactionJournal, stagingRelativePath, type PromotionFaultPoint } from "../../src/filesystem/transaction.js";
+import { commitTransaction, readTransactionJournal, stagingRelativePath, type CommitTransactionOptions, type PromotionFaultPoint } from "../../src/filesystem/transaction.js";
 import { recoverInterruptedTransaction } from "../../src/filesystem/recovery.js";
 import { acquireInitOwnership, lockRelativePath, releaseInitOwnership } from "../../src/filesystem/ownership.js";
 import { openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
@@ -140,6 +140,25 @@ describe("journaled init transaction", () => {
     } finally {
       filesystem.close();
     }
+  });
+
+  it("staging keeps bytes under the held operational directory after its pathname is substituted", async () => {
+    const fixture = await useFixture();
+    const outside = await useFixture();
+    const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });
+    let reached = false;
+    const options = {
+      onBeforeStaging: async () => {
+        reached = true;
+        await rename(join(fixture.root, ".exspecso"), join(fixture.root, "held-operational"));
+        await symlink(outside.root, join(fixture.root, ".exspecso"), "dir");
+      },
+    } as CommitTransactionOptions & { readonly onBeforeStaging: () => Promise<void> };
+
+    await expect(commitTransaction(plan, options)).resolves.toMatchObject({ kind: "committed" });
+    expect(reached).toBe(true);
+    await expect(readdir(outside.root)).resolves.toEqual([".git"]);
+    await expect(readFile(join(fixture.root, "held-operational", ".staging"), "utf8")).rejects.toThrow();
   });
 
   it("rejects traversal, external targets, symlinked ancestors, and stale preimages before staging", async () => {
