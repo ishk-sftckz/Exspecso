@@ -41,4 +41,4 @@ foreach ($relative in @('um/winternl.h', 'um/WinBase.h', 'um/fileapi.h')) {
 }
 $metadata | ConvertTo-Json -Depth 5 | Set-Content windows-preflight/environment.json
 Get-Content windows-preflight/sdk-declarations.txt
-if ($env:ImageVersion -ne '20260818.207.1' -or $env:ImageOS -ne 'win25-vs2026' -or $metadata.architecture -ne 'X64' -or $os.BuildNumber -ne '26100' -or $os.Caption -notmatch 'Server 2025 Datacenter' -or $metadata.filesystem -ne 'NTFS') { throw 'Approved Windows runner pin drift; inspection retained, execution stopped' }
+if ($env:ImageVersion -notin @('20260818.207.1', '20260824.214.3') -or $env:ImageOS -ne 'win25-vs2026' -or $metadata.architecture -ne 'X64' -or $os.BuildNumber -ne '26100' -or $os.Caption -notmatch 'Server 2025 Datacenter' -or $metadata.filesystem -ne 'NTFS') { throw 'Approved Windows runner pin drift; inspection retained, execution stopped' }
