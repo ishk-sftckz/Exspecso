@@ -31,7 +31,7 @@ foreach ($relative in @('um/winternl.h', 'um/WinBase.h', 'um/fileapi.h')) {
   if (!(Test-Path $header)) { throw "Missing SDK header $header" }
   $metadata.headers += @{ path = $relative; sha256 = (Get-FileHash $header -Algorithm SHA256).Hash.ToLowerInvariant() }
   $lines = Get-Content $header
-  $patterns = 'NtCreateFile\(|NtSetInformationFile\(|_OBJECT_ATTRIBUTES|_FILE_RENAME_INFO|_FILE_DISPOSITION_INFO|_FILE_ID_INFO|FILE_OPEN_REPARSE_POINT|FILE_SYNCHRONOUS_IO_NONALERT|FILE_OPEN_IF|FileRenameInformation|GetVolumeInformationByHandleW'
+  $patterns = 'NtCreateFile|NtSetInformationFile|_OBJECT_ATTRIBUTES|_FILE_RENAME_INFO|_FILE_DISPOSITION_INFO|_FILE_ID_INFO|FILE_OPEN_REPARSE_POINT|FILE_SYNCHRONOUS_IO_NONALERT|FILE_OPEN_IF|FileRenameInformation|FILE_RENAME_FLAG|FileRenameInfoEx|GetVolumeInformationByHandleW'
   $matches = Select-String -Path $header -Pattern $patterns
   foreach ($match in $matches) {
     "--- $relative line $($match.LineNumber) ---" | Add-Content windows-preflight/sdk-declarations.txt

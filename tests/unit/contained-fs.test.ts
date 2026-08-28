@@ -1,5 +1,7 @@
 import { link, mkdir, readFile, rename, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
 import { afterEach, describe, expect, it } from "vitest";
 import { openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
@@ -111,5 +113,81 @@ describe("contained filesystem provider", () => {
     privateFile.write(Buffer.from("valid"));
     expect(privateFile.read().toString()).toBe("valid");
     expect(await readFile(join(directory.root, "existing"), "utf8")).toBe("preserved");
+  });
+
+  it("W-01 rejects junctions, alternate streams, device aliases and wrong entry kinds", async () => {
+    const directory = await fixture();
+    const outside = await fixture();
+    await symlink(outside.root, join(directory.root, "junction"), "junction");
+    await writeFile(join(directory.root, "ordinary"), "preserved");
+    const fs = keep(openContainedFilesystem(directory.root));
+    const child = keep(fs.root.openDirectory("child", true));
+    expect(() => fs.root.openDirectory("junction")).toThrow();
+    expect(() => fs.root.removeDirectory("junction")).toThrow();
+    for (const name of ["ordinary:secret", "CON.txt", "COM1", "LPT9.log", "COM¹", "LPT².txt", "COM³"]) {
+      expect(() => fs.root.createFile(name)).toThrow();
+    }
+    expect(() => fs.root.openFile("child")).toThrow();
+    expect(() => fs.root.openDirectory("ordinary")).toThrow();
+    expect(() => fs.root.unlink("child")).toThrow();
+    expect(() => fs.root.removeDirectory("ordinary")).toThrow();
+    const temporary = keep(child.createFile("temporary"));
+    expect(() => child.replace(temporary, "..")).toThrow();
+    expect(await readFile(join(directory.root, "ordinary"), "utf8")).toBe("preserved");
+    expect(fs.root.list()).toEqual([".git", "child", "junction", "ordinary"]);
+  });
+
+  it("W-02 replaces with an open reader while preserving the old object and full identity observation", async () => {
+    const directory = await fixture();
+    await writeFile(join(directory.root, "target"), "before");
+    const fs = keep(openContainedFilesystem(directory.root));
+    const old = keep(fs.root.openFile("target"));
+    const before = old.stat();
+    const temporary = keep(fs.root.createFile("temporary"));
+    temporary.write(Buffer.from("after"));
+    fs.root.replace(temporary, "target");
+    const current = keep(fs.root.openFile("target"));
+    expect(old.read().toString()).toBe("before");
+    expect(old.stat()).toEqual(before);
+    expect(current.read().toString()).toBe("after");
+    expect(current.stat().inode).not.toBe(before.inode);
+    expect(current.stat().device).toBe(before.device);
+    expect(() => temporary.write(Buffer.from("late"))).toThrow();
+    expect(() => fs.root.openFile("absent")).toThrow(/EXSPECSO_CONTAINMENT_ENOENT/);
+  });
+
+  it("W-02 rejects a substituted private sibling without replacing the intended target", async () => {
+    const directory = await fixture();
+    await writeFile(join(directory.root, "target"), "before");
+    const fs = keep(openContainedFilesystem(directory.root));
+    const temporary = keep(fs.root.createFile("temporary"));
+    temporary.write(Buffer.from("ours"));
+    await rename(join(directory.root, "temporary"), join(directory.root, "held"));
+    await writeFile(join(directory.root, "temporary"), "substituted");
+    expect(() => fs.root.replace(temporary, "target")).toThrow();
+    expect(await readFile(join(directory.root, "target"), "utf8")).toBe("before");
+    expect(await readFile(join(directory.root, "temporary"), "utf8")).toBe("substituted");
+    expect(temporary.read().toString()).toBe("ours");
+  });
+
+  // Windows sharing modes have no POSIX equivalent; this case belongs only to the native Windows row.
+  if (process.platform === "win32") it("W-02 reports a real sharing conflict without modifying either file", async () => {
+    const directory = await fixture();
+    await writeFile(join(directory.root, "target"), "before");
+    const fs = keep(openContainedFilesystem(directory.root));
+    const temporary = keep(fs.root.createFile("temporary"));
+    temporary.write(Buffer.from("after"));
+    const program = "$s=[IO.File]::Open($env:EXSPECSO_LOCK_TARGET,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::Read);try{[Console]::WriteLine('locked');[Console]::ReadLine()|Out-Null}finally{$s.Dispose()}";
+    const locker = spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", Buffer.from(program, "utf16le").toString("base64")], {
+      env: { ...process.env, EXSPECSO_LOCK_TARGET: join(directory.root, "target") }, stdio: ["pipe", "pipe", "pipe"],
+    });
+    const exited = once(locker, "exit");
+    try {
+      const [chunk] = await Promise.race([once(locker.stdout, "data"), exited.then(() => { throw new Error("Windows sharing fixture exited before acquiring its lock"); })]);
+      expect(String(chunk).trim()).toBe("locked");
+      expect(() => fs.root.replace(temporary, "target")).toThrow(/EXSPECSO_CONTAINMENT/);
+      expect(await readFile(join(directory.root, "target"), "utf8")).toBe("before");
+      expect(temporary.read().toString()).toBe("after");
+    } finally { locker.stdin.end("\n"); await exited; }
   });
 });
