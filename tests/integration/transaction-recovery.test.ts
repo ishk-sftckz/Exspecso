@@ -155,10 +155,10 @@ describe("journaled init transaction", () => {
       },
     } as CommitTransactionOptions & { readonly onBeforeStaging: () => Promise<void> };
 
-    await expect(commitTransaction(plan, options)).resolves.toMatchObject({ kind: "committed" });
+    await expect(commitTransaction(plan, options)).resolves.toMatchObject({ kind: "failed" });
     expect(reached).toBe(true);
     await expect(readdir(outside.root)).resolves.toEqual([".git"]);
-    await expect(readFile(join(fixture.root, "held-operational", ".staging"), "utf8")).rejects.toThrow();
+    await expect(readdir(join(fixture.root, "held-operational", ".staging"))).resolves.toHaveLength(1);
   });
 
   it("rejects traversal, external targets, symlinked ancestors, and stale preimages before staging", async () => {

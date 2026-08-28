@@ -160,11 +160,11 @@ export async function runInit(input: InitInput): Promise<number> {
     }
     const transaction = await commitTransaction(plan, {
       ownership: acquisition.ownership,
-      async validateStaged(stageRoot) {
+      async validateStaged(stage) {
         const stagedConfigTarget = plan.writes.find(({ relativePath }) => relativePath === ".exspecso/exspecso.config.json");
         if (stagedConfigTarget === undefined) return;
         try {
-          const stagedConfig = capability.reader.read(repositoryComponents(repositoryRoot, `${stageRoot}${sep}files${sep}${stagedConfigTarget.relativePath}`)).toString("utf8");
+          const stagedConfig = stage.read(["files", ...stagedConfigTarget.relativePath.split("/")]).toString("utf8");
           if (!projectConfigSchema.safeParse(JSON.parse(stagedConfig)).success) throw new Error("invalid staged config");
         } catch {
           throw new Error("EXSPECSO_INIT_STAGED_CONFIG_INVALID");
