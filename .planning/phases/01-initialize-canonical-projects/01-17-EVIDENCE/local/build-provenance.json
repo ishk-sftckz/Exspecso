@@ -1,0 +1,43 @@
+{
+  "supportRowId": "ENV-MA25",
+  "buildCommit": "f9765ff1e89b584f9c0612e607374b53cd3cc18a",
+  "variant": "release",
+  "sources": {
+    "native/contained-fs.cc": "f56a4172134c723ebcf2f1ebd20a5c14cdf5e597bd1568cc0e13c7085ca68f18",
+    "native/contained-fs-posix.cc": "b26f5a0cae2cc19036e8f9fae97ccd3f739e4cb62fbf9dbbeb031ed24c136d13",
+    "native/contained-fs-win.cc": "3811573db8153b9126f2cd274272f75efedc50c45ce7898dd005fb3964318d42",
+    "native/build.mjs": "8ca4bdb3b52f69c4dfc7d08e0772056559c40843ac6fca34c42e7815412d9b3c",
+    "native/support-matrix.json": "f9ca3f8490a922e86a5b385d8087c116c4999e1d8839384816fec9ae20910d72",
+    "native/windows-preflight.ps1": "ac5d0e940dc0df03fff044803929b0df72714c71b2c5a4f44abe385cc1e9f5d3"
+  },
+  "headerHash": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+  "compiler": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+  "compilerVersion": "Apple clang version 17.0.0 (clang-1700.6.4.2)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin",
+  "developerDirectory": "/Library/Developer/CommandLineTools",
+  "sdk": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+  "sdkVersion": "26.2",
+  "sdkBuild": "25C58",
+  "osVersion": "26.5.1",
+  "osBuild": "25F80",
+  "args": [
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-fvisibility=hidden",
+    "-bundle",
+    "-undefined",
+    "dynamic_lookup",
+    "-isysroot",
+    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+    "-mmacosx-version-min=26.5.1",
+    "-DNAPI_VERSION=8",
+    "-DNODE_GYP_MODULE_NAME=contained_fs",
+    "-I",
+    "/var/folders/gb/rm0q4rln62b29shqvhmg3d5c0000gn/T/exspecso-native-build-MZH8oz/node-v20.19.0/include/node",
+    "/Users/ishk.sftckz/Projects/exspecso/native/contained-fs.cc",
+    "-o",
+    "/Users/ishk.sftckz/Projects/exspecso/dist/native/ENV-MA25/darwin-arm64/contained-fs.node"
+  ],
+  "binarySHA256": "d064680fae19b776b1ab941cb404757c4efd64afbf3b50d85a24b3e4c1c7eee8"
+}

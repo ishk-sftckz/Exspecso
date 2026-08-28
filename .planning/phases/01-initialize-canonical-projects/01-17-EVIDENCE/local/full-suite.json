@@ -1,0 +1,1786 @@
+{
+  "command": [
+    "npm",
+    "test",
+    "--",
+    "--run",
+    "--testTimeout",
+    "60000",
+    "--reporter=json",
+    "--outputFile",
+    "/var/folders/gb/rm0q4rln62b29shqvhmg3d5c0000gn/T/exspecso-env-ma25-k0jB15/vitest-full.json"
+  ],
+  "exitCode": 0,
+  "signal": null,
+  "vitest": {
+    "numTotalTestSuites": 28,
+    "numPassedTestSuites": 28,
+    "numFailedTestSuites": 0,
+    "numPendingTestSuites": 0,
+    "numTotalTests": 136,
+    "numPassedTests": 136,
+    "numFailedTests": 0,
+    "numPendingTests": 0,
+    "numTodoTests": 0,
+    "snapshot": {
+      "added": 0,
+      "failure": false,
+      "filesAdded": 0,
+      "filesRemoved": 0,
+      "filesRemovedList": [],
+      "filesUnmatched": 0,
+      "filesUpdated": 0,
+      "matched": 0,
+      "total": 0,
+      "unchecked": 0,
+      "uncheckedKeysByFile": [],
+      "unmatched": 0,
+      "updated": 0,
+      "didUpdate": false
+    },
+    "startTime": 1787925302264,
+    "success": true,
+    "testResults": [
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "installed containment operation grid"
+            ],
+            "fullName": "installed containment operation grid RACE-01 through RACE-06 bind every declared operation to a fixed native boundary",
+            "status": "passed",
+            "title": "RACE-01 through RACE-06 bind every declared operation to a fixed native boundary",
+            "duration": 1.648083000000014,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "installed containment operation grid"
+            ],
+            "fullName": "installed containment operation grid requires one real observed Node lane per matrix record instead of stamping unrun lanes",
+            "status": "passed",
+            "title": "requires one real observed Node lane per matrix record instead of stamping unrun lanes",
+            "duration": 2.227249999999998,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925303365,
+        "endTime": 1787925303369.2273,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/integration/containment-races.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer PK-03 prebuilt install runs a scripts-disabled tarball offline outside the checkout for root and nested CLI runs",
+            "status": "passed",
+            "title": "PK-03 prebuilt install runs a scripts-disabled tarball offline outside the checkout for root and nested CLI runs",
+            "duration": 14083.221291,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer PK-04 provider unavailable rejects missing, corrupt, or manifest-swapped providers before exact repository mutation",
+            "status": "passed",
+            "title": "PK-04 provider unavailable rejects missing, corrupt, or manifest-swapped providers before exact repository mutation",
+            "duration": 16527.589916999998,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer contained promotion tracer reaches the native leaf substitution boundary",
+            "status": "passed",
+            "title": "contained promotion tracer reaches the native leaf substitution boundary",
+            "duration": 9764.761917000003,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer contained promotion tracer reaches the native parent substitution boundary",
+            "status": "passed",
+            "title": "contained promotion tracer reaches the native parent substitution boundary",
+            "duration": 9343.793708999998,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer contained promotion tracer reaches the native ancestor substitution boundary",
+            "status": "passed",
+            "title": "contained promotion tracer reaches the native ancestor substitution boundary",
+            "duration": 9267.510582999996,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer contained promotion tracer rejects incomplete test activation before replacement",
+            "status": "passed",
+            "title": "contained promotion tracer rejects incomplete test activation before replacement",
+            "duration": 8320.130875000003,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer contained promotion tracer preserves an external hardlink during an additive rerun",
+            "status": "passed",
+            "title": "contained promotion tracer preserves an external hardlink during an additive rerun",
+            "duration": 12804.114875,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer creates only the canonical foundation and Codex adapter",
+            "status": "passed",
+            "title": "creates only the canonical foundation and Codex adapter",
+            "duration": 7370.905666999999,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer returns an error before writing when the selected agent is unsupported",
+            "status": "passed",
+            "title": "returns an error before writing when the selected agent is unsupported",
+            "duration": 6062.150333999991,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer resolves the containing Git root before initialization",
+            "status": "passed",
+            "title": "resolves the containing Git root before initialization",
+            "duration": 1.2355839999945601,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer initializes at the nearest containing Git root from a deep nested cwd",
+            "status": "passed",
+            "title": "initializes at the nearest containing Git root from a deep nested cwd",
+            "duration": 6043.386291999996,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer uses a nested Git repository instead of its parent repository",
+            "status": "passed",
+            "title": "uses a nested Git repository instead of its parent repository",
+            "duration": 7479.172042000006,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "packed Codex initializer tracer"
+            ],
+            "fullName": "packed Codex initializer tracer reports a repairable no-repository diagnostic without writes",
+            "status": "passed",
+            "title": "reports a repairable no-repository diagnostic without writes",
+            "duration": 5695.866042000009,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302674,
+        "endTime": 1787925415438.866,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/integration/init-codex-tracer.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "skill migration preflight"
+            ],
+            "fullName": "skill migration preflight plans only the selected pristine legacy claude migration and binds its full preimage",
+            "status": "passed",
+            "title": "plans only the selected pristine legacy claude migration and binds its full preimage",
+            "duration": 2033.558292,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "skill migration preflight"
+            ],
+            "fullName": "skill migration preflight plans only the selected pristine legacy codex migration and binds its full preimage",
+            "status": "passed",
+            "title": "plans only the selected pristine legacy codex migration and binds its full preimage",
+            "duration": 976.2003750000003,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "skill migration preflight"
+            ],
+            "fullName": "skill migration preflight requires scoped replacement for conflicting legacy and current claude skills",
+            "status": "passed",
+            "title": "requires scoped replacement for conflicting legacy and current claude skills",
+            "duration": 259.7154169999999,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "skill migration preflight"
+            ],
+            "fullName": "skill migration preflight requires scoped replacement for conflicting legacy and current codex skills",
+            "status": "passed",
+            "title": "requires scoped replacement for conflicting legacy and current codex skills",
+            "duration": 286.65654099999983,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "managed adapter ownership"
+            ],
+            "fullName": "managed adapter ownership classifies a missing target and an unchanged generated adapter",
+            "status": "passed",
+            "title": "classifies a missing target and an unchanged generated adapter",
+            "duration": 0.391624999999749,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "managed adapter ownership"
+            ],
+            "fullName": "managed adapter ownership preserves a changed owned adapter and returns a deterministic concise diff",
+            "status": "passed",
+            "title": "preserves a changed owned adapter and returns a deterministic concise diff",
+            "duration": 0.284291999999823,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "managed adapter ownership"
+            ],
+            "fullName": "managed adapter ownership does not grant ownership to unowned or malformed headers",
+            "status": "passed",
+            "title": "does not grant ownership to unowned or malformed headers",
+            "duration": 0.14600000000018554,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "managed adapter ownership"
+            ],
+            "fullName": "managed adapter ownership writes only a self-contained version and original body fingerprint",
+            "status": "passed",
+            "title": "writes only a self-contained version and original body fingerprint",
+            "duration": 0.15308299999969677,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "additive initialization reruns"
+            ],
+            "fullName": "additive initialization reruns parses replacement approval as a strict repeatable option",
+            "status": "passed",
+            "title": "parses replacement approval as a strict repeatable option",
+            "duration": 0.8929169999996702,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "additive initialization reruns"
+            ],
+            "fullName": "additive initialization reruns unions a new selected agent without changing project identity, constitution, or unselected adapter bytes",
+            "status": "passed",
+            "title": "unions a new selected agent without changing project identity, constitution, or unselected adapter bytes",
+            "duration": 862.8360000000002,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "additive initialization reruns"
+            ],
+            "fullName": "additive initialization reruns migrates a pristine legacy claude adapter and remains idempotent while preserving canonical artifacts",
+            "status": "passed",
+            "title": "migrates a pristine legacy claude adapter and remains idempotent while preserving canonical artifacts",
+            "duration": 1235.913125,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "additive initialization reruns"
+            ],
+            "fullName": "additive initialization reruns migrates a pristine legacy codex adapter and remains idempotent while preserving canonical artifacts",
+            "status": "passed",
+            "title": "migrates a pristine legacy codex adapter and remains idempotent while preserving canonical artifacts",
+            "duration": 1232.8466670000007,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "additive initialization reruns"
+            ],
+            "fullName": "additive initialization reruns reports every selected conflict and writes nothing",
+            "status": "passed",
+            "title": "reports every selected conflict and writes nothing",
+            "duration": 635.380666,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "additive initialization reruns"
+            ],
+            "fullName": "additive initialization reruns replaces only an explicitly selected conflicting adapter",
+            "status": "passed",
+            "title": "replaces only an explicitly selected conflicting adapter",
+            "duration": 908.3085419999998,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "additive initialization reruns"
+            ],
+            "fullName": "additive initialization reruns rejects an approval whose planned preimage became stale",
+            "status": "passed",
+            "title": "rejects an approval whose planned preimage became stale",
+            "duration": 539.1108330000006,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302778,
+        "endTime": 1787925311750.1108,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/integration/init-rerun.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "minimal persistent initialization artifacts"
+            ],
+            "fullName": "minimal persistent initialization artifacts keeps fresh and repeated initialization to the two canonical files plus selected adapter",
+            "status": "passed",
+            "title": "keeps fresh and repeated initialization to the two canonical files plus selected adapter",
+            "duration": 2041.4376660000003,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302779,
+        "endTime": 1787925304820.4377,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/integration/minimal-artifacts.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction ownership capabilities publish exclusively inside the originally held operational directory",
+            "status": "passed",
+            "title": "ownership capabilities publish exclusively inside the originally held operational directory",
+            "duration": 690.760417,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction staging keeps bytes under the held operational directory after its pathname is substituted",
+            "status": "passed",
+            "title": "staging keeps bytes under the held operational directory after its pathname is substituted",
+            "duration": 889.0214170000002,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction rejects traversal, external targets, symlinked ancestors, and stale preimages before staging",
+            "status": "passed",
+            "title": "rejects traversal, external targets, symlinked ancestors, and stale preimages before staging",
+            "duration": 1061.1764589999998,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction treats an empty plan as a true no-op without operational debris",
+            "status": "passed",
+            "title": "treats an empty plan as a true no-op without operational debris",
+            "duration": 0.99279099999967,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction excludes a second writer while the first has a prepared journal",
+            "status": "passed",
+            "title": "excludes a second writer while the first has a prepared journal",
+            "duration": 1119.9818749999995,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction ownership race: direct recovery leaves a live writer's evidence byte-identical",
+            "status": "passed",
+            "title": "ownership race: direct recovery leaves a live writer's evidence byte-identical",
+            "duration": 669.0046670000002,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction ownership race: init loses to a writer that starts after its idle observation",
+            "status": "passed",
+            "title": "ownership race: init loses to a writer that starts after its idle observation",
+            "duration": 676.2010829999999,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction ownership race: competing stale reclaimers cannot remove a newer live owner",
+            "status": "passed",
+            "title": "ownership race: competing stale reclaimers cannot remove a newer live owner",
+            "duration": 378.43775000000005,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction reclaims ownership only after a killed process has actually exited",
+            "status": "passed",
+            "title": "reclaims ownership only after a killed process has actually exited",
+            "duration": 766.1254170000002,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction preserves legacy regular-file ownership markers for manual inspection",
+            "status": "passed",
+            "title": "preserves legacy regular-file ownership markers for manual inspection",
+            "duration": 235.98233400000026,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction preserves partial candidates and unexpected owner entries without treating them as stale",
+            "status": "passed",
+            "title": "preserves partial candidates and unexpected owner entries without treating them as stale",
+            "duration": 370.60549999999967,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction treats a live PID as busy even when a dead owner record is otherwise well formed",
+            "status": "passed",
+            "title": "treats a live PID as busy even when a dead owner record is otherwise well formed",
+            "duration": 204.61616700000013,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction removes a complete dead private candidate only after publishing its own lease",
+            "status": "passed",
+            "title": "removes a complete dead private candidate only after publishing its own lease",
+            "duration": 216.76987499999996,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction stages, hashes, journals deterministic promotion order, and retains evidence after each injected promotion fault",
+            "status": "passed",
+            "title": "stages, hashes, journals deterministic promotion order, and retains evidence after each injected promotion fault",
+            "duration": 937.265457999999,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction records write-ahead promotion intent and leaves an external hard-link alias on the old inode",
+            "status": "passed",
+            "title": "records write-ahead promotion intent and leaves an external hard-link alias on the old inode",
+            "duration": 206.75387500000033,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction recovers every promotion step after injected exception and controlled interruption without accepting a mixed set",
+            "status": "passed",
+            "title": "recovers every promotion step after injected exception and controlled interruption without accepting a mixed set",
+            "duration": 2976.3905000000013,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction restores an in-flight schema-2 replacement and makes the next recovery a no-op",
+            "status": "passed",
+            "title": "restores an in-flight schema-2 replacement and makes the next recovery a no-op",
+            "duration": 602.9190419999995,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction restarts identified cleanup after an already-removed staged copy",
+            "status": "passed",
+            "title": "restarts identified cleanup after an already-removed staged copy",
+            "duration": 463.74841600000036,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction preserves a cleaning journal when its stage contains an unlisted entry",
+            "status": "passed",
+            "title": "preserves a cleaning journal when its stage contains an unlisted entry",
+            "duration": 492.66799999999967,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction recovers every promotion step after an externally killed CLI child",
+            "status": "passed",
+            "title": "recovers every promotion step after an externally killed CLI child",
+            "duration": 2789.577416,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "journaled init transaction"
+            ],
+            "fullName": "journaled init transaction fails closed for tampered journal, hash, and symlink evidence",
+            "status": "passed",
+            "title": "fails closed for tampered journal, hash, and symlink evidence",
+            "duration": 688.7857920000006,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302794,
+        "endTime": 1787925319232.786,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/integration/transaction-recovery.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation reports an actual provider failure before any ownership or staging write",
+            "status": "passed",
+            "title": "reports an actual provider failure before any ownership or staging write",
+            "duration": 3100.274042,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation rejects an invalid JSON parent before init writes anything",
+            "status": "passed",
+            "title": "rejects an invalid JSON parent before init writes anything",
+            "duration": 455.0500830000001,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation returns every independent config schema error with actionable diagnostics",
+            "status": "passed",
+            "title": "returns every independent config schema error with actionable diagnostics",
+            "duration": 2.5651660000003176,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation aggregates unknown parents and duplicate IDs alongside config errors",
+            "status": "passed",
+            "title": "aggregates unknown parents and duplicate IDs alongside config errors",
+            "duration": 222.85654200000045,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation aggregates independent invalid declarations once alongside config, duplicate, and parent errors",
+            "status": "passed",
+            "title": "aggregates independent invalid declarations once alongside config, duplicate, and parent errors",
+            "duration": 228.34170799999993,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation reports malformed canonical JSON separately from the project configuration parser",
+            "status": "passed",
+            "title": "reports malformed canonical JSON separately from the project configuration parser",
+            "duration": 212.64200000000073,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation blocks init for every declared invalid JSON shape without mutating the fixture tree",
+            "status": "passed",
+            "title": "blocks init for every declared invalid JSON shape without mutating the fixture tree",
+            "duration": 222.75937499999964,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation reports malformed JSON through a stable parse diagnostic without a stack trace",
+            "status": "passed",
+            "title": "reports malformed JSON through a stable parse diagnostic without a stack trace",
+            "duration": 0.4025000000001455,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation blocks init before planning writes and leaves directly edited artifacts byte unchanged",
+            "status": "passed",
+            "title": "blocks init before planning writes and leaves directly edited artifacts byte unchanged",
+            "duration": 199.14416700000038,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "direct-edit validation"
+            ],
+            "fullName": "direct-edit validation lists every duplicate and prevents resolution or mutation",
+            "status": "passed",
+            "title": "lists every duplicate and prevents resolution or mutation",
+            "duration": 453.60054200000013,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302785,
+        "endTime": 1787925307883.6006,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/integration/validation-errors.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "native adapter registry"
+            ],
+            "fullName": "native adapter registry maps claude to its only native destination and invocation",
+            "status": "passed",
+            "title": "maps claude to its only native destination and invocation",
+            "duration": 1.93991699999998,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "native adapter registry"
+            ],
+            "fullName": "native adapter registry maps codex to its only native destination and invocation",
+            "status": "passed",
+            "title": "maps codex to its only native destination and invocation",
+            "duration": 0.1918749999999818,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "native adapter registry"
+            ],
+            "fullName": "native adapter registry maps opencode to its only native destination and invocation",
+            "status": "passed",
+            "title": "maps opencode to its only native destination and invocation",
+            "duration": 0.12583300000000008,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "native adapter registry"
+            ],
+            "fullName": "native adapter registry starts claude skills with native frontmatter and fingerprints metadata and instructions",
+            "status": "passed",
+            "title": "starts claude skills with native frontmatter and fingerprints metadata and instructions",
+            "duration": 1.6518330000000105,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "native adapter registry"
+            ],
+            "fullName": "native adapter registry starts codex skills with native frontmatter and fingerprints metadata and instructions",
+            "status": "passed",
+            "title": "starts codex skills with native frontmatter and fingerprints metadata and instructions",
+            "duration": 0.23295799999999645,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "native adapter registry"
+            ],
+            "fullName": "native adapter registry preserves the exact marker-first OpenCode format",
+            "status": "passed",
+            "title": "preserves the exact marker-first OpenCode format",
+            "duration": 0.07049999999998136,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "native adapter registry"
+            ],
+            "fullName": "native adapter registry writes only selected native targets and completion invocations for every non-empty subset",
+            "status": "passed",
+            "title": "writes only selected native targets and completion invocations for every non-empty subset",
+            "duration": 0.569500000000005,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "native adapter registry"
+            ],
+            "fullName": "native adapter registry renders concurrent selections without shared or widened state",
+            "status": "passed",
+            "title": "renders concurrent selections without shared or widened state",
+            "duration": 0.30658299999998917,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "frontmatter-aware managed fingerprints"
+            ],
+            "fullName": "frontmatter-aware managed fingerprints recognizes a pristine legacy layout without changing fingerprint semantics",
+            "status": "passed",
+            "title": "recognizes a pristine legacy layout without changing fingerprint semantics",
+            "duration": 0.11729199999996354,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "frontmatter-aware managed fingerprints"
+            ],
+            "fullName": "frontmatter-aware managed fingerprints recognizes a pristine native layout without changing fingerprint semantics",
+            "status": "passed",
+            "title": "recognizes a pristine native layout without changing fingerprint semantics",
+            "duration": 0.1150000000000091,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "frontmatter-aware managed fingerprints"
+            ],
+            "fullName": "frontmatter-aware managed fingerprints inserts the marker without changing any original content bytes",
+            "status": "passed",
+            "title": "inserts the marker without changing any original content bytes",
+            "duration": 0.08104200000002493,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "frontmatter-aware managed fingerprints"
+            ],
+            "fullName": "frontmatter-aware managed fingerprints protects metadata and instruction edits in the legacy layout",
+            "status": "passed",
+            "title": "protects metadata and instruction edits in the legacy layout",
+            "duration": 0.40929199999999355,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "frontmatter-aware managed fingerprints"
+            ],
+            "fullName": "frontmatter-aware managed fingerprints protects metadata and instruction edits in the native layout",
+            "status": "passed",
+            "title": "protects metadata and instruction edits in the native layout",
+            "duration": 0.2084159999999997,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "frontmatter-aware managed fingerprints"
+            ],
+            "fullName": "frontmatter-aware managed fingerprints rejects malformed and unsupported markers in the legacy layout",
+            "status": "passed",
+            "title": "rejects malformed and unsupported markers in the legacy layout",
+            "duration": 0.06974999999999909,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "frontmatter-aware managed fingerprints"
+            ],
+            "fullName": "frontmatter-aware managed fingerprints rejects malformed and unsupported markers in the native layout",
+            "status": "passed",
+            "title": "rejects malformed and unsupported markers in the native layout",
+            "duration": 0.04337499999996908,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "frontmatter-aware managed fingerprints"
+            ],
+            "fullName": "frontmatter-aware managed fingerprints never treats a marker in prose or incomplete frontmatter as proof of ownership",
+            "status": "passed",
+            "title": "never treats a marker in prose or incomplete frontmatter as proof of ownership",
+            "duration": 0.07816700000000765,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "frontmatter-aware managed fingerprints"
+            ],
+            "fullName": "frontmatter-aware managed fingerprints does not ignore duplicate markers when computing the fingerprint",
+            "status": "passed",
+            "title": "does not ignore duplicate markers when computing the fingerprint",
+            "duration": 0.051000000000044565,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302738,
+        "endTime": 1787925302744.2085,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/unit/adapters.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts accepts only the minimal D-01 project configuration fields",
+            "status": "passed",
+            "title": "accepts only the minimal D-01 project configuration fields",
+            "duration": 3.354208999999969,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts renders only the five D-03 constitution invariants",
+            "status": "passed",
+            "title": "renders only the five D-03 constitution invariants",
+            "duration": 0.46050000000002456,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts recognizes exactly the nine D-20 public ID families and rejects aliases",
+            "status": "passed",
+            "title": "recognizes exactly the nine D-20 public ID families and rejects aliases",
+            "duration": 694.255083,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts resolves ROADMAP only at its reserved path and isolates adjacent Task sections",
+            "status": "passed",
+            "title": "resolves ROADMAP only at its reserved path and isolates adjacent Task sections",
+            "duration": 1332.0862499999998,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts resolves every exact D-20 family to a canonical location",
+            "status": "passed",
+            "title": "resolves every exact D-20 family to a canonical location",
+            "duration": 1981.6113330000003,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts keeps identity stable across title changes and declaration reordering, but fails closed for duplicates",
+            "status": "passed",
+            "title": "keeps identity stable across title changes and declaration reordering, but fails closed for duplicates",
+            "duration": 623.034208,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts retains every explicitly declared invalid JSON id and parent shape as a diagnostic",
+            "status": "passed",
+            "title": "retains every explicitly declared invalid JSON id and parent shape as a diagnostic",
+            "duration": 220.42558399999962,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts keeps valid JSON definitions separate from explicit frontmatter diagnostics",
+            "status": "passed",
+            "title": "keeps valid JSON definitions separate from explicit frontmatter diagnostics",
+            "duration": 239.1678750000001,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts reports substituted artifact entries without reading their external bytes",
+            "status": "passed",
+            "title": "reports substituted artifact entries without reading their external bytes",
+            "duration": 0.6557080000002316,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts returns byte-equivalent locations from concurrent read-only resolution",
+            "status": "passed",
+            "title": "returns byte-equivalent locations from concurrent read-only resolution",
+            "duration": 2200.4150420000005,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts recognizes IDs without materializing deferred canonical artifacts",
+            "status": "passed",
+            "title": "recognizes IDs without materializing deferred canonical artifacts",
+            "duration": 207.3176250000006,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "canonical artifact contracts"
+            ],
+            "fullName": "canonical artifact contracts keeps fresh and repeated initialization limited to minimal artifacts and selected adapters",
+            "status": "passed",
+            "title": "keeps fresh and repeated initialization limited to minimal artifacts and selected adapters",
+            "duration": 917.2996660000008,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302780,
+        "endTime": 1787925311200.2996,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/unit/artifacts.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider PK-01 assembles one distinct provider manifest entry for each support row sharing a target",
+            "status": "passed",
+            "title": "PK-01 assembles one distinct provider manifest entry for each support row sharing a target",
+            "duration": 148.34808300000003,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider PK-02 rejects a missing or duplicate support-row release artifact before accepting a package",
+            "status": "passed",
+            "title": "PK-02 rejects a missing or duplicate support-row release artifact before accepting a package",
+            "duration": 233.78512500000005,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider accepts the declared address diagnostic before resolving a native support row",
+            "status": "passed",
+            "title": "accepts the declared address diagnostic before resolving a native support row",
+            "duration": 104.36979200000007,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider keeps the bounded native safety suite in every existing matrix runner",
+            "status": "passed",
+            "title": "keeps the bounded native safety suite in every existing matrix runner",
+            "duration": 4.103707999999983,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider accepts only the approved ext-family statfs magic after unsigned normalization",
+            "status": "passed",
+            "title": "accepts only the approved ext-family statfs magic after unsigned normalization",
+            "duration": 0.1531249999999318,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider NP-01 rejects invalid components and wrong types without creating entries",
+            "status": "passed",
+            "title": "NP-01 rejects invalid components and wrong types without creating entries",
+            "duration": 337.08795799999996,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider NP-01 rejects symlink directories and file leaves",
+            "status": "passed",
+            "title": "NP-01 rejects symlink directories and file leaves",
+            "duration": 448.5239170000002,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider NP-02 replaces an entry without modifying its hardlink alias",
+            "status": "passed",
+            "title": "NP-02 replaces an entry without modifying its hardlink alias",
+            "duration": 451.12137499999994,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider NP-02 binds a moved directory object and never follows its substituted name (limitation)",
+            "status": "passed",
+            "title": "NP-02 binds a moved directory object and never follows its substituted name (limitation)",
+            "duration": 437.51687500000025,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider NP-03 rejects replacement with a file from a different parent and closes idempotently",
+            "status": "passed",
+            "title": "NP-03 rejects replacement with a file from a different parent and closes idempotently",
+            "duration": 255.01754200000005,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider NP-01 creates exclusively and removes only the named file or empty directory",
+            "status": "passed",
+            "title": "NP-01 creates exclusively and removes only the named file or empty directory",
+            "duration": 257.998333,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider NP-03 rejects writes through a read-only capability and invalid buffers",
+            "status": "passed",
+            "title": "NP-03 rejects writes through a read-only capability and invalid buffers",
+            "duration": 241.71629200000007,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider W-01 rejects junctions, alternate streams, device aliases and wrong entry kinds",
+            "status": "passed",
+            "title": "W-01 rejects junctions, alternate streams, device aliases and wrong entry kinds",
+            "duration": 249.03375000000005,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider W-02 replaces with an open reader while preserving the old object and full identity observation",
+            "status": "passed",
+            "title": "W-02 replaces with an open reader while preserving the old object and full identity observation",
+            "duration": 245.30349999999999,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "contained filesystem provider"
+            ],
+            "fullName": "contained filesystem provider W-02 rejects a substituted private sibling without replacing the intended target",
+            "status": "passed",
+            "title": "W-02 rejects a substituted private sibling without replacing the intended target",
+            "duration": 263.6092090000002,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302645,
+        "endTime": 1787925306323.6091,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/unit/contained-fs.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate materializes every declared support row and named Node lane",
+            "status": "passed",
+            "title": "materializes every declared support row and named Node lane",
+            "duration": 1.8382910000000265,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate keeps native build prerequisites target-specific",
+            "status": "passed",
+            "title": "keeps native build prerequisites target-specific",
+            "duration": 0.8110409999999888,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects missing prior row final evidence",
+            "status": "passed",
+            "title": "rejects missing prior row final evidence",
+            "duration": 114.768167,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects missing ENV-MA25 final evidence",
+            "status": "passed",
+            "title": "rejects missing ENV-MA25 final evidence",
+            "duration": 121.66779099999997,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects missing Node 25.2.1 lane final evidence",
+            "status": "passed",
+            "title": "rejects missing Node 25.2.1 lane final evidence",
+            "duration": 82.1021669999999,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects Node 25.2.0 final evidence",
+            "status": "passed",
+            "title": "rejects Node 25.2.0 final evidence",
+            "duration": 73.92324999999994,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects Node 25.2.2 final evidence",
+            "status": "passed",
+            "title": "rejects Node 25.2.2 final evidence",
+            "duration": 92.19433300000003,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects failed final evidence",
+            "status": "passed",
+            "title": "rejects failed final evidence",
+            "duration": 108.22291600000005,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects skipped final evidence",
+            "status": "passed",
+            "title": "rejects skipped final evidence",
+            "duration": 82.45041700000002,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects cancelled final evidence",
+            "status": "passed",
+            "title": "rejects cancelled final evidence",
+            "duration": 112.28104199999996,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects stale commit final evidence",
+            "status": "passed",
+            "title": "rejects stale commit final evidence",
+            "duration": 111.00108300000011,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects wrong hash final evidence",
+            "status": "passed",
+            "title": "rejects wrong hash final evidence",
+            "duration": 103.0994169999999,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects wrong provider N-API final evidence",
+            "status": "passed",
+            "title": "rejects wrong provider N-API final evidence",
+            "duration": 66.98162500000012,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects wrong live Node-API final evidence",
+            "status": "passed",
+            "title": "rejects wrong live Node-API final evidence",
+            "duration": 72.64916599999992,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects emulated final evidence",
+            "status": "passed",
+            "title": "rejects emulated final evidence",
+            "duration": 79.95341699999994,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects wrong libc observation final evidence",
+            "status": "passed",
+            "title": "rejects wrong libc observation final evidence",
+            "duration": 100.25316699999985,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects missing operation-root filesystem evidence final evidence",
+            "status": "passed",
+            "title": "rejects missing operation-root filesystem evidence final evidence",
+            "duration": 87.74837500000012,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects overlay operation-root filesystem final evidence",
+            "status": "passed",
+            "title": "rejects overlay operation-root filesystem final evidence",
+            "duration": 85.26116699999989,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects mismatched operation-root filesystem hexadecimal observation final evidence",
+            "status": "passed",
+            "title": "rejects mismatched operation-root filesystem hexadecimal observation final evidence",
+            "duration": 76.88733300000013,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects environment paired with another row manifest final evidence",
+            "status": "passed",
+            "title": "rejects environment paired with another row manifest final evidence",
+            "duration": 70.14066700000012,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate rejects duplicate/conflicting rows and accepts a complete exact native matrix",
+            "status": "passed",
+            "title": "rejects duplicate/conflicting rows and accepts a complete exact native matrix",
+            "duration": 168.07624999999985,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "containment evidence aggregate"
+            ],
+            "fullName": "containment evidence aggregate requires the current ENV-MA25 local record at the prerequisite stage",
+            "status": "passed",
+            "title": "requires the current ENV-MA25 local record at the prerequisite stage",
+            "duration": 199.6661670000003,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302633,
+        "endTime": 1787925304646.6663,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/unit/containment-evidence.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "native containment support matrix"
+            ],
+            "fullName": "native containment support matrix declares and resolves the local macOS 26.5.1 Node 25.2.1 support row",
+            "status": "passed",
+            "title": "declares and resolves the local macOS 26.5.1 Node 25.2.1 support row",
+            "duration": 1.1707499999999982,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "declared and undeclared support tuples"
+            ],
+            "fullName": "declared and undeclared support tuples accepts every declared row under each named Node lane",
+            "status": "passed",
+            "title": "accepts every declared row under each named Node lane",
+            "duration": 2.001749999999987,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "declared and undeclared support tuples"
+            ],
+            "fullName": "declared and undeclared support tuples rejects undeclared, ambiguous, and malformed support or manifest tuples before native loading",
+            "status": "passed",
+            "title": "rejects undeclared, ambiguous, and malformed support or manifest tuples before native loading",
+            "duration": 4.3700000000000045,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925303163,
+        "endTime": 1787925303170.37,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/unit/containment-support.test.ts"
+      },
+      {
+        "assertionResults": [
+          {
+            "ancestorTitles": [
+              "runtime selection"
+            ],
+            "fullName": "runtime selection presents every runtime in stable order, unchecked, with detection only as metadata",
+            "status": "passed",
+            "title": "presents every runtime in stable order, unchecked, with detection only as metadata",
+            "duration": 2.123625000000004,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "runtime selection"
+            ],
+            "fullName": "runtime selection reopens after an empty interactive submission and returns cancellation explicitly",
+            "status": "passed",
+            "title": "reopens after an empty interactive submission and returns cancellation explicitly",
+            "duration": 0.2545000000000073,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "runtime selection"
+            ],
+            "fullName": "runtime selection accepts repeatable non-TTY flags without invoking a prompt",
+            "status": "passed",
+            "title": "accepts repeatable non-TTY flags without invoking a prompt",
+            "duration": 0.20204100000000835,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "runtime selection"
+            ],
+            "fullName": "runtime selection returns stable diagnostics for missing, invalid, and malformed non-TTY inputs while preserving first-declared order",
+            "status": "passed",
+            "title": "returns stable diagnostics for missing, invalid, and malformed non-TTY inputs while preserving first-declared order",
+            "duration": 0.622333000000026,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          },
+          {
+            "ancestorTitles": [
+              "runtime selection"
+            ],
+            "fullName": "runtime selection detects only runtime availability labels",
+            "status": "passed",
+            "title": "detects only runtime availability labels",
+            "duration": 0.12179100000000176,
+            "failureMessages": [],
+            "meta": {},
+            "tags": []
+          }
+        ],
+        "startTime": 1787925302970,
+        "endTime": 1787925302973.6223,
+        "status": "passed",
+        "message": "",
+        "name": "/Users/ishk.sftckz/Projects/exspecso/tests/unit/runtime-selection.test.ts"
+      }
+    ]
+  }
+}

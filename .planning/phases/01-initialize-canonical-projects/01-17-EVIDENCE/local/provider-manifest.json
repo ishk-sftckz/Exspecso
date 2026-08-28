@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "packageVersion": "0.1.0",
+  "buildCommit": "f9765ff1e89b584f9c0612e607374b53cd3cc18a",
+  "variant": "release",
+  "targets": [
+    {
+      "supportRowId": "ENV-MA25",
+      "target": "darwin-arm64",
+      "platform": "darwin",
+      "arch": "arm64",
+      "osVersion": "26.5.1",
+      "osBuild": "25F80",
+      "filesystem": "apfs",
+      "libc": "system",
+      "napiVersion": 8,
+      "byteLength": 99104,
+      "sha256": "d064680fae19b776b1ab941cb404757c4efd64afbf3b50d85a24b3e4c1c7eee8",
+      "path": "ENV-MA25/darwin-arm64/contained-fs.node"
+    }
+  ]
+}

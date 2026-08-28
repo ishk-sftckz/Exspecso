@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "fixtureRoot": {
+    "path": "/work/.ci-fixtures",
+    "rawMagicDecimal": "61267",
+    "normalizedMagicDecimal": "61267",
+    "normalizedMagicHex": "0x0000ef53",
+    "mapping": "ext2/ext3",
+    "statText": "ext2/ext3",
+    "mountinfo": [
+      "413 404 8:1 /home/runner/work/exspecso/exspecso /work rw,relatime - ext4 /dev/root rw,discard,errors=remount-ro,commit=30"
+    ]
+  },
+  "work": {
+    "path": "/work",
+    "rawMagicDecimal": "61267",
+    "normalizedMagicDecimal": "61267",
+    "normalizedMagicHex": "0x0000ef53",
+    "mapping": "ext2/ext3",
+    "statText": "ext2/ext3",
+    "mountinfo": [
+      "413 404 8:1 /home/runner/work/exspecso/exspecso /work rw,relatime - ext4 /dev/root rw,discard,errors=remount-ro,commit=30"
+    ]
+  },
+  "tmp": {
+    "path": "/tmp",
+    "rawMagicDecimal": "2035054128",
+    "normalizedMagicDecimal": "2035054128",
+    "normalizedMagicHex": "0x794c7630",
+    "mapping": "unapproved",
+    "statText": "UNKNOWN",
+    "mountinfo": [
+      "404 184 0:48 / / rw,relatime - overlay overlay rw,lowerdir=/var/lib/docker/overlay2/l/E3LFD5JJPJFO6YZRKAPBZZPOYS:/var/lib/docker/overlay2/l/XOZHVIOZRS2CTQPZENKCF5KO4X:/var/lib/docker/overlay2/l/3B7VLTBEWTM75D7Y5R3Y7CPGWD:/var/lib/docker/overlay2/l/JH6HV57FTSJKMIG3IUNOFNQR7V:/var/lib/docker/overlay2/l/VK3WTNV6OCDDOZO2HI2XFOBLWX,upperdir=/var/lib/docker/overlay2/f56b0a6d11cf234746a7dcd9dd60f8bdbe16ce379113005fd0a68234f0b75061/diff,workdir=/var/lib/docker/overlay2/f56b0a6d11cf234746a7dcd9dd60f8bdbe16ce379113005fd0a68234f0b75061/work,nouserxattr"
+    ]
+  }
+}
