@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 #if defined(_WIN32)
-#error Windows provider is gated by the next parity task; no pathname fallback.
+#include "contained-fs-win.cc"
 #else
 #include "contained-fs-posix.cc"
 #endif
@@ -44,6 +44,10 @@ std::string string(napi_env env, napi_value value, bool component = true) {
     std::transform(device.begin(), device.end(), device.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
     contained::require(device != "CON" && device != "PRN" && device != "AUX" && device != "NUL" &&
       !(device.size() == 4 && (device.rfind("COM", 0) == 0 || device.rfind("LPT", 0) == 0) && device[3] >= '1' && device[3] <= '9'), "reserved device name");
+    if (device.rfind("COM", 0) == 0 || device.rfind("LPT", 0) == 0) {
+      auto suffix = device.substr(3);
+      contained::require(suffix != "\xc2\xb9" && suffix != "\xc2\xb2" && suffix != "\xc2\xb3", "reserved device alias");
+    }
     for (unsigned char c : s) contained::require(c >= 32, "control character forbidden");
   }
   return s;
@@ -71,7 +75,21 @@ napi_value Close(napi_env e, napi_callback_info i) { return guard(e, [&] { auto 
 napi_value List(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,1); auto names=contained::list(handle(e,a[0])); std::sort(names.begin(),names.end()); napi_value v; check(napi_create_array_with_length(e,names.size(),&v)); for(size_t n=0;n<names.size();n++) { napi_value s; check(napi_create_string_utf8(e,names[n].data(),names[n].size(),&s)); check(napi_set_element(e,v,n,s)); } return v; }); }
 napi_value Replace(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,3); contained::replace(handle(e,a[0]),handle(e,a[1]),string(e,a[2])); return undefined(e); }); }
 napi_value Unlink(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,3); bool dir; check(napi_get_value_bool(e,a[2],&dir)); contained::unlink(handle(e,a[0]),string(e,a[1]),dir); return undefined(e); }); }
-napi_value Stat(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,1); auto& h=handle(e,a[0]); auto st=contained::metadata(h); napi_value v; check(napi_create_object(e,&v)); for(auto field : {std::pair<const char*,uint64_t>{"device",st.st_dev},{"inode",st.st_ino},{"size",static_cast<uint64_t>(st.st_size)}}) { napi_value n; check(napi_create_bigint_uint64(e,field.second,&n)); check(napi_set_named_property(e,v,field.first,n)); } return v; }); }
+napi_value Stat(napi_env e, napi_callback_info i) { return guard(e, [&] {
+  auto a=arguments(e,i,1); auto st=contained::metadata(handle(e,a[0])); napi_value v;
+  check(napi_create_object(e,&v));
+  for(auto field : {std::pair<const char*,uint64_t>{"device",st.st_dev},{"size",static_cast<uint64_t>(st.st_size)}}) {
+    napi_value n; check(napi_create_bigint_uint64(e,field.second,&n)); check(napi_set_named_property(e,v,field.first,n));
+  }
+  napi_value inode;
+#if defined(_WIN32)
+  const uint64_t words[] = {st.st_ino, st.inodeHigh};
+  check(napi_create_bigint_words(e,0,2,words,&inode));
+#else
+  check(napi_create_bigint_uint64(e,st.st_ino,&inode));
+#endif
+  check(napi_set_named_property(e,v,"inode",inode)); return v;
+}); }
 napi_value Init(napi_env env, napi_value exports) {
   return guard(env,[&] {
     for(auto method : {std::pair<const char*,napi_callback>{"openRoot",OpenRoot},{"openDirectory",OpenDirectory},{"openFile",OpenFile},{"read",Read},{"write",Write},{"sync",Sync},{"close",Close},{"list",List},{"replace",Replace},{"unlink",Unlink},{"stat",Stat}}) {
