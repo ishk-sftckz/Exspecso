@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
-status: Plan 01-20 complete; Plan 01-12 verification halt resolved; resume Plan 01-13
-stopped_at: Completed 01-20-PLAN.md
-last_updated: "2026-08-28T11:28:15.337Z"
+status: Plan 01-13 complete; resume Plan 01-14
+stopped_at: Completed 01-13-PLAN.md
+last_updated: "2026-08-28T12:35:27.865Z"
 last_activity: 2026-08-28
 last_activity_desc: Plan 01-20 retained ENV-MA25's local Node-API 8 provider and 123/123 full-suite evidence, formally resolving the Plan 01-12 halt.
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 20
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 13 of 20; Plan 01-20 and its Plan 01-12 evidence closure are complete
-Status: Resume Plan 01-13 bound ownership and staging work
-Last activity: 2026-08-28 — Plan 01-20 built the declared ENV-MA25 provider and passed the complete unfiltered 123-test local gate.
+Plan: 14 of 20; Plan 01-13 is complete
+Status: Resume Plan 01-14 containment recovery work
+Last activity: 2026-08-28 — Plan 01-13 bound ownership, staging, and promotion to held native directory capabilities.
 
-Plan execution: 14 plans are implementation-complete and 6 remain pending (20 total). Plan 01-20 completed the exact ENV-MA25 provider/full-suite evidence contract, set Plan 01-12 complete, and resolved its retained continuation checkpoint. Ownership/staging containment may now begin in 01-13.
+Plan execution: 15 plans are implementation-complete and 5 remain pending (20 total). Plan 01-13 bound ownership, staging, and promotion operations; Plan 01-14 may now continue the recovery work.
 
 ### Active Execution — Native target matrix
 
@@ -114,6 +114,7 @@ Plan execution: 14 plans are implementation-complete and 6 remain pending (20 to
 | Phase 01 P12 | 15min | 2 tasks | 8 files |
 | Phase 01 P19 | 14min | 2 tasks | 12 files |
 | Phase 01 P20 | 11min | 3 tasks | 14 files |
+| Phase 01 P13 | 55m | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -152,6 +153,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Derive final support evidence from declared matrix rows and named Node lanes, including ENV-MA25 and Node 25.2.1.
 - [Phase ?]: Treat ENV-MA25 as retained local release evidence; never substitute a hosted runner record for it.
 - [Phase ?]: Close Plan 01-12 only after the declared local release provider passes the unfiltered full suite.
+- [Phase ?]: Ownership and transaction staging retain native directory capabilities instead of reopening mutation paths.
+- [Phase ?]: Promotion parent capabilities are held before the precise native test boundary.
 
 ### Pending Todos
 
@@ -183,6 +186,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-28T11:28:15.320Z
-Stopped at: Completed 01-20-PLAN.md
+Last session: 2026-08-28T12:35:27.851Z
+Stopped at: Completed 01-13-PLAN.md
 Resume file: None
