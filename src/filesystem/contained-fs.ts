@@ -133,28 +133,30 @@ function requireRelativeComponents(components: readonly string[]): void {
 class NativeBoundReader implements BoundReader {
   constructor(private readonly root: DirectoryCapability) {}
 
-  private directory(components: readonly string[]): DirectoryCapability {
+  private inDirectory<T>(components: readonly string[], action: (directory: DirectoryCapability) => T): T {
     requireRelativeComponents(components);
     let directory = this.root;
-    for (const component of components) directory = directory.openDirectory(component);
-    return directory;
+    const opened: DirectoryCapability[] = [];
+    try {
+      for (const component of components) {
+        directory = directory.openDirectory(component);
+        opened.push(directory);
+      }
+      return action(directory);
+    } finally {
+      for (const capability of opened.reverse()) capability.close();
+    }
   }
 
   list(components: readonly string[]): readonly string[] {
-    const directory = this.directory(components);
-    try {
-      return directory.list();
-    } finally {
-      if (directory !== this.root) directory.close();
-    }
+    return this.inDirectory(components, (directory) => directory.list());
   }
 
   metadata(components: readonly string[]): BoundEntryKind {
     requireRelativeComponents(components);
     if (components.length === 0) return "directory";
-    const parent = this.directory(components.slice(0, -1));
     const name = components.at(-1)!;
-    try {
+    return this.inDirectory(components.slice(0, -1), (parent) => {
       try {
         const directory = parent.openDirectory(name);
         directory.close();
@@ -168,25 +170,20 @@ class NativeBoundReader implements BoundReader {
           throw directoryError;
         }
       }
-    } finally {
-      if (parent !== this.root) parent.close();
-    }
+    });
   }
 
   read(components: readonly string[]): Buffer {
     requireRelativeComponents(components);
     if (components.length === 0) throw new Error("EXSPECSO_CONTAINMENT_INVALID: cannot read a directory");
-    const parent = this.directory(components.slice(0, -1));
-    try {
+    return this.inDirectory(components.slice(0, -1), (parent) => {
       const file = parent.openFile(components.at(-1)!);
       try {
         return file.read();
       } finally {
         file.close();
       }
-    } finally {
-      if (parent !== this.root) parent.close();
-    }
+    });
   }
 }
 export interface RootCapability {
