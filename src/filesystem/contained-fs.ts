@@ -68,7 +68,7 @@ function loadProvider(): { native: NativeProvider; provenance: ProviderProvenanc
         if (typeof error?.stderr !== "string" || !error.stderr.includes("musl libc")) throw error;
         libc = error.stderr;
       }
-      if (!kernel || filesystem !== "ext2/ext3" || !libc.includes("Version 1.2.6")) unavailable("unverified Alpine Linux/filesystem/libc; no project changes made");
+      if (!kernel || filesystem !== "ext2/ext3" || !libc.includes("Version 1.2.6")) unavailable(`unverified Alpine Linux/filesystem/libc (${kernel}/${filesystem}/${libc.replace(/\s+/g, " ").trim()}); no project changes made`);
     } else unavailable("this tracer has no verified provider for the host");
     const binary = join(packageRoot, "dist/native", entry.path);
     if (!lstatSync(binary).isFile()) unavailable("provider must be an in-package regular file");
