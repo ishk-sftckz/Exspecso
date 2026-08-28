@@ -10,6 +10,7 @@ import { assertSafeTransactionPaths } from "../../src/filesystem/safe-path.js";
 import { commitTransaction, readTransactionJournal, stagingRelativePath, type PromotionFaultPoint } from "../../src/filesystem/transaction.js";
 import { recoverInterruptedTransaction } from "../../src/filesystem/recovery.js";
 import { acquireInitOwnership, lockRelativePath, releaseInitOwnership } from "../../src/filesystem/ownership.js";
+import { openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
 import { runInit } from "../../src/init/run-init.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 
@@ -117,6 +118,30 @@ async function killAfterOwnershipPublication(root: string): Promise<void> {
 }
 
 describe("journaled init transaction", () => {
+  it("ownership capabilities publish exclusively inside the originally held operational directory", async () => {
+    const fixture = await useFixture();
+    const outside = await useFixture();
+    const filesystem = openContainedFilesystem(fixture.root);
+    try {
+      const operational = filesystem.root.createDirectory(".exspecso");
+      await rename(join(fixture.root, ".exspecso"), join(fixture.root, "held-operational"));
+      await symlink(outside.root, join(fixture.root, ".exspecso"), "dir");
+
+      const candidate = operational.createDirectory(".init.lock.candidate-test");
+      const owner = candidate.createFile("owner-test.json");
+      owner.write(Buffer.from("owned"));
+      owner.sync();
+      owner.close();
+      operational.publishDirectory(candidate, ".init.lock");
+
+      expect(await readFile(join(fixture.root, "held-operational", ".init.lock", "owner-test.json"), "utf8")).toBe("owned");
+      await expect(readFile(join(outside.root, ".init.lock", "owner-test.json"), "utf8")).rejects.toThrow();
+      expect(() => operational.createDirectory(".init.lock")).toThrow(/EXSPECSO_CONTAINMENT/);
+    } finally {
+      filesystem.close();
+    }
+  });
+
   it("rejects traversal, external targets, symlinked ancestors, and stale preimages before staging", async () => {
     const fixture = await useFixture();
     const outside = join(fixture.root, "..", `outside-${Date.now()}.txt`);
