@@ -40,6 +40,15 @@ function completeRecord(row: (typeof matrix.rows)[number]) {
       node: { version: row.node.baseline, napi: 8 },
       compiler: "approved compiler",
       toolchain: "approved toolchain",
+      operationRootFilesystem: row.os.family === "linux" ? {
+        path: "/work/.ci-fixtures/exspecso-fixture",
+        rawMagicDecimal: "61267",
+        normalizedMagicDecimal: "61267",
+        normalizedMagicHex: "0x0000ef53",
+        mapping: "ext2/ext3",
+        statText: "UNKNOWN",
+        mountinfo: ["42 35 0:42 / /work rw,relatime - ext4 /dev/sda rw"],
+      } : undefined,
     },
   };
 }
@@ -82,6 +91,9 @@ describe("containment evidence aggregate", () => {
     ["stale commit", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, sourceCommit: "b".repeat(40) } : record)],
     ["wrong hash", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, provider: { ...record.provider, buildSHA256: "f".repeat(64) } } : record)],
     ["emulated", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, environment: { ...record.environment, native: false } } : record)],
+    ["missing operation-root filesystem evidence", (records: any[]) => records.map((record) => record.rowId === "ENV-LMX" ? { ...record, environment: { ...record.environment, operationRootFilesystem: undefined } } : record)],
+    ["overlay operation-root filesystem", (records: any[]) => records.map((record) => record.rowId === "ENV-LMX" ? { ...record, environment: { ...record.environment, operationRootFilesystem: { ...record.environment.operationRootFilesystem, rawMagicDecimal: "2035054128", normalizedMagicDecimal: "2035054128", normalizedMagicHex: "0x794c7630", mapping: "overlay" } } } : record)],
+    ["mismatched operation-root filesystem hexadecimal observation", (records: any[]) => records.map((record) => record.rowId === "ENV-LMX" ? { ...record, environment: { ...record.environment, operationRootFilesystem: { ...record.environment.operationRootFilesystem, normalizedMagicHex: "0x00000000" } } } : record)],
   ])("rejects %s tracer evidence", (_name, mutate) => {
     const records = matrix.rows.map(completeRecord);
     expect(() => aggregate(mutate(records))).toThrow();

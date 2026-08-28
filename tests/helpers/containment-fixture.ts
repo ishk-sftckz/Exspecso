@@ -3,11 +3,22 @@ import { createHash, randomBytes } from "node:crypto";
 import { createConnection, type Socket } from "node:net";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { promisify } from "node:util";
 
 const exec = promisify(execFile);
 const root = resolve(import.meta.dirname, "../..");
+function testTemporaryRoot(): string {
+  const configured = process.env.EXSPECSO_TEST_TMPDIR;
+  if (!configured) return tmpdir();
+  if (!isAbsolute(configured) || resolve(configured) !== configured) throw new Error("EXSPECSO_TEST_TMPDIR must be an absolute canonical test fixture path");
+  return configured;
+}
+async function createTestTemporaryDirectory(prefix: string): Promise<string> {
+  const parent = testTemporaryRoot();
+  await mkdir(parent, { recursive: true });
+  return mkdtemp(join(parent, prefix));
+}
 function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   if (value && typeof value === "object") {
@@ -47,7 +58,7 @@ export async function inspectInstalledPackage(installed: string) {
   return { installed, provider, sha256, manifest, provenance, packageInventory: await packageInventory(installed) };
 }
 export async function installContainedPackage(variant: "release" | "test") {
-  const directory = await mkdtemp(join(tmpdir(), `exspecso-${variant}-install-`));
+  const directory = await createTestTemporaryDirectory(`exspecso-${variant}-install-`);
   try {
     const staged = join(directory, "package");
     await cp(join(root, "dist"), join(staged, "dist"), { recursive: true });
@@ -75,7 +86,7 @@ export async function installContainedPackage(variant: "release" | "test") {
 
 /** Only the historical test package receives this seam; no production source is changed. */
 export async function installVulnerablePackage() {
-  const directory = await mkdtemp(join(tmpdir(), "exspecso-historical-install-"));
+  const directory = await createTestTemporaryDirectory("exspecso-historical-install-");
   try {
     const fixture = join(root, "tests/fixtures/contained-vulnerable");
     const ledger = JSON.parse(await readFile(join(fixture, "source-ledger.json"), "utf8")) as { baselineCommit: string; sources: Record<string, string> };
