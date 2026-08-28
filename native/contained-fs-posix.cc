@@ -157,8 +157,16 @@ std::vector<std::string> list(Handle& h) {
 void barrier() {
 #if defined(EXSPECSO_CONTAINMENT_TEST)
   static bool reached = false;
-  const char* point = std::getenv("EXSPECSO_TEST_NATIVE_OPERATION");
-  if (reached || !point || std::strcmp(point, "replace:before") != 0) return;
+  const char* point = std::getenv("EXSPECSO_CONTAINMENT_TEST_OPERATION");
+  const char* channel = std::getenv("EXSPECSO_CONTAINMENT_TEST_CHANNEL_ID");
+  const char* controller = std::getenv("EXSPECSO_CONTAINMENT_TEST_CONTROLLER_PID");
+  if (!point && !channel && !controller) return;
+  require(!reached && point && channel && controller, "incomplete containment test activation");
+  const std::string nonce(channel);
+  require(std::strcmp(point, "replace:before") == 0 && nonce.size() == 64 &&
+    std::all_of(nonce.begin(), nonce.end(), [](unsigned char c) { return std::isdigit(c) || (c >= 'a' && c <= 'f'); }) &&
+    std::strlen(controller) > 0 && std::strlen(controller) <= 10 && controller[0] != '0' &&
+    std::all_of(controller, controller + std::strlen(controller), [](unsigned char c) { return std::isdigit(c); }), "invalid containment test activation");
   reached = true;
   Dl_info image{};
   require(dladdr(reinterpret_cast<const void*>(&barrier), &image) != 0 && image.dli_fname, "cannot identify loaded test provider");
@@ -168,7 +176,7 @@ void barrier() {
     if (c == '\\' || c == '"') path += '\\';
     path += static_cast<char>(c);
   }
-  const std::string message = "{\"operation\":\"replace:before\",\"pid\":" + std::to_string(getpid()) + ",\"providerPath\":\"" + path + "\"}\n";
+  const std::string message = "{\"op\":\"replace:before\",\"childpid\":" + std::to_string(getpid()) + ",\"providerpath\":\"" + path + "\",\"nonce\":\"" + nonce + "\"}";
   size_t offset = 0;
   while (offset < message.size()) {
     auto count = ::write(3, message.data() + offset, message.size() - offset);
@@ -178,7 +186,10 @@ void barrier() {
   pollfd pfd{4, POLLIN, 0};
   int ready; do { ready = poll(&pfd, 1, 10000); } while (ready < 0 && errno == EINTR);
   require(ready > 0, "test barrier timeout");
-  char reply = 0; require(::read(4, &reply, 1) == 1 && reply == '1', "invalid test acknowledgement");
+  const std::string expected = "{\"ack\":\"" + nonce + "\"}";
+  std::array<char, 128> reply{};
+  const auto count = ::read(4, reply.data(), reply.size());
+  require(count == static_cast<ssize_t>(expected.size()) && std::string(reply.data(), static_cast<size_t>(count)) == expected, "invalid test acknowledgement");
 #endif
 }
 void replace(Handle& parent, Handle& source, const std::string& target) {

@@ -67,7 +67,9 @@ try {
     args = ["/nologo", "/std:c++17", "/O2", "/W4", "/EHsc", "/MT", "/LD", "/utf-8", "/D_WIN32_WINNT=0x0A00", "/DNAPI_VERSION=8", "/DNODE_GYP_MODULE_NAME=contained_fs", "/I" + include, "/I" + join(msvc, "include")];
     for (const part of ["ucrt", "shared", "um", "winrt"]) args.push("/I" + join(sdk, "Include", sdkVersion, part));
     if (variant === "test") args.push("/DEXSPECSO_CONTAINMENT_TEST=1");
-    args.push(join(root, "native/contained-fs.cc"), "/Fo" + join(work, "contained-fs.obj"), "/link", "/OUT:" + binary, "/IMPLIB:" + join(work, "contained-fs.lib"), nodeLib, "kernel32.lib", "/LIBPATH:" + join(msvc, "lib/x64"));
+    args.push(join(root, "native/contained-fs.cc"), "/Fo" + join(work, "contained-fs.obj"), "/link", "/OUT:" + binary, "/IMPLIB:" + join(work, "contained-fs.lib"), nodeLib, "kernel32.lib");
+    if (variant === "test") args.push("bcrypt.lib", "advapi32.lib");
+    args.push("/LIBPATH:" + join(msvc, "lib/x64"));
     for (const part of ["ucrt", "um"]) args.push("/LIBPATH:" + join(sdk, "Lib", sdkVersion, part, "x64"));
     buildEnvironment = { ...process.env, PATH: dirname(compiler) + ";" + process.env.PATH };
   }
