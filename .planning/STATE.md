@@ -36,6 +36,7 @@ Plan execution: 9 completed plans; 9 pending plans (18 total). Contract approval
 
 ### Active Execution — Installed tracer expansion
 
+- On 2026-08-28 the user asked to continue after completing Trusted Access verification and explicitly requested subagents to reduce repeated context compaction. Resume Plan 01-10 Task 3 with one implementation executor and an independent read-only evidence reviewer; dependent implementation remains serial. The earlier platform-message explanation is not a new project approval gate. No account access state is inferred, and any actual platform denial must be reported without bypass.
 - On 2026-08-28 the user replied `approve` to the resolved proposal in `59d99e9`. Approval record: `8f160dc`; completed decision summary: `4072370` / `01-09-SUMMARY.md`.
 - All eight exact modern OS/CPU/libc rows, three adapters, nine Node lanes and the explicit engine correction, C Node-API 8 and pinned tools/headers, same-package prebuilts, Mode B evidence, journal schema-2 compatibility and bounded free CI work are approved. Scope exclusions and safety assumptions remain in SUPPORT.
 - The earlier `i approve` / `done` applied only to metadata inspection and workflow authorization. That history is preserved; the new response is the native approval.
