@@ -12,7 +12,8 @@ const build = JSON.parse(readFileSync("dist/native/build-provenance.json", "utf8
 const result = JSON.parse(readFileSync("tracer-results.json", "utf8"));
 if (result.numFailedTests || !result.numPassedTests) throw new Error("installed native tracer did not pass");
 const command = (program, args) => execFileSync(program, args, { encoding: "utf8" }).trim();
-const sourceCommit = command("git", ["rev-parse", "HEAD"]);
+const sourceCommit = process.env.EXSPECSO_SOURCE_COMMIT ?? command("git", ["rev-parse", "HEAD"]);
+if (!/^[a-f0-9]{40}$/.test(sourceCommit)) throw new Error("evidence source commit must be the exact 40-hex snapshot");
 writeFileSync("evidence.json", JSON.stringify({
   schemaVersion: 1,
   matrixRevision: matrix.revision,

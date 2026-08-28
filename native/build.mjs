@@ -111,7 +111,8 @@ try {
   if (dependencies) console.log(dependencies);
   const bytes = readFileSync(binary);
   const packageVersion = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version;
-  const buildCommit = command("git", ["rev-parse", "HEAD"]);
+  const buildCommit = process.env.EXSPECSO_SOURCE_COMMIT ?? command("git", ["rev-parse", "HEAD"]);
+  if (!/^[a-f0-9]{40}$/.test(buildCommit)) throw new Error("build source commit must be the exact 40-hex snapshot");
   const sources = Object.fromEntries(["native/contained-fs.cc", "native/contained-fs-posix.cc", "native/contained-fs-win.cc", "native/build.mjs", "native/windows-preflight.ps1"].map((name) => [name, hash(readFileSync(join(root, name)))]));
   const manifest = { schemaVersion: 1, packageVersion, buildCommit, variant, targets: [{ target, platform: process.platform, arch: process.arch, osVersion, osBuild, filesystem: windows ? "ntfs" : process.platform === "darwin" ? "apfs" : "ext4", libc: requestedLibc === "musl" ? "musl-1.2.6-r2" : libc, napiVersion: 8, byteLength: bytes.length, sha256: hash(bytes), path: `${target}/contained-fs.node` }] };
   writeFileSync(join(out, "dist", "native", "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
