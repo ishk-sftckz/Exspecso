@@ -64,7 +64,13 @@ if (process.platform === "darwin") {
   osBuild = command("uname", ["-r"]);
   compiler = command("which", ["g++"]);
   compilerVersion = command(compiler, ["--version"]);
-  libc = command("ldd", ["--version"]);
+  try {
+    libc = command("ldd", ["--version"]);
+  } catch (error) {
+    // musl's loader reports its version on stderr and intentionally exits 1.
+    if (typeof error?.stderr !== "string" || !error.stderr.includes("musl libc")) throw error;
+    libc = error.stderr.trim();
+  }
   if (osVersion !== "Alpine 3.24" || !compilerVersion.includes("15.2.0") || !libc.includes("Version 1.2.6")) throw new Error("Alpine compiler/libc pin drift; update the approved ledger before building");
 } else {
   throw new Error("--libc must be glibc or musl");
