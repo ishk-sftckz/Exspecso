@@ -124,6 +124,7 @@ try {
   if (!/^[a-f0-9]{40}$/.test(buildCommit)) throw new Error("build source commit must be the exact 40-hex snapshot");
   const sources = Object.fromEntries(["native/contained-fs.cc", "native/contained-fs-posix.cc", "native/contained-fs-win.cc", "native/build.mjs", "native/support-matrix.json", "native/windows-preflight.ps1"].map((name) => [name, hash(readFileSync(join(root, name)))]));
   const manifest = { schemaVersion: 2, packageVersion, buildCommit, variant, targets: [{ supportRowId: supportRow.id, target, platform: process.platform, arch: process.arch, osVersion, osBuild, filesystem: supportRow.filesystem, libc: supportRow.libc, napiVersion: 8, byteLength: bytes.length, sha256: hash(bytes), path: `${supportRow.id}/${target}/contained-fs.node` }] };
+  writeFileSync(join(out, "dist", "native", "support-matrix.json"), JSON.stringify(matrix, null, 2) + "\n");
   writeFileSync(join(out, "dist", "native", "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
   writeFileSync(join(out, "dist", "native", "build-provenance.json"), JSON.stringify({ supportRowId: supportRow.id, buildCommit, variant, sources, headerHash, compiler, compilerVersion, developerDirectory, sdk, sdkVersion, sdkBuild, xcode, osVersion, osBuild, windows, nodeLibHash, dependencies, args, binarySHA256: hash(bytes) }, null, 2) + "\n");
   console.log(JSON.stringify({ variant, supportRowId: supportRow.id, target, binary, sha256: hash(bytes), buildCommit }));

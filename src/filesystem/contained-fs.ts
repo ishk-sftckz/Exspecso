@@ -54,7 +54,9 @@ function observeRuntime(operationRoot: string): RuntimeObservation {
   const nodeVersion = process.versions.node;
   const napiVersion = Number(process.versions.napi);
   if (process.platform === "darwin") {
-    const disk = command("/usr/sbin/diskutil", ["info", operationRoot]);
+    const mount = command("/bin/df", ["-P", operationRoot]).split("\n").at(-1)?.trim().split(/\s+/).at(-1);
+    if (!mount) unavailable("cannot determine the operation-root filesystem mount");
+    const disk = command("/usr/sbin/diskutil", ["info", mount]);
     return {
       platform: process.platform,
       arch: process.arch,

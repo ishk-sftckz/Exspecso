@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 export interface RuntimeObservation {
@@ -82,7 +82,13 @@ function assertMatrix(value: unknown): asserts value is SupportMatrix {
   for (const exact of policy.exactVersions) version(String(exact));
 }
 
-export function loadSupportMatrix(path = fileURLToPath(new URL("../../native/support-matrix.json", import.meta.url))): SupportMatrix {
+function defaultMatrixPath(): string {
+  const source = fileURLToPath(new URL("../../native/support-matrix.json", import.meta.url));
+  const packaged = fileURLToPath(new URL("../native/support-matrix.json", import.meta.url));
+  return existsSync(source) ? source : packaged;
+}
+
+export function loadSupportMatrix(path = defaultMatrixPath()): SupportMatrix {
   let parsed: unknown;
   try {
     parsed = JSON.parse(readFileSync(path, "utf8"));
