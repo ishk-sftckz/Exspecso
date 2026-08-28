@@ -59,6 +59,7 @@ jobs:
         env:
           EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
           TARGET: ${{ matrix.target }}
+          FAMILY: ${{ matrix.family }}
         run: |
           set -euo pipefail
           export EXSPECSO_TEST_TMPDIR="$PWD/.ci-fixtures"
@@ -67,7 +68,7 @@ jobs:
           node native/build.mjs --variant release --target "$TARGET" --out . --headers "$EXSPECSO_NODE_HEADERS"
           npm run build
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
-          node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json
+          if [ "$FAMILY" = glibc ]; then node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json; fi
           node scripts/write-containment-evidence.mjs
       - name: Fetch checksum-verified native Node inputs for Windows
         if: (inputs.mode == 'full' || matrix.family == 'musl') && matrix.family == 'windows'

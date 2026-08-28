@@ -12,7 +12,7 @@ function matchingMountinfo(path) {
   const resolved = realpathSync(path);
   const lines = readFileSync("/proc/self/mountinfo", "utf8").trim().split("\n");
   const candidates = lines.map((line) => ({ line, mountpoint: unescapeMountPath(line.split(" - ", 1)[0].split(" ")[4] ?? "") }))
-    .filter(({ mountpoint }) => resolved === mountpoint || resolved.startsWith(`${mountpoint}/`))
+    .filter(({ mountpoint }) => mountpoint === "/" || resolved === mountpoint || resolved.startsWith(`${mountpoint}/`))
     .sort((left, right) => right.mountpoint.length - left.mountpoint.length);
   return candidates.length ? [candidates[0].line] : [];
 }
