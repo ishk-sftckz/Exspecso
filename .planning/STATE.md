@@ -4,15 +4,15 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: Portable replan awaiting independent check
-stopped_at: Portable containment replan requested; implementation paused
-last_updated: "2026-08-28T04:12:51.155Z"
+status: Approved metadata inspection blocked on GitHub workflow scope
+stopped_at: 01-09 approved metadata-only preflight blocked on GitHub workflow scope; native contract remains pending
+last_updated: "2026-08-28T04:15:07.107Z"
 last_activity: 2026-08-28
 last_activity_desc: Completed quick research 260828-ffa comparing GSD/BMAD initialization and runtime support; Phase 1 containment approval and execution remain pending.
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 19
+  total_plans: 20
   completed_plans: 8
 ---
 
@@ -37,6 +37,7 @@ Plan execution: 8 completed plans preserved; 10 revised/new plans pending (18 to
 ### Active Execution Checkpoint — revised portable contract
 
 - The user authorized replanning for Windows, macOS, Linux, all three agent adapters, and comprehensive tests; implementation remains paused.
+- On 2026-08-28 the user replied `i approve` to metadata-only GitHub environment inspection. The prepared workflow upload returned HTTP 404; the current GitHub CLI credential has repository access but lacks the required `workflow` scope. No remote branch or jobs were created. See `01-CONTAINMENT-PREFLIGHT.json` and `.yml`. Resume only after the user grants that scope; the full native/safety contract is still unapproved and 01-10 remains blocked. This does not change the plan order or the eight platform obligations.
 - See `01-CONTAINMENT-REPLAN.md` and `01-CONTAINMENT-RESEARCH.md`. Proposed same-package prebuilts remove end-user compiler/header needs; the exact provider, OS/CPU/Node/libc/filesystem matrix and infrastructure still need approval.
 - Every already-open directory can be relocated. The object-authority versus strict lexical-containment boundary requires an explicit decision, never a silent reduction in the safety claim.
 - Ten serial plans (01-09–18) and 42 test families passed independent plan checking after revision; see 01-CONTAINMENT-PLAN-CHECK.md. All implementation and new test results remain pending. Do not resume the superseded source-install contract or count this planning request as native implementation approval.
@@ -158,6 +159,6 @@ Research note: `docs/research/initialization-runtime-comparison.md` records a ge
 
 ## Session Continuity
 
-Last session: 2026-08-27T18:26:26.335377+00:00
-Stopped at: Revised 01-09 Task 1 contract approval; replan checked, implementation not authorized.
-Resume file: .planning/phases/01-initialize-canonical-projects/01-09-PLAN.md
+Last session: 2026-08-28T04:15:07.095Z
+Stopped at: 01-09 approved metadata-only preflight blocked on GitHub workflow scope; native contract remains pending
+Resume file: .planning/phases/01-initialize-canonical-projects/01-CONTAINMENT-PREFLIGHT.json

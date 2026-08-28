@@ -1,0 +1,40 @@
+{
+  "status": "blocked_before_dispatch",
+  "recorded_at": "2026-08-28T04:14:49.715Z",
+  "approval": {
+    "response": "i approve",
+    "scope": "Metadata-only GitHub environment inspection; not native implementation or a plan-order change"
+  },
+  "repository": "ishk-sftckz/exspecso",
+  "proposed_branch": "codex/containment-metadata-preflight-20260828",
+  "remote_base_observed": "571a1905a1345b9792acf137b5dc4f6b5454bc15",
+  "workflow_path": ".github/workflows/containment-metadata-preflight.yml",
+  "workflow_sha256": "648f1982f97e52c298f8a06caf998e45e86edbe779bf9f652a5d983da2868bbc",
+  "validation": {
+    "yaml_roundtrip": "passed",
+    "bash_syntax": "passed",
+    "scope_check": "passed",
+    "powershell_runtime": "not_run"
+  },
+  "upload": {
+    "endpoint": "POST /repos/ishk-sftckz/exspecso/git/trees",
+    "http_status": 404,
+    "message": "Not Found"
+  },
+  "authentication": {
+    "repository_push_permission": true,
+    "repo_scope_present": true,
+    "workflow_scope_present": false,
+    "required_scope": "workflow",
+    "diagnosis": "Required workflow scope is absent. The upload returned 404 without an explicit scope error; recheck after user-authorized scope refresh."
+  },
+  "remote_branch_created": false,
+  "workflow_runs_observed": 0,
+  "environment_inspections": [],
+  "application_tests_run": false,
+  "compilation_run": false,
+  "installations_run": false,
+  "implementation_authorized": false,
+  "next_action": "User grants GitHub CLI workflow scope, then retry the unchanged metadata-only preflight.",
+  "scope_reference": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes"
+}

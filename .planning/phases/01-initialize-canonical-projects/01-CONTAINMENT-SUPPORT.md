@@ -42,6 +42,18 @@ The research's OS/libc minimums are proposal inputs, not automatically approved 
 
 Pending. Record the exact user response, date, accepted boundary, each target tuple/version, Node policy, evidence mode, tool infrastructure authorizations, decisions declined, and unresolved blockers. A generic previous tracer approval does not satisfy this record.
 
+### Limited infrastructure approval — 2026-08-28
+
+The user replied `i approve` after clarification that the pending request was permission to inspect GitHub testing environments, not to simplify the plan or begin native implementation. This approves a metadata-only preflight workflow on a temporary `codex/` branch using free standard GitHub-hosted runners. It permits collecting OS/CPU/filesystem, installed Node, compiler/SDK and preinstalled musl availability information, and preserving inspection evidence.
+
+Scope exclusions remain explicit: no application-source changes or checkout, package/tool installation, native compilation, new credentials, secrets output, paid resources, publishing, or approval of the native safety contract. The workflow receives no repository-token permissions and runs no external actions. It is based on the remote default branch so unrelated local work is not uploaded. The plan order and all eight platform obligations remain unchanged.
+
+Inspection status: **blocked before dispatch**. The prepared workflow passed YAML round-trip, Bash syntax and static scope checks. Its upload through `POST /repos/ishk-sftckz/exspecso/git/trees` returned HTTP 404. Read-only inspection confirmed repository push/admin access and the `repo` OAuth scope, but no `workflow` scope. GitHub requires `workflow` to add workflow files; the 404 response itself did not identify its cause. No temporary branch or workflow run exists. Do not try another credential or route around this permission boundary.
+
+The exact prepared workflow is saved as `01-CONTAINMENT-PREFLIGHT.yml` in this phase directory (not installed under `.github/workflows`). Sanitized observations and its SHA-256 are in `01-CONTAINMENT-PREFLIGHT.json`. The only requested authentication change is the user's interactive `gh auth refresh --hostname github.com --scopes workflow`, after which scopes and remote state must be rechecked before retrying. No token or credential is saved in these artifacts.
+
+Missing musl environments will be reported, not installed or treated as passing. No actual runner, build or application-test results were obtained. Plan 01-09 remains incomplete and 01-10 remains blocked pending the complete contract decision. This limited inspection approval does not approve later native implementation, platform exclusions, a Node engine change, a weaker safety boundary or paid infrastructure.
+
 ## Recommended decision defaults, to resolve before approval
 
 Propose all eight ENV rows, with native OS evidence on local APFS/NTFS/ext4. Start the OS-floor proposal from the researched Node support baselines: macOS 13.5, Windows 10/Server 2016, Linux kernel 4.18 and glibc 2.28. These are upstream compatibility inputs, not Exspecso support results; Windows editions must also receive an explicit upstream security-lifecycle disposition. Musl needs a named distribution, libc version and Node build provenance. Prefer maintained host OS and Node LTS versions for recommended use, retaining older approved floors only as labeled compatibility lanes.
