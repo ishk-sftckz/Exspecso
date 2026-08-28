@@ -6,9 +6,9 @@ current_phase: 01
 current_phase_name: Initialize Canonical Projects
 status: POSIX tracer approved; executing installed tracer expansion
 stopped_at: 01-10 Task 3 installed tracer; Tasks 1–2 verified
-last_updated: "2026-08-28T05:04:06.543570+00:00"
+last_updated: "2026-08-28T05:33:50Z"
 last_activity: 2026-08-28
-last_activity_desc: Verified and committed the native POSIX tracer; approved macOS CI passed 18 focused and 74 regression tests; tracer approval recorded; Windows parity is active.
+last_activity_desc: Completed quick task 260828-haj frontmatter fix; 25 focused checks and both native skill discovery probes pass; full native init verification remains unavailable locally. Phase 1 gates unchanged.
 progress:
   total_phases: 1
   completed_phases: 0
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
 Plan: 10 of 18; Tasks 1–2 verified; 2/3 tasks complete; Task 3 active
 Status: POSIX tracer approved; executing installed tracer expansion
-Last activity: 2026-08-28 — Task 1 GREEN f2280b0 and checkpoint/evidence 6e43a5a committed. Native CI passed 18 focused and 74 regression tests; Plan 01-10 remains incomplete.
+Last activity: 2026-08-28 — Completed quick task 260828-haj: generated skill frontmatter fix (91eddbb), with 25 focused checks and native Claude/Codex discovery verified. Full local suite: 60 passed, 34 native-dependent failures; Plan 01-10 remains incomplete.
 
 Plan execution: 9 completed plans; 9 pending plans (18 total). Contract approval is complete; native repair and phase verification remain incomplete.
 
@@ -151,8 +151,9 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260828-ffa | Research GSD/BMAD initialization and runtime support versus Exspecso Phase 1 | 2026-08-28 | 2c7f31f | [260828-ffa-research-gsd-and-bmad-initialization-and](./quick/260828-ffa-research-gsd-and-bmad-initialization-and/) |
+| 260828-haj | Fix Claude/Codex skill frontmatter while preserving fingerprints, migration and conflicts; native init verification limited by host | 2026-08-28 | 91eddbb | [260828-haj-fix-generated-skill-frontmatter-compatib](./quick/260828-haj-fix-generated-skill-frontmatter-compatib/) |
 
-Research note: `docs/research/initialization-runtime-comparison.md` records a generated Codex skill frontmatter incompatibility with the inspected official parser. This remains unfixed and requires scoped adapter verification; the research does not change Phase 1 completion or containment approval.
+Research follow-up: quick task `260828-haj` fixes the generated skill frontmatter incompatibility recorded in `docs/research/initialization-runtime-comparison.md`. Codex 0.150.0-alpha.8 and Claude Code 2.1.207 expose the intended metadata; fingerprints and migration/conflict preflight pass. End-to-end init migration still requires the approved native environment. This does not change Phase 1 completion or containment approval.
 
 ## Deferred Items
 
