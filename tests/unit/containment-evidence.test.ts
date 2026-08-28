@@ -63,6 +63,7 @@ describe("containment evidence aggregate", () => {
     const workflow = readFileSync(join(root, ".github/workflows/containment.yml"), "utf8");
     expect(posix).toContain("#include <array>");
     expect(build).toContain('join(sdk, "Lib", sdkVersion, part, targetArchitecture)');
+    expect(build).toContain('error.stderr.includes("musl libc")');
     expect(workflow).toContain("wget -q https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz");
   });
 
