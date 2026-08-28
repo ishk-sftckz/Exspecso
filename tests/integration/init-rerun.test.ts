@@ -1,8 +1,10 @@
+import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import { inspectManagedFile, renderManagedFile } from "../../src/adapters/managed-file.js";
+import { ADAPTER_REGISTRY } from "../../src/adapters/registry.js";
 import { parseInitArguments } from "../../src/cli/arguments.js";
 import { buildInitPlan, validateInitPlan } from "../../src/init/plan.js";
 import { runInit } from "../../src/init/run-init.js";
@@ -57,6 +59,86 @@ async function snapshot(root: string, directory = root): Promise<Record<string, 
   }
   return files;
 }
+
+// Freeze the old renderer independently of renderManagedFile so migration tests
+// cannot silently start using the new layout when the generator changes.
+function legacySkill(agent: "claude" | "codex"): string {
+  const runtime = agent === "claude" ? "Claude Code" : "OpenAI Codex";
+  const invocation = agent === "claude" ? "/exspecso-start" : "$exspecso-start";
+  const body = `---\nname: exspecso-start\ndescription: Begin Exspecso project orientation from the canonical repository artifacts.\n---\n\n# Exspecso Start\n\nUse the repository's canonical Exspecso artifacts to begin project orientation in ${runtime}. The portable operation identity is \`exspecso-start\`, documented as \`/exspecso-start\`; invoke it here as \`${invocation}\`. Preserve approved intent, surface uncertainty for human resolution, and write only the artifacts required by the approved workflow.\n`;
+  return `<!-- exspecso:managed template-version=1 original-body-sha256=${createHash("sha256").update(body).digest("hex")} -->\n${body}`;
+}
+
+describe("skill migration preflight", () => {
+  it.each(["claude", "codex"] as const)("plans only the selected pristine legacy %s migration and binds its full preimage", async (agent) => {
+    const fixture = await useFixture();
+    const initial = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["claude", "codex", "opencode"] });
+    // Seed files directly: these tests exercise read-only planning, not native promotion.
+    for (const write of initial.writes) {
+      await mkdir(dirname(write.target), { recursive: true });
+      await writeFile(write.target, write.content);
+    }
+    for (const selected of ["claude", "codex"] as const) {
+      await writeFile(join(fixture.root, ADAPTER_REGISTRY[selected].relativePath), legacySkill(selected));
+    }
+    const before = await snapshot(fixture.root);
+
+    const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: [agent] });
+
+    expect(plan.conflicts).toEqual([]);
+    expect(plan.approvalProblems).toEqual([]);
+    expect(plan.writes).toEqual([expect.objectContaining({
+      relativePath: ADAPTER_REGISTRY[agent].relativePath,
+      content: ADAPTER_REGISTRY[agent].render(),
+      expectedExists: true,
+      expectedPreimageHash: createHash("sha256").update(legacySkill(agent)).digest("hex"),
+    })]);
+    expect(plan.writes[0].content.startsWith("---\n")).toBe(true);
+    await expect(validateInitPlan(plan)).resolves.toEqual([]);
+    await expect(snapshot(fixture.root)).resolves.toEqual(before);
+
+    await writeFile(plan.writes[0].target, legacySkill(agent).replace("description: Begin", "description: User edit. Begin"));
+    await expect(validateInitPlan(plan)).resolves.toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "EXSPECSO_INIT_STALE_PREIMAGE" }),
+    ]));
+  });
+
+  it.each(["claude", "codex"] as const)("requires scoped replacement for conflicting legacy and current %s skills", async (agent) => {
+    const fixture = await useFixture();
+    const target = join(fixture.root, ADAPTER_REGISTRY[agent].relativePath);
+    await mkdir(dirname(target), { recursive: true });
+
+    for (const original of [legacySkill(agent), ADAPTER_REGISTRY[agent].render()]) {
+      for (const [content, state] of [
+        [original.replace("description: Begin", "description: User edit. Begin"), "owned-modified"],
+        [original + "User instruction.\n", "owned-modified"],
+        [original.replace("template-version=1", "template-version=99"), "malformed-header"],
+        [original.replace("original-body-sha256=", "broken-hash="), "malformed-header"],
+        ["---\nname: exspecso-start\ndescription: User skill.\n---\nUser instructions.\n", "unowned"],
+      ]) {
+        await writeFile(target, content);
+        const before = await snapshot(fixture.root);
+        const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: [agent] });
+        expect(plan.conflicts).toEqual([expect.objectContaining({ agent, state })]);
+        expect(plan.writes.some((write) => write.target === target)).toBe(false);
+        await expect(validateInitPlan(plan)).resolves.toEqual(expect.arrayContaining([
+          expect.objectContaining({ code: "EXSPECSO_INIT_ADAPTER_CONFLICT" }),
+        ]));
+
+        const approved = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: [agent], replaceAgents: [agent] });
+        expect(approved.conflicts).toEqual([]);
+        expect(approved.writes.find((write) => write.target === target)?.content).toBe(ADAPTER_REGISTRY[agent].render());
+        await expect(validateInitPlan(approved)).resolves.toEqual([]);
+        await expect(snapshot(fixture.root)).resolves.toEqual(before);
+
+        await writeFile(target, content + "Changed after approval.\n");
+        await expect(validateInitPlan(approved)).resolves.toEqual(expect.arrayContaining([
+          expect.objectContaining({ code: "EXSPECSO_INIT_STALE_PREIMAGE" }),
+        ]));
+      }
+    }
+  });
+});
 
 describe("managed adapter ownership", () => {
   const body = "# Exspecso Start\n\nGenerated adapter body.\n";
@@ -122,17 +204,22 @@ describe("additive initialization reruns", () => {
     await expect(readFile(join(fixture.root, ".claude", "skills", "exspecso-start", "SKILL.md"), "utf8")).resolves.toContain("exspecso-start");
   });
 
-  it("refreshes an unchanged owned selected adapter while preserving canonical artifacts", async () => {
+  it.each(["claude", "codex"] as const)("migrates a pristine legacy %s adapter and remains idempotent while preserving canonical artifacts", async (agent) => {
     const fixture = await useFixture();
-    await initialize(fixture.root, ["codex"]);
+    const initial = await initialize(fixture.root, ["claude", "codex", "opencode"]);
+    expect(initial, initial.stderr).toMatchObject({ exitCode: 0 });
     const canonicalBefore = await snapshot(join(fixture.root, ".exspecso"));
-    const codexPath = join(fixture.root, ".agents", "skills", "exspecso-start", "SKILL.md");
-    const adapterBefore = await readFile(codexPath, "utf8");
+    const adapterPath = join(fixture.root, ADAPTER_REGISTRY[agent].relativePath);
+    await writeFile(adapterPath, legacySkill(agent));
+    const before = await snapshot(fixture.root);
+    const expectedSnapshot = { ...before, [relative(fixture.root, adapterPath)]: ADAPTER_REGISTRY[agent].render() };
 
-    await expect(initialize(fixture.root, ["codex"])).resolves.toMatchObject({ exitCode: 0 });
+    await expect(initialize(fixture.root, [agent])).resolves.toMatchObject({ exitCode: 0 });
 
     await expect(snapshot(join(fixture.root, ".exspecso"))).resolves.toEqual(canonicalBefore);
-    await expect(readFile(codexPath, "utf8")).resolves.toBe(adapterBefore);
+    await expect(snapshot(fixture.root)).resolves.toEqual(expectedSnapshot);
+    await expect(initialize(fixture.root, [agent])).resolves.toMatchObject({ exitCode: 0 });
+    await expect(snapshot(fixture.root)).resolves.toEqual(expectedSnapshot);
   });
 
   it("reports every selected conflict and writes nothing", async () => {
@@ -166,7 +253,7 @@ describe("additive initialization reruns", () => {
 
     await expect(initialize(fixture.root, ["codex"], ["codex"])).resolves.toMatchObject({ exitCode: 0 });
 
-    await expect(readFile(codexPath, "utf8")).resolves.toMatch(/^<!-- exspecso:managed/);
+    await expect(readFile(codexPath, "utf8")).resolves.toBe(ADAPTER_REGISTRY.codex.render());
     await expect(readFile(claudePath, "utf8")).resolves.toBe(claudeBefore);
   });
 
