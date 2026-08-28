@@ -31,7 +31,7 @@ writeFileSync("evidence.json", JSON.stringify({
     kernel: provider.osBuild,
     filesystem: provider.filesystem,
     libc: provider.libc ?? "system",
-    node: { version: process.version.slice(1), napi: Number(process.versions.napi) },
+    node: { version: process.version.slice(1), napi: provider.napiVersion, runtimeNapi: Number(process.versions.napi) },
     compiler: build.compilerVersion,
     toolchain: row.toolchain,
     image: process.env.ImageVersion ?? row.image ?? "unreported"
