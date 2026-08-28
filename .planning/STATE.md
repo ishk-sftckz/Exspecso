@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 01
-current_phase_name: Initialize Canonical Projects
-status: Plan 01-11 complete; executing contained artifact reads
-stopped_at: Completed 01-11-PLAN.md; ready for 01-12
-last_updated: "2026-08-28T08:35:41.444Z"
+current_phase_name: initialize-canonical-projects
+status: Plan 01-12 complete; ready for bound ownership and staging operations
+stopped_at: Completed 01-12-PLAN.md
+last_updated: "2026-08-28T08:50:05.468Z"
 last_activity: 2026-08-28
-last_activity_desc: All eight approved native tracer rows and the downloaded rejecting aggregate pass; Plan 01-12 contained artifact-read migration is next.
+last_activity_desc: Bound artifact reads and root-bound init preflight are complete with exact-source hosted proof; Plan 01-13 ownership/staging migration is next.
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 18
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 12 of 18; Plans 01-10 and 01-11 complete
-Status: Executing contained artifact reads
-Last activity: 2026-08-28 — Hosted run 33155426835 and the downloaded aggregate passed all eight approved native rows.
+Plan: 13 of 18; Plans 01-10, 01-11, and 01-12 complete
+Status: Ready to execute bound ownership and staging operations
+Last activity: 2026-08-28 — Plan 01-12 bound artifact and initializer reads to the approved native capability.
 
-Plan execution: 11 completed plans; 7 pending plans (18 total). The all-target tracer is complete; wider containment migration remains.
+Plan execution: 12 completed plans; 6 pending plans (18 total). The all-target tracer and artifact-read migration are complete; ownership/staging containment remains.
 
 ### Active Execution — Native target matrix
 
@@ -109,6 +109,7 @@ Plan execution: 11 completed plans; 7 pending plans (18 total). The all-target t
 | Phase 01 P06 | 15min | 2 tasks | 6 files |
 | Phase 01 P07 | 10min | 2 tasks | 5 files |
 | Phase 01 P08 | 20min | 2 tasks | 5 files |
+| Phase 01 P12 | 15min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -140,6 +141,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Use scanner diagnostics as the single declaration-validation path to aggregate each independent canonical error once.
 - [Phase ?]: Recovery, standalone transactions, and runInit share one token-bound lease; only the outer owner releases it.
 - [Phase ?]: Only a sole complete UUID-matched dead ownership record is reclaimable; legacy, partial, unreadable, changed, or unexpected evidence remains diagnostic.
+- [Phase ?]: Artifact scans and init preimage checks share a validated relative-component BoundReader; unsafe reads are diagnostics, never absence.
+- [Phase ?]: The root capability stays open for the full init preflight and is closed on every exit before transaction completion.
 
 ### Pending Todos
 
@@ -171,6 +174,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-28T08:35:41.427Z
-Stopped at: Completed 01-11-PLAN.md; ready for 01-12
+Last session: 2026-08-28T08:50:05.458Z
+Stopped at: Completed 01-12-PLAN.md
 Resume file: None
