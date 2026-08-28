@@ -201,13 +201,13 @@ void barrier() {
   require(count == static_cast<ssize_t>(expected.size()) && std::string(reply.data(), static_cast<size_t>(count)) == expected, "invalid test acknowledgement");
 #endif
 }
-void replace(Handle& parent, Handle& source, const std::string& target) {
+void replace(Handle& parent, Handle& source, const std::string& target, bool testBoundary) {
   directory(parent); active(source);
   require(source.writable && !source.consumed && !source.directory, "private source required");
   const auto p = metadata(parent);
   require(parent.authority == source.authority && p.st_dev == source.parentDevice && p.st_ino == source.parentInode, "source belongs to another parent");
   require(target != source.name, "source and target must differ");
-  barrier(); // Test-only final-use boundary; absent in the release binary.
+  if (testBoundary) barrier(); // Test-only final-use boundary; absent in the release binary.
   struct stat observed{};
   if (fstatat(parent.fd, source.name.c_str(), &observed, AT_SYMLINK_NOFOLLOW) < 0) fail("stat replacement source");
   const auto held = metadata(source);

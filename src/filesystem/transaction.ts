@@ -3,7 +3,7 @@ import { lstat, mkdir, open, readFile, rm, rmdir, writeFile } from "node:fs/prom
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import type { PlannedWrite } from "../init/plan.js";
-import { assertSafeTarget, assertSafeTransactionPaths } from "./safe-path.js";
+import { assertSafeTransactionPaths } from "./safe-path.js";
 import { acquireInitOwnership, inspectInitOwnership, releaseInitOwnership, type InitOwnership } from "./ownership.js";
 import { openContainedFilesystem, type DirectoryCapability, type RootCapability } from "./contained-fs.js";
 
@@ -220,10 +220,10 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
     }
   }
-  const stageRoot = join(root, stagingRelativePath, transactionId);
   let journal: TransactionJournal | undefined;
   let staging: DirectoryCapability | undefined;
   let stage: DirectoryCapability | undefined;
+  const promotionParents = new Map<string, DirectoryCapability>();
   let committed = false;
   try {
     staging = ownership.operationalDirectory.openDirectory(".staging", true);
@@ -250,6 +250,16 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       });
     }
     stage.openDirectory("files").sync();
+    // Capture every destination parent before the first native replacement
+    // boundary. Promotion then uses only those held objects, even if a caller
+    // relocates a directory while a test-only replacement barrier is active.
+    for (const write of plan.writes) {
+      const targetComponents = components(write.relativePath);
+      targetComponents.pop();
+      let parent = filesystem.root;
+      for (const component of targetComponents) parent = parent.openDirectory(component, true);
+      promotionParents.set(write.relativePath, parent);
+    }
     journal = await updateJournal(stage, {
       schemaVersion: transactionSchemaVersion,
       transactionId,
@@ -264,11 +274,10 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
     for (const [index, relativePath] of journal.promotionOrder.entries()) {
       const write = plan.writes.find((candidate) => candidate.relativePath === relativePath);
       if (write === undefined) throw new Error(`EXSPECSO_TRANSACTION_JOURNAL_TARGET: ${relativePath}`);
-      await assertSafeTarget(root, write);
       const targetComponents = components(relativePath);
       const name = targetComponents.pop()!;
-      let parent = filesystem.root;
-      for (const component of targetComponents) parent = parent.openDirectory(component, true);
+      const parent = promotionParents.get(relativePath);
+      if (parent === undefined) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_PARENT: ${relativePath}`);
       let existing: string | undefined;
       try {
         const file = parent.openFile(name);
@@ -285,7 +294,7 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       try {
         temporary.write(staged);
         temporary.sync();
-        parent.replace(temporary, name);
+        parent.replace(temporary, name, true);
         if (sha256(temporary.read().toString("utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_HASH: ${relativePath}`);
         parent.sync();
       } finally { temporary.close(); }
@@ -311,7 +320,10 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       }
     } finally {
       try { if (ownsLease && ownership !== undefined) await releaseInitOwnership(ownership); }
-      finally { filesystem.close(); }
+      finally {
+        for (const parent of promotionParents.values()) parent.close();
+        filesystem.close();
+      }
     }
   }
 }

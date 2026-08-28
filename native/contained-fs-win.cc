@@ -352,14 +352,14 @@ void barrier() {
 #else
 void barrier() {}
 #endif
-void replace(Handle& parent, Handle& source, const std::string& target) {
+void replace(Handle& parent, Handle& source, const std::string& target, bool testBoundary) {
   directory(parent); active(source);
   require(!source.directory && source.writable && !source.consumed && parent.authority == source.authority && sameIdentity(identity(parent), source.parentIdentity), "private sibling from this parent required");
   auto named = openFile(parent, source.name, false);
   require(sameIdentity(identity(*named), identity(source)), "private sibling identity changed");
   try { auto destination = openFile(parent, target, false); }
   catch (const std::system_error& error) { if (error.code() != std::errc::no_such_file_or_directory) throw; }
-  barrier(); // Test-only final-use boundary; absent in the release binary.
+  if (testBoundary) barrier(); // Test-only final-use boundary; absent in the release binary.
   // The destination name is attacker-controlled until the final handle-relative use.
   // Reopen it after the test boundary so a newly substituted reparse entry cannot
   // be replaced as though the pre-barrier observation still applied.
