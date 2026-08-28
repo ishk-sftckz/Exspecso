@@ -1,10 +1,9 @@
-import { readFile, readdir } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { relative, resolve, sep } from "node:path";
 import { projectConfigSchema } from "../artifacts/schema.js";
 import { validateProject } from "../artifacts/validate.js";
 import { renderDiagnostics } from "../errors/diagnostic.js";
 import { findGitRoot } from "../filesystem/git-root.js";
-import { openContainedFilesystem } from "../filesystem/contained-fs.js";
+import { openContainedFilesystem, type BoundReader } from "../filesystem/contained-fs.js";
 import { recoverInterruptedTransaction } from "../filesystem/recovery.js";
 import { commitTransaction } from "../filesystem/transaction.js";
 import { acquireInitOwnership, inspectInitOwnership, releaseInitOwnership } from "../filesystem/ownership.js";
@@ -39,11 +38,20 @@ function writeError(output: NodeJS.WritableStream, code: string, message: string
   output.write(`${code}: ${message}\n`);
 }
 
-async function hasRecoveryEvidence(repositoryRoot: string): Promise<boolean> {
+function repositoryComponents(repositoryRoot: string, target: string): readonly string[] {
+  const path = relative(repositoryRoot, target).split(sep);
+  if (path.some((component) => !component || component === "." || component === "..")) {
+    throw new Error("EXSPECSO_INIT_PRECONDITION_FAILED: staged artifact escaped the repository root");
+  }
+  return path;
+}
+
+function hasRecoveryEvidence(reader: BoundReader): boolean {
   try {
-    return (await readdir(join(repositoryRoot, ".exspecso", ".staging"))).length > 0;
+    return reader.list([".exspecso", ".staging"]).length > 0;
   } catch (error) {
-    return (error as NodeJS.ErrnoException).code !== "ENOENT";
+    if (error instanceof Error && error.message.includes("EXSPECSO_CONTAINMENT_ENOENT")) return false;
+    throw error;
   }
 }
 
@@ -59,23 +67,32 @@ export async function runInit(input: InitInput): Promise<number> {
     return 1;
   }
 
-  const recoveryEvidence = await hasRecoveryEvidence(repositoryRoot);
-  if (!recoveryEvidence) {
-    const preliminaryDiagnostics = await validateProject(repositoryRoot);
-    if (preliminaryDiagnostics.length > 0) {
-      input.stderr.write(renderDiagnostics(preliminaryDiagnostics));
-      return 1;
-    }
-  }
-
-  // A missing host binary must fail before ownership/recovery can create state.
+  // Provider/marker preflight precedes all ownership, recovery, and staging effects.
+  let capability;
   try {
-    const preflight = openContainedFilesystem(repositoryRoot);
-    preflight.close();
+    capability = openContainedFilesystem(repositoryRoot);
+    const marker = capability.reader.metadata([".git"]);
+    if (marker !== "directory" && marker !== "file") throw new Error("Git marker is not a regular file or directory.");
   } catch (error) {
     writeError(input.stderr, "EXSPECSO_INIT_PREFLIGHT_FAILED", error instanceof Error ? error.message : "The bundled filesystem provider is unavailable.");
     return 1;
   }
+
+  try {
+    let recoveryEvidence: boolean;
+    try {
+      recoveryEvidence = hasRecoveryEvidence(capability.reader);
+    } catch (error) {
+      writeError(input.stderr, "EXSPECSO_INIT_PREFLIGHT_FAILED", error instanceof Error ? error.message : "Cannot inspect recovery evidence.");
+      return 1;
+    }
+    if (!recoveryEvidence) {
+      const preliminaryDiagnostics = await validateProject(repositoryRoot, capability.reader);
+      if (preliminaryDiagnostics.length > 0) {
+        input.stderr.write(renderDiagnostics(preliminaryDiagnostics));
+        return 1;
+      }
+    }
 
   const observedOwnership = await inspectInitOwnership(repositoryRoot);
   if (observedOwnership.kind === "busy") {
@@ -112,7 +129,7 @@ export async function runInit(input: InitInput): Promise<number> {
       input.stderr.write(`EXSPECSO_INIT_RECOVERED: ${recovery.transactionId} ${recovery.disposition}\n`);
     }
 
-    const validationDiagnostics = await validateProject(repositoryRoot);
+    const validationDiagnostics = await validateProject(repositoryRoot, capability.reader);
     if (validationDiagnostics.length > 0) {
       input.stderr.write(renderDiagnostics(validationDiagnostics));
       return 1;
@@ -124,6 +141,7 @@ export async function runInit(input: InitInput): Promise<number> {
         repositoryRoot,
         selectedAgents: input.selectedAgents,
         replaceAgents: input.replaceAgents,
+        reader: capability.reader,
       });
     } catch {
       writeError(input.stderr, "EXSPECSO_INIT_PREFLIGHT_FAILED", "Cannot inspect the current initialization targets.");
@@ -135,7 +153,7 @@ export async function runInit(input: InitInput): Promise<number> {
       return 1;
     }
 
-    const planProblems = await validateInitPlan(plan);
+    const planProblems = await validateInitPlan(plan, capability.reader);
     if (planProblems.length > 0) {
       for (const problem of planProblems) writeError(input.stderr, problem.code, problem.message);
       return 1;
@@ -146,7 +164,7 @@ export async function runInit(input: InitInput): Promise<number> {
         const stagedConfigTarget = plan.writes.find(({ relativePath }) => relativePath === ".exspecso/exspecso.config.json");
         if (stagedConfigTarget === undefined) return;
         try {
-          const stagedConfig = await readFile(join(stageRoot, "files", stagedConfigTarget.relativePath), "utf8");
+          const stagedConfig = capability.reader.read(repositoryComponents(repositoryRoot, `${stageRoot}${sep}files${sep}${stagedConfigTarget.relativePath}`)).toString("utf8");
           if (!projectConfigSchema.safeParse(JSON.parse(stagedConfig)).success) throw new Error("invalid staged config");
         } catch {
           throw new Error("EXSPECSO_INIT_STAGED_CONFIG_INVALID");
@@ -165,5 +183,8 @@ export async function runInit(input: InitInput): Promise<number> {
     return 1;
   } finally {
     await releaseInitOwnership(acquisition.ownership);
+  }
+  } finally {
+    capability.close();
   }
 }
