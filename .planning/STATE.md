@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
 status: Plan 01-14 complete; resume Plan 01-15
-stopped_at: Completed 01-14-PLAN.md
-last_updated: "2026-08-28T12:56:35.446Z"
+stopped_at: Completed 01-15-PLAN.md
+last_updated: "2026-08-28T13:04:42.549Z"
 last_activity: 2026-08-28
 last_activity_desc: Plan 01-20 retained ENV-MA25's local Node-API 8 provider and 123/123 full-suite evidence, formally resolving the Plan 01-12 halt.
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 20
-  completed_plans: 16
+  total_plans: 22
+  completed_plans: 17
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 15 of 20; Plan 01-14 is complete
+Plan: 16 of 20; Plan 01-14 is complete
 Status: Resume Plan 01-15 conservative cleanup and native safety checks
 Last activity: 2026-08-28 — Plan 01-14 added schema-2 write-ahead promotion evidence and capability-bound restartable recovery.
 
@@ -116,6 +116,7 @@ Plan execution: 16 plans are implementation-complete and 4 remain pending (20 to
 | Phase 01 P20 | 11min | 3 tasks | 14 files |
 | Phase 01 P13 | 55m | 2 tasks | 8 files |
 | Phase 01 P14 | 15m | 2 tasks | 4 files |
+| Phase 01 P15 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -158,6 +159,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Promotion parent capabilities are held before the precise native test boundary.
 - [Phase ?]: Schema-2 journal writes intent before each promotion and accepts only validated prior/staged recovery observations.
 - [Phase ?]: Schema-1 recovery cleans only an untouched complete-prior journal; all replacement gaps remain ambiguous.
+- [Phase ?]: Cleanup validates journal-identified staging inventory before removing recovery authority.
+- [Phase ?]: Address diagnostics run the native safety suite before release evidence capture.
 
 ### Pending Todos
 
@@ -189,6 +192,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-28T12:56:35.436Z
-Stopped at: Completed 01-14-PLAN.md
+Last session: 2026-08-28T13:04:42.541Z
+Stopped at: Completed 01-15-PLAN.md
 Resume file: None
