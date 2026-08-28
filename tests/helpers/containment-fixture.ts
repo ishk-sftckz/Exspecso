@@ -96,16 +96,16 @@ ${boundary}`);
     // Windows rejects that durability call with EPERM before the copy boundary;
     // this test-only compatibility patch leaves copyFile and all path resolution
     // untouched so the historical external-write regression can be observed.
-    const windowsFsync = `  const handle = await open(destination, "r");
-  try {
-    await handle.sync();
-  } finally {
-    await handle.close();
-  }`;
+    const windowsFsync = /  const handle = await open\(destination, ["']r["']\);\r?\n  try \{\r?\n    await handle\.sync\(\);\r?\n  \} finally \{\r?\n    await handle\.close\(\);\r?\n  \}/;
     if (process.platform === "win32") {
-      if (source.split(windowsFsync).length !== 2) throw new Error("Historical Windows fsync boundary changed");
+      if (!windowsFsync.test(source) || windowsFsync.test(source.replace(windowsFsync, ""))) throw new Error("Historical Windows fsync boundary changed");
       source = source.replace(windowsFsync, `  if (process.platform !== "win32") {
-${windowsFsync}
+    const handle = await open(destination, "r");
+    try {
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
   }`);
     }
     await writeFile(transaction, source);
