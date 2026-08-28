@@ -23,9 +23,9 @@ metrics:
   duration: recovered and closed after partial execution
   completed_date: 2026-08-28
 actuals:
-  tokens: 7925
+  tokens: 7929
   tasks: 2
-  commits: 4
+  commits: 5
 requirements-completed: [SETUP-01, SETUP-02, SETUP-06, SETUP-07, ART-01, ART-03, ART-04, ART-05, ART-06, ART-08, ART-09]
 coverage:
   - id: D1
@@ -63,6 +63,7 @@ Artifact scanning, validation, and init preflight now share an opened native roo
 - Added `BoundReader` operations for safe enumeration, no-follow metadata, and regular-file reads under an already-open `ContainedFilesystem` root.
 - Migrated artifact resolution and validation to report unsafe or unreadable entries explicitly while retaining independent malformed-declaration, duplicate, lazy-artifact, ordering, and D-20 diagnostics.
 - Bound init's preliminary validation, recovery-evidence inspection, config and adapter preimage reads, stale-preimage validation, and staged-config inspection to one caller-owned root capability.
+- Closed every transient directory capability opened while traversing a bound reader, while keeping the caller-owned root alive for the whole init operation.
 - Added RD-01 substitution and RD-04 actual-provider-failure regressions; provider or marker failure now exits before ownership, recovery, or staging writes.
 
 ## Task Commits
@@ -70,6 +71,7 @@ Artifact scanning, validation, and init preflight now share an opened native roo
 1. **Task 1: Resolve and validate artifacts through bound reads**
    - `d68fca4` — `test(01-12): add unsafe artifact read regression`
    - `7a5172e` — `feat(01-12): bind artifact reads to native capabilities`
+   - `c400384` — `fix(01-12): close transient reader capabilities`
 2. **Task 2: Bind initializer preflight and stale-preimage checks to the same root**
    - `c57cabb` — `test(01-12): add provider preflight regression`
    - `6a9d1ba` — `feat(01-12): share the root-bound reader through init`
@@ -100,7 +102,11 @@ The current local macOS 26.5.1 / 25F80 host is deliberately outside the approved
 
 ## Deviations from Plan
 
-None - plan implementation was already completed in the four recorded TDD commits before recovery. Close-out retained the existing exact-source hosted evidence rather than rebuilding or replacing the approved provider on an unapproved local host.
+### Auto-fixed Issues
+
+1. **[Rule 1 - Handle lifecycle]** A post-commit audit found that nested bound-reader traversal closed only its final directory handle. `NativeBoundReader` now closes every transient directory in reverse order while preserving the caller-owned root lifetime. Fixed in `c400384` and rechecked with the focused substitution and provider-preflight regressions plus `npm run build`.
+
+Close-out retained the existing exact-source hosted evidence rather than rebuilding or replacing the approved provider on an unapproved local host.
 
 ## Known Stubs
 
@@ -108,11 +114,10 @@ None.
 
 ## Self-Check: PASSED
 
-- All four Task commits exist in Git history.
+- All five Task commits exist in Git history.
 - Every retained hosted evidence record names source commit `6a9d1ba2f50fc1daca80ecb2e636b5a47f02f2c3` and reports a passing result.
 - All files listed under `key_files` exist.
 
 ## Next Phase Readiness
 
 Plan 01-13 can bind ownership and staging operations to the same native capability model. The native provider remains fail-closed on hosts outside the approved support matrix; no fallback was introduced.
-
