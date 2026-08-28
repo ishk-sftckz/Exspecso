@@ -24,7 +24,10 @@ if (nodeLanes.size !== matrix.nodePolicy.testedVersions.length) fail("matrix con
 const localRow = matrix.rows.find((row) => row.id === "ENV-MA25" && row.runnerKind === "local");
 if (!localRow) fail("matrix does not declare the required local ENV-MA25 row");
 const requiredRows = stage === "prerequisite" ? [localRow] : stage === "final" ? matrix.rows : matrix.rows.filter((row) => row.runnerKind === "ci");
-const requiredLanes = stage === "final" ? nodeLanes : stage === "prerequisite" ? new Set([localRow.node.testedVersion]) : new Set();
+const requiredLanes = stage === "prerequisite" ? new Set([localRow.node.testedVersion]) : nodeLanes;
+function requiredLanesForRow(row) {
+  return row.id === localRow.id ? new Set([localRow.node.testedVersion]) : nodeLanes;
+}
 const files = readdirSync(evidenceDir).filter((file) => file.endsWith(".json") && !new Set(["full-suite.json", "provider-manifest.json", "build-provenance.json"]).has(file)).sort();
 if (!files.length) fail("no evidence records found");
 const records = files.map((file) => JSON.parse(readFileSync(join(evidenceDir, file), "utf8")));
@@ -53,7 +56,7 @@ function verifyRowObservation(record, row) {
   if (environment.native !== true) fail(`${record.rowId} is emulated or not native`);
   if (environment.cpu !== row.cpu || environment.filesystem !== row.filesystem || environment.libc !== row.libc) fail(`${record.rowId} environment does not match approved target`);
   if (environment.os !== row.os.family || environment.osVersion !== row.os.version || environment.osBuild !== (row.os.build ?? row.os.kernel)) fail(`${record.rowId} exact OS observation does not match approved row`);
-  if (environment.node?.version !== row.node.testedVersion) fail(`${record.rowId} Node version does not match approved row`);
+  if (row.id === localRow.id && environment.node?.version !== row.node.testedVersion) fail(`${record.rowId} Node version does not match the approved local row`);
   if (!Number.isInteger(environment.node?.liveNapi) || environment.node.liveNapi < matrix.nodePolicy.napi) fail(`${record.rowId} live Node-API observation is invalid`);
   if (row.id === localRow.id && environment.node.liveNapi !== 10) fail(`${record.rowId} must prove live Node-API 10`);
   if (record.provider?.napi !== matrix.nodePolicy.napi) fail(`${record.rowId} provider Node-API does not match approved policy`);
@@ -68,8 +71,14 @@ for (const record of records) {
   if (record.matrixRevision !== matrix.revision) fail(`wrong matrix revision for ${record.rowId}`);
   const row = rows.get(record.rowId);
   if (!row) fail(`unknown row ${record.rowId}`);
-  if (seen.has(record.rowId)) fail(`duplicate/conflicting row ${record.rowId}`);
-  seen.set(record.rowId, record);
+  if (!Array.isArray(record.nodeLanes) || record.nodeLanes.length !== 1) fail(`${record.rowId} must declare exactly one observed Node lane`);
+  const [observedLane] = record.nodeLanes;
+  if (!nodeLanes.has(observedLane)) fail(`${record.rowId} declares an unknown Node lane ${observedLane}`);
+  if (record.environment?.node?.version !== observedLane) fail(`${record.rowId} live Node version does not match its observed lane`);
+  if (!requiredLanesForRow(row).has(observedLane)) fail(`${record.rowId} declares a Node lane outside its approved scope`);
+  const recordKey = `${record.rowId}/${observedLane}`;
+  if (seen.has(recordKey)) fail(`duplicate/conflicting row-lane ${recordKey}`);
+  seen.set(recordKey, record);
   if (record.status !== "passed") fail(`${record.rowId} status is ${record.status}`);
   if (record.evidenceMode !== "release") fail(`${record.rowId} evidence mode is not release`);
   verifyRowObservation(record, row);
@@ -77,17 +86,18 @@ for (const record of records) {
   if (!/^[a-f0-9]{40}$/.test(record.sourceCommit ?? "")) fail(`${record.rowId} source commit is invalid`);
   if (sourceCommit && sourceCommit !== record.sourceCommit) fail("stale/conflicting source commit");
   sourceCommit = record.sourceCommit;
-  for (const lane of record.nodeLanes ?? []) {
-    if (!nodeLanes.has(lane)) fail(`${record.rowId} declares an unknown Node lane ${lane}`);
-    observedLanes.add(lane);
-  }
+  observedLanes.add(observedLane);
   if (stage === "final") {
     if (!sha256(record.finalTarball?.sha256)) fail(`${record.rowId} final tarball hash is invalid`);
     if (finalTarball && finalTarball !== record.finalTarball.sha256) fail("mixed final tarball evidence");
     finalTarball = record.finalTarball.sha256;
   }
 }
-for (const row of requiredRows) if (!seen.has(row.id)) fail(`missing required row ${row.id}`);
+for (const row of requiredRows) {
+  for (const lane of requiredLanesForRow(row)) {
+    if (!seen.has(`${row.id}/${lane}`)) fail(`missing required row-lane ${row.id}/${lane}`);
+  }
+}
 for (const lane of requiredLanes) if (!observedLanes.has(lane)) fail(`missing required Node lane ${lane}`);
 if (stage === "prerequisite" && expectedSourceCommit !== undefined && sourceCommit !== expectedSourceCommit) fail("prerequisite evidence is not from the expected current source commit");
 console.log(JSON.stringify({ plan_complete: true, stage, matrixRevision: matrix.revision, sourceCommit, rows: [...seen.keys()].sort(), nodeLanes: [...observedLanes].sort() }));

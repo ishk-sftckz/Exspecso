@@ -38,21 +38,23 @@ jobs:
           git remote add origin https://github.com/ishk-sftckz/exspecso.git
           git fetch --depth=1 origin "$GITHUB_SHA"
           git checkout --detach FETCH_HEAD
-      - name: Fetch checksum-verified Node 20.19.0 inputs
+      - name: Fetch checksum-verified declared Node runtime and build inputs
         if: (inputs.mode == 'full' || matrix.row.family == 'musl') && (matrix.row.family == 'macos' || matrix.row.family == 'glibc')
         shell: bash
         env:
           TARGET: ${{ matrix.row.target }}
+          NODE_LANE: ${{ matrix.nodeLane }}
         run: |
           set -euo pipefail
-          archive="node-v20.19.0-$TARGET.tar.gz"
-          base=https://nodejs.org/dist/v20.19.0
-          curl --fail --silent --show-error -O "$base/SHASUMS256.txt"
-          curl --fail --silent --show-error -O "$base/$archive" -O "$base/node-v20.19.0-headers.tar.gz"
-          grep "  $archive$" SHASUMS256.txt | shasum -a 256 -c -
+          runtime_archive="node-v$NODE_LANE-$TARGET.tar.gz"
+          runtime_base="https://nodejs.org/dist/v$NODE_LANE"
+          headers_base=https://nodejs.org/dist/v20.19.0
+          curl --fail --silent --show-error "$runtime_base/SHASUMS256.txt" -o runtime-SHASUMS256.txt
+          curl --fail --silent --show-error -O "$runtime_base/$runtime_archive" -O "$headers_base/node-v20.19.0-headers.tar.gz"
+          grep "  $runtime_archive$" runtime-SHASUMS256.txt | shasum -a 256 -c -
           test "$(shasum -a 256 node-v20.19.0-headers.tar.gz | awk '{print $1}')" = 800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb
-          tar -xzf "$archive"
-          echo "$PWD/node-v20.19.0-$TARGET/bin" >> "$GITHUB_PATH"
+          tar -xzf "$runtime_archive"
+          echo "$PWD/node-v$NODE_LANE-$TARGET/bin" >> "$GITHUB_PATH"
           echo "EXSPECSO_NODE_HEADERS=$PWD/node-v20.19.0-headers.tar.gz" >> "$GITHUB_ENV"
       - name: Build and run the real installed tracer natively
         if: (inputs.mode == 'full' || matrix.row.family == 'musl') && (matrix.row.family == 'macos' || matrix.row.family == 'glibc')
@@ -75,24 +77,30 @@ jobs:
           node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
           if [ "$FAMILY" = glibc ]; then node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json; fi
           node scripts/write-containment-evidence.mjs
-      - name: Fetch checksum-verified native Node inputs for Windows
+      - name: Fetch checksum-verified declared Windows runtime and build inputs
         if: (inputs.mode == 'full' || matrix.row.family == 'musl') && matrix.row.family == 'windows'
         shell: pwsh
         env:
           TARGET: ${{ matrix.row.target }}
+          NODE_LANE: ${{ matrix.nodeLane }}
         run: |
           $ErrorActionPreference = 'Stop'
           $nodeTarget = $env:TARGET.Replace('win32-', 'win-')
-          $base = 'https://nodejs.org/dist/v20.19.0/'
-          Invoke-WebRequest "$base/SHASUMS256.txt" -OutFile SHASUMS256.txt
-          foreach ($name in @("node-v20.19.0-$nodeTarget.zip", 'node-v20.19.0-headers.tar.gz', "$nodeTarget/node.lib")) {
+          $runtimeBase = "https://nodejs.org/dist/v$env:NODE_LANE/"
+          $headersBase = 'https://nodejs.org/dist/v20.19.0/'
+          Invoke-WebRequest "$runtimeBase/SHASUMS256.txt" -OutFile runtime-SHASUMS256.txt
+          Invoke-WebRequest "$headersBase/SHASUMS256.txt" -OutFile headers-SHASUMS256.txt
+          $runtimeArchive = "node-v$env:NODE_LANE-$nodeTarget.zip"
+          foreach ($name in @($runtimeArchive, 'node-v20.19.0-headers.tar.gz', "$nodeTarget/node.lib")) {
             $destination = Join-Path $env:RUNNER_TEMP ([IO.Path]::GetFileName($name))
+            $base = if ($name -eq $runtimeArchive) { $runtimeBase } else { $headersBase }
+            $checksumFile = if ($name -eq $runtimeArchive) { 'runtime-SHASUMS256.txt' } else { 'headers-SHASUMS256.txt' }
             Invoke-WebRequest "$base$name" -OutFile $destination
-            $expected = ((Get-Content SHASUMS256.txt | Where-Object { $_ -match "\s$name$" }) -split '\s+')[0]
+            $expected = ((Get-Content $checksumFile | Where-Object { $_ -match "\s$name$" }) -split '\s+')[0]
             if ((Get-FileHash $destination -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw "Node input checksum mismatch: $name" }
           }
-          Expand-Archive (Join-Path $env:RUNNER_TEMP "node-v20.19.0-$nodeTarget.zip") $env:RUNNER_TEMP
-          "$env:RUNNER_TEMP/node-v20.19.0-$nodeTarget" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Expand-Archive (Join-Path $env:RUNNER_TEMP $runtimeArchive) $env:RUNNER_TEMP
+          "$env:RUNNER_TEMP/node-v$env:NODE_LANE-$nodeTarget" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           "EXSPECSO_NODE_HEADERS=$(Join-Path $env:RUNNER_TEMP 'node-v20.19.0-headers.tar.gz')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "EXSPECSO_NODE_LIB=$(Join-Path $env:RUNNER_TEMP 'node.lib')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Build and run the real installed Windows tracer
@@ -119,19 +127,42 @@ jobs:
           EXSPECSO_CONTAINMENT_ROW: ${{ matrix.row.id }}
           EXSPECSO_OBSERVED_NODE_LANE: ${{ matrix.nodeLane }}
           TARGET: ${{ matrix.row.target }}
+          NODE_LANE: ${{ matrix.nodeLane }}
         run: |
           set -euo pipefail
           base=$(node -e "const m=require('./native/support-matrix.json');console.log(m.rows.find(x=>x.id===process.env.EXSPECSO_CONTAINMENT_ROW).image)")
-          runtime=$(node -e "console.log(process.env.TARGET.endsWith('arm64') ? 'node:20.19.0-alpine3.21@sha256:646bc11400802534d70bc576fc9704bb6409e0ed802658a8e785472d160c38d3' : 'node:20.19.0-alpine3.21@sha256:37a5a350292926f98d48de9af160b0a3f7fcb141566117ee452742739500a5bd')")
+          case "$NODE_LANE/$TARGET" in
+            20.19.0/linux-x64) runtime=node:20.19.0-alpine3.21@sha256:37a5a350292926f98d48de9af160b0a3f7fcb141566117ee452742739500a5bd ;;
+            20.19.0/linux-arm64) runtime=node:20.19.0-alpine3.21@sha256:646bc11400802534d70bc576fc9704bb6409e0ed802658a8e785472d160c38d3 ;;
+            20.19.5/linux-x64) runtime=node:20.19.5-alpine3.22@sha256:be8d32d651b3e0c9c2b28fdc1d3888408125d703232013cff955344d052027e5 ;;
+            20.19.5/linux-arm64) runtime=node:20.19.5-alpine3.22@sha256:9851daa67a46cd267436aae71dedba1d86e6498a1b01e6c417941e31c8021b6e ;;
+            20.20.2/linux-x64) runtime=node:20.20.2-alpine3.23@sha256:afdf98210b07b586eb71fa22ba2e432e058e4cd1304d31ed60888755b8c865fb ;;
+            20.20.2/linux-arm64) runtime=node:20.20.2-alpine3.23@sha256:d63c387675b0ec5d7ef0c15b03691ac9f82803a8b30c87de3ce8a16960831cbc ;;
+            22.13.0/linux-x64) runtime=node:22.13.0-alpine3.21@sha256:133cdce957f50f47236d6d926592fb1db7a120ac3c33191e611b60dfab63e324 ;;
+            22.13.0/linux-arm64) runtime=node:22.13.0-alpine3.21@sha256:9090fa64b73b14ab658d907e7916afcb1633e4bdd5134f9b1be4a21a6c56f0b8 ;;
+            22.23.2/linux-x64) runtime=node:22.23.2-alpine3.24@sha256:76789712cd1ae89a1225eac9077010d68987a423588042dac30446f502f1858c ;;
+            22.23.2/linux-arm64) runtime=node:22.23.2-alpine3.24@sha256:1ef15d33d74602021f35ec64a4e72f4a21e2cfa68ebecd125fbe0c44af8f604a ;;
+            24.0.0/linux-x64) runtime=node:24.0.0-alpine3.21@sha256:daf9b7ead63a07bcad1de673b38566b0ba7e3b8abd12b2458486acabe598f1b7 ;;
+            24.0.0/linux-arm64) runtime=node:24.0.0-alpine3.21@sha256:c68c0a01cf0674640b9b3524d50da2af10112770ce4ce69804da60de59ffd1d2 ;;
+            24.20.0/linux-x64) runtime=node:24.20.0-alpine3.24@sha256:4caaaf42195bcd6f6f3559a413b20cb8f8ad089e231ee874cf7701643966689f ;;
+            24.20.0/linux-arm64) runtime=node:24.20.0-alpine3.24@sha256:d3724e44ee368606d753e0027eb8d2a94fc1f275e5d9e4620178a12edb655f5f ;;
+            25.2.1/linux-x64) runtime=node:25.2.1-alpine3.22@sha256:3725508db47d7e983a75d7ee7a8beecc006080aad286418c2676516d5cd5456f ;;
+            25.2.1/linux-arm64) runtime=node:25.2.1-alpine3.22@sha256:5864b1926ea1a8113aeffa882ca7bffd997af1804ccee29096d04f4f188030b3 ;;
+            26.0.0/linux-x64) runtime=node:26.0.0-alpine3.23@sha256:eb2ff22e292cafc20a333e889d8993cfb1604d1fe545f13fa86ff1a45534d1d7 ;;
+            26.0.0/linux-arm64) runtime=node:26.0.0-alpine3.23@sha256:f93b4c5d322011f11d14ab9749b206a036d3a61c00b7f9355063d5362c062a08 ;;
+            26.8.1/linux-x64) runtime=node:26.8.1-alpine3.24@sha256:ad6400dee476b06e82d0ee3a088e2d7555f6e6569c346e61d69e14d0f19e8c2b ;;
+            26.8.1/linux-arm64) runtime=node:26.8.1-alpine3.24@sha256:0d642590166d10420a0efa32b0db56987aef75eeca82742305b4ac4cfd0210e0 ;;
+            *) echo "unsupported declared Node lane/target: $NODE_LANE/$TARGET" >&2; exit 1 ;;
+          esac
           docker pull "$base"
           docker pull "$runtime"
-          docker run --rm --entrypoint sh "$runtime" -c 'cat /usr/local/bin/node' > node20-musl
-          chmod +x node20-musl
-          docker run --rm --user root -e EXSPECSO_CONTAINMENT_ROW -e TARGET -e EXSPECSO_SOURCE_COMMIT="$GITHUB_SHA" -v "$PWD:/work" -w /work "$base" sh -euxc '
+          docker run --rm --entrypoint sh "$runtime" -c 'cat /usr/local/bin/node' > node-musl
+          chmod +x node-musl
+          docker run --rm --user root -e EXSPECSO_CONTAINMENT_ROW -e EXSPECSO_OBSERVED_NODE_LANE -e TARGET -e NODE_LANE -e EXSPECSO_SOURCE_COMMIT="$GITHUB_SHA" -v "$PWD:/work" -w /work "$base" sh -euxc '
             apk add --no-cache g++=15.2.0-r5 musl-dev=1.2.6-r2 linux-headers=7.0.0-r1
             wget -q https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz
             test "$(sha256sum node-v20.19.0-headers.tar.gz | awk "{print \$1}")" = 800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb
-            ln -sf /work/node20-musl /tmp/node
+            ln -sf /work/node-musl /tmp/node
             export PATH=/tmp:$PATH EXSPECSO_NODE_HEADERS=/work/node-v20.19.0-headers.tar.gz EXSPECSO_CONTAINMENT_LIBC=musl EXSPECSO_TEST_TMPDIR=/work/.ci-fixtures
             mkdir -p "$EXSPECSO_TEST_TMPDIR"
             npm ci --ignore-scripts
