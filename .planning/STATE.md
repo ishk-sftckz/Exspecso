@@ -4,11 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: Executing approved native POSIX tracer
-stopped_at: 01-09 approved; beginning 01-10 Task 1
-last_updated: "2026-08-28T04:39:00.197Z"
+status: POSIX tracer verified; awaiting required human feedback
+stopped_at: 01-10 Task 1 verified; tracer approval required before Task 2
+last_updated: "2026-08-28T04:59:20.416Z"
 last_activity: 2026-08-28
-last_activity_desc: User approved the resolved contract; 01-09 decision complete; native implementation and tests begin in 01-10.
+last_activity_desc: Verified and committed the native POSIX tracer; approved macOS CI passed 18 focused and 74 regression tests; awaiting tracer feedback before Windows parity.
 progress:
   total_phases: 1
   completed_phases: 0
@@ -28,19 +28,22 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 10 of 18; Task 1 POSIX native tracer; 0/3 tasks complete
-Status: Approved contract; implementing first tracer
-Last activity: 2026-08-28 — User replied approve to the resolved contract; 01-09 summary committed. Beginning 01-10 Task 1 with its existing tracer review gate.
+Plan: 10 of 18; Task 1 verified; 1/3 tasks complete; human tracer feedback pending
+Status: POSIX tracer verified; awaiting human feedback before Windows parity
+Last activity: 2026-08-28 — Task 1 GREEN f2280b0 and checkpoint/evidence 6e43a5a committed. Native CI passed 18 focused and 74 regression tests; Plan 01-10 remains incomplete.
 
 Plan execution: 9 completed plans; 9 pending plans (18 total). Contract approval is complete; native repair and phase verification remain incomplete.
 
-### Active Execution — approved portable contract
+### Active Checkpoint — verified POSIX tracer
 
 - On 2026-08-28 the user replied `approve` to the resolved proposal in `59d99e9`. Approval record: `8f160dc`; completed decision summary: `4072370` / `01-09-SUMMARY.md`.
 - All eight exact modern OS/CPU/libc rows, three adapters, nine Node lanes and the explicit engine correction, C Node-API 8 and pinned tools/headers, same-package prebuilts, Mode B evidence, journal schema-2 compatibility and bounded free CI work are approved. Scope exclusions and safety assumptions remain in SUPPORT.
 - The earlier `i approve` / `done` applied only to metadata inspection and workflow authorization. That history is preserved; the new response is the native approval.
-- Plan 01-10 Task 1 must prove a real installed POSIX promotion tracer and required provider tests, then stop at its tracer feedback checkpoint before expansion. Local macOS 26.5.1 is development-only; approved hosted macOS supplies acceptance evidence with the pinned tools.
-- No native implementation, build/load or application matrix result is established by the decision. Missing or failed required evidence blocks expansion. All 42 test families and later human/security gates remain required.
+- Plan 01-10 Task 1 is verified: RED `bbe2e5d`, GREEN `f2280b0`; checkpoint/evidence `6e43a5a`. CI run 33143078424 / snapshot e06f4dd504ac7f892b745bacd592e26003687f07 passed 18 focused and 74 full regression tests on the approved macOS arm64 / Node 20.19.0 row. Local TS/syntax and loader-negative checks are separate evidence, not native acceptance.
+- Review: `01-10-TRACER-REVIEW.md`; raw logs, reports, native events, input hashes, provenance and binary are in `01-10-EVIDENCE/`. The 01-10 SUMMARY has `status: halted` and explicitly means 1/3 tasks, not plan completion. Downstream plans remain blocked. Do not infer completion from the presence of this checkpoint summary.
+- Await the user's tracer feedback before **01-10 Task 2** (Windows parity). The design approval is already granted; do not repeat it. Resume via `.continue-here.md` without redoing Task 1.
+- The temporary remote branch `codex/containment-posix-tracer-20260828` retains the reviewed task-only snapshot; default remote branch was not updated. No paid resources, global installs, new credentials or publication.
+- Only the macOS arm64 tracer has native evidence. Windows/Linux, other CPU/Node rows, complete TR/NP expansions, native diagnostics, all wider path migrations and human/security closure gates remain pending. Instrumented evidence is Mode B; moved-object schedules are limitations, not strict lexical containment successes.
 
 ### Superseded Execution Checkpoint — history only
 
@@ -139,8 +142,8 @@ None yet.
 - CR-01 invalid canonical JSON declarations are repaired by Plan 01-07; independent phase re-verification remains required before closing the recorded verifier gap.
 - The live-writer recovery and stale-owner races are repaired and tested in 01-08; CR-02 still requires independent phase re-verification before it is closed.
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
-- Plan 01-09 is complete. The revised contract is approved; implementation starts at the 01-10 POSIX tracer. Evidence gates remain mandatory.
-- Next: execute 01-10 Task 1 and obtain tracer feedback before expansion. After the remaining serial plans, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
+- Plan 01-09 is complete. Plan 01-10 Task 1 is verified; human tracer feedback gates Task 2. Plan 01-10 and Phase 1 are incomplete.
+- Next: obtain feedback on the verified POSIX tracer, then resume 01-10 Task 2. After the remaining serial plans, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
 ### Quick Tasks Completed
@@ -159,6 +162,6 @@ Research note: `docs/research/initialization-runtime-comparison.md` records a ge
 
 ## Session Continuity
 
-Last session: 2026-08-28T04:39:00.197Z
-Stopped at: 01-09 approved; beginning 01-10 Task 1
-Resume file: .planning/phases/01-initialize-canonical-projects/01-10-PLAN.md
+Last session: 2026-08-28T04:59:20.416Z
+Stopped at: 01-10 Task 1 verified; tracer approval required before Task 2
+Resume file: .planning/phases/01-initialize-canonical-projects/.continue-here.md

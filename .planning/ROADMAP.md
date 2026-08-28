@@ -75,7 +75,7 @@ Plans:
 
 **Wave 10** *(gap closure; depends on 01-09)*
 
-- [ ] 01-10-PLAN.md — Prove installed POSIX and Windows native promotion tracers
+- [ ] 01-10-PLAN.md — Prove installed POSIX and Windows native promotion tracers (Task 1 verified; tracer feedback pending before Windows)
 
 **Wave 11** *(gap closure; depends on 01-10)*
 
@@ -197,7 +197,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Initialize Canonical Projects | 9/18 | Contract approved; native implementation and verification pending | - |
+| 1. Initialize Canonical Projects | 9/18 | POSIX tracer verified; feedback and remaining native work pending | - |
 | 2. Build the Project Truth Engine | 0/TBD | Not started | - |
 | 3. Orient and Plan One Approved Phase | 0/TBD | Not started | - |
 | 4. Deliver One Approved Phase | 0/TBD | Not started | - |

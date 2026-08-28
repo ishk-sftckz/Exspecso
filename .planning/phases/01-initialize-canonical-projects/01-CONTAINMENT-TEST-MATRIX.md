@@ -1,6 +1,6 @@
 # Containment test matrix — planned, not passing evidence
 
-Status: all new rows pending implementation and 01-09 approval. Existing local build/62-test baseline is historical evidence, not proof of this matrix. All fixtures use dedicated disposable test directories; controllers may only modify those fixtures and terminate their own child processes.
+Status: 01-09 contract approved. The 01-10 Task 1 subset has native macOS evidence below; all full-family/matrix obligations remain incomplete. The prior local build/62-test baseline is historical evidence, not proof of this matrix. All fixtures use dedicated disposable test directories; controllers may only modify those fixtures and terminate their own child processes.
 
 ## How evidence is classified
 
@@ -94,3 +94,7 @@ Split generated grids into bounded shards using an explicit shard index/count. T
 Each record names matrix revision, case ID, operation/site/transition, expected oracle, status, evidence mode, source commit, final release tarball SHA-256, installed provider SHA-256/realpath, test-variant hash where applicable, shared-core equivalence record, exact Node/NAPI, native CPU, OS/kernel/image, libc, filesystem, compiler/SDK/header versions, command/exit outcome and logs. Build provenance and logs are not self-authenticating; 18 validates their trusted workflow/repository/commit provenance binding. Keep test-controller channel paths within disposable fixtures, never production configuration.
 
 The release package is assembled once from all approved native builds and redistributed for release tests. Every row must agree on its exact tarball hash. Missing runner, missing provenance, missing required test or unsupported primitive blocks the candidate. No package is published by this phase. Success still requires independent phase verification, real-TTY UAT, the five retained judgment acknowledgements, and the security audit; no Phase 2 advancement from this matrix alone.
+
+## Observed Task 1 subset — 2026-08-28
+
+Run 33143078424 passed 18 focused and 74 full regression tests on ENV-MA only: macOS 15.7.7 / 24G720, APFS, native arm64, Node 20.19.0. The new tests exercise subsets of NP-01/02/03 and TR-01/02, plus missing-provider-before-mutation. They do not complete every family expansion or any other environment/Node row. Mode B instrumentation and moved-directory limitation cases are labeled in `01-10-TRACER-REVIEW.md`; exact reports, native boundary events, binary/provenance and source hashes are in `01-10-EVIDENCE/`. Windows parity, full historical TR-01 grid reproduction, native diagnostics and all other planned rows remain pending.
