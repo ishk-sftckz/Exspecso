@@ -34,7 +34,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 11/20 plans complete; 01-12 implementation is committed but its verification halt remains open until 01-20
+**Plans**: 12/20 plans implementation-complete; 01-12 remains verification-halted until 01-20 records exact ENV-MA25 proof and a full unfiltered local regression
 
 Plans:
 **Wave 1**
@@ -81,39 +81,36 @@ Plans:
 
 - [x] 01-11-PLAN.md — Require native tracer evidence on every approved target
 
-**Wave 12** *(gap closure; depends on 01-11; implementation committed, verification halted)*
+**Wave 12** *(gap closure; both plans depend on completed 01-11; 01-12 is implementation-committed but verification-halted, while 01-19 is runnable and consumes that halted work-in-place)*
 
 - [ ] 01-12-PLAN.md — Bind artifact validation and initializer reads (halted after implementation; completion evidence and checkpoint resolution are owned by 01-20)
-
-**Wave 13** *(gap closure; depends on completed 01-11 and consumes committed 01-12 implementation as halted work-in-place)*
-
 - [ ] 01-19-PLAN.md — Add the current Mac and Node 25.2.1 through data-driven support rows
 
-**Wave 14** *(gap closure; depends on 01-19 and formally closes the 01-12 verification halt after local provider/full-suite evidence passes)*
+**Wave 13** *(gap closure; depends on 01-19 and formally closes the 01-12 verification halt only after exact ENV-MA25 proof and the full unfiltered local regression pass)*
 
 - [ ] 01-20-PLAN.md — Pass the complete local native regression/evidence gate and propagate support
 
-**Wave 15** *(gap closure; depends on 01-20)*
+**Wave 14** *(gap closure; depends on 01-20)*
 
 - [ ] 01-13-PLAN.md — Bind ownership and staging operations
 
-**Wave 16** *(gap closure; depends on 01-13)*
+**Wave 15** *(gap closure; depends on 01-13)*
 
 - [ ] 01-14-PLAN.md — Make promotion and recovery restartable through bound operations
 
-**Wave 17** *(gap closure; depends on 01-14)*
+**Wave 16** *(gap closure; depends on 01-14)*
 
 - [ ] 01-15-PLAN.md — Complete conservative cleanup and native safety checks
 
-**Wave 18** *(gap closure; depends on 01-15)*
+**Wave 17** *(gap closure; depends on 01-15)*
 
 - [ ] 01-16-PLAN.md — Prove the same-package prebuilt installation contract
 
-**Wave 19** *(gap closure; depends on 01-16)*
+**Wave 18** *(gap closure; depends on 01-16)*
 
 - [ ] 01-17-PLAN.md — Run the complete installed containment test matrix
 
-**Wave 20** *(gap closure; depends on 01-17)*
+**Wave 19** *(gap closure; depends on 01-17)*
 
 - [ ] 01-18-PLAN.md — Gate the final package candidate on platform evidence and review
 
@@ -205,7 +202,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Initialize Canonical Projects | 11/20 | In Progress|  |
+| 1. Initialize Canonical Projects | 12/20 | In Progress|  |
 | 2. Build the Project Truth Engine | 0/TBD | Not started | - |
 | 3. Orient and Plan One Approved Phase | 0/TBD | Not started | - |
 | 4. Deliver One Approved Phase | 0/TBD | Not started | - |

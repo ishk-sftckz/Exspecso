@@ -13,7 +13,7 @@ progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 20
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -32,7 +32,7 @@ Plan: 19 of 20; Plans 01-10 and 01-11 complete; Plan 01-12 implementation is com
 Status: Execute the corrected local support and full-regression prerequisites, formally close 01-12 in 01-20, then begin bound ownership/staging
 Last activity: 2026-08-28 — Plan 01-12 bound artifact and initializer reads to the approved native capability.
 
-Plan execution: 11 completed plans; Plan 01-12 is halted after its implementation commits, and 8 later plans remain pending (20 total). The all-target tracer is complete and the artifact-read migration exists as halted work-in-place. Plan 01-19 is runnable from completed 01-11 and consumes that committed work; Plan 01-20 adds the complete local regression evidence, changes 01-12 to complete, resolves its continuation checkpoint, and only then unblocks ownership/staging containment in 01-13.
+Plan execution: 12 plans are implementation-complete; Plan 01-12 remains verification-halted after its implementation commits, and 8 plans remain pending (20 total). The all-target tracer is complete and the artifact-read migration exists as halted work-in-place. Plan 01-19 is runnable from completed 01-11 and consumes that committed work; Plan 01-20 may formally close 01-12 and resolve its continuation checkpoint only after exact ENV-MA25 proof and the full unfiltered local regression pass, and only then may ownership/staging containment begin in 01-13.
 
 ### Active Execution — Native target matrix
 
