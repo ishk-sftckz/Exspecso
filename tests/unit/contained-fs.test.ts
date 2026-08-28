@@ -1,6 +1,6 @@
 import { link, mkdir, readFile, rename, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
 import { afterEach, describe, expect, it } from "vitest";
 import { isApprovedLinuxFilesystemType, normalizeLinuxFilesystemType, openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
@@ -23,6 +23,22 @@ function keep<T extends { close(): void }>(capability: T): T {
 }
 
 describe("contained filesystem provider", () => {
+  it("accepts the declared address diagnostic before resolving a native support row", () => {
+    const result = spawnSync(process.execPath, [
+      join(import.meta.dirname, "../../native/build.mjs"),
+      "--variant", "release",
+      "--diagnostic", "address",
+      "--row", "MISSING",
+    ], { encoding: "utf8" });
+    expect(result.status).not.toBe(0);
+    expect(`${result.stdout}\n${result.stderr}`).toContain("--row must name exactly one declared native support row");
+  });
+
+  it("keeps the bounded native safety suite in every existing matrix runner", async () => {
+    const workflow = await readFile(join(import.meta.dirname, "../../.github/workflows/containment.yml"), "utf8");
+    expect(workflow.match(/tests\/unit\/contained-fs\.test\.ts/g)).toHaveLength(3);
+  });
+
   it("accepts only the approved ext-family statfs magic after unsigned normalization", () => {
     expect(normalizeLinuxFilesystemType(0xef53n)).toBe(0xef53n);
     expect(normalizeLinuxFilesystemType(-1n)).toBe(0xffffffffn);
