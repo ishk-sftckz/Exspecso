@@ -1,13 +1,19 @@
 name: Containment native target matrix
 on:
-  push:
-    branches: [codex/containment-native-matrix-20260828]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Run the musl observation diagnostic or the complete approved matrix.
+        required: true
+        type: choice
+        options: [musl-diagnostic, full]
 permissions: {}
 concurrency:
   group: containment-native-matrix
   cancel-in-progress: false
 jobs:
   native:
+    if: inputs.mode == 'full' || matrix.family == 'musl'
     name: ${{ matrix.id }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
@@ -55,10 +61,13 @@ jobs:
           TARGET: ${{ matrix.target }}
         run: |
           set -euo pipefail
+          export EXSPECSO_TEST_TMPDIR="$PWD/.ci-fixtures"
+          mkdir -p "$EXSPECSO_TEST_TMPDIR"
           npm ci --ignore-scripts
           node native/build.mjs --variant release --target "$TARGET" --out . --headers "$EXSPECSO_NODE_HEADERS"
           npm run build
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+          node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json
           node scripts/write-containment-evidence.mjs
       - name: Fetch checksum-verified native Node inputs for Windows
         if: matrix.family == 'windows'
@@ -112,11 +121,17 @@ jobs:
             wget -q https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz
             test "$(sha256sum node-v20.19.0-headers.tar.gz | awk "{print \$1}")" = 800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb
             ln -sf /work/node20-musl /tmp/node
-            export PATH=/tmp:$PATH EXSPECSO_NODE_HEADERS=/work/node-v20.19.0-headers.tar.gz EXSPECSO_CONTAINMENT_LIBC=musl
+            export PATH=/tmp:$PATH EXSPECSO_NODE_HEADERS=/work/node-v20.19.0-headers.tar.gz EXSPECSO_CONTAINMENT_LIBC=musl EXSPECSO_TEST_TMPDIR=/work/.ci-fixtures
+            mkdir -p "$EXSPECSO_TEST_TMPDIR"
             npm ci --ignore-scripts
             node native/build.mjs --variant release --target "$TARGET" --out . --headers "$EXSPECSO_NODE_HEADERS" --libc musl
             npm run build
+            set +e
             npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+            tracer_status=$?
+            set -e
+            node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --out filesystem-observation.json
+            test "$tracer_status" -eq 0
             node scripts/write-containment-evidence.mjs'
       - name: Upload actual target evidence and binaries
         if: always()
@@ -125,6 +140,7 @@ jobs:
           name: containment-${{ matrix.id }}
           path: |
             evidence.json
+            filesystem-observation.json
             tracer-results.json
             dist/native/
             windows-preflight/

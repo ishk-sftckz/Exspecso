@@ -79,6 +79,9 @@ describe("containment evidence aggregate", () => {
     const evidenceWriter = readFileSync(join(root, "scripts/write-containment-evidence.mjs"), "utf8");
     expect(evidenceWriter).toContain("EXSPECSO_SOURCE_COMMIT");
     expect(evidenceWriter).toContain("napi: provider.napiVersion");
+    expect(loader).toContain("loadProvider(operationRoot)");
+    expect(loader).toContain("statfsSync(root, { bigint: true })");
+    expect(loader).not.toContain('["stat", ["-f", "-c", "%T", packageRoot]');
     expect(workflow).toContain('-e EXSPECSO_SOURCE_COMMIT="$GITHUB_SHA"');
     expect(workflow).toContain("wget -q https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz");
   });
