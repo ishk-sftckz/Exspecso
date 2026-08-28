@@ -99,4 +99,17 @@ describe("contained filesystem provider", () => {
     fs.root.removeDirectory("child");
     expect(fs.root.list()).toEqual([".git"]);
   });
+
+  it("NP-03 rejects writes through a read-only capability and invalid buffers", async () => {
+    const directory = await fixture();
+    await writeFile(join(directory.root, "existing"), "preserved");
+    const fs = keep(openContainedFilesystem(directory.root));
+    const readOnly = keep(fs.root.openFile("existing"));
+    expect(() => readOnly.write(Buffer.from("overwrite"))).toThrow();
+    const privateFile = keep(fs.root.createFile("space and é"));
+    expect(() => privateFile.write("not a buffer" as unknown as Buffer)).toThrow();
+    privateFile.write(Buffer.from("valid"));
+    expect(privateFile.read().toString()).toBe("valid");
+    expect(await readFile(join(directory.root, "existing"), "utf8")).toBe("preserved");
+  });
 });

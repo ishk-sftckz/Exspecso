@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { link, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { link, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { findGitRoot } from "../../src/filesystem/git-root.js";
 import { createGitFixture, createNoGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 import { runCli } from "../helpers/run-cli.js";
+import { installContainedPackage, runAtNativeReplacement } from "../helpers/containment-fixture.js";
 
 const execFileAsync = promisify(execFile);
 const temporaryPaths: string[] = [];
@@ -51,6 +52,62 @@ async function packAndRun(
 }
 
 describe("packed Codex initializer tracer", () => {
+  it("contained promotion tracer rejects a missing installed provider before any project mutation", async () => {
+    const fixture = await useFixture(createGitFixture);
+    const before = await readdir(fixture.root);
+    const installed = await installContainedPackage("release");
+    temporaryPaths.push(installed.directory);
+    expect((await readFile(installed.provider)).includes(Buffer.from("EXSPECSO_TEST_NATIVE_OPERATION"))).toBe(false);
+    await rename(installed.provider, `${installed.provider}.removed`);
+    const result = await runCli(process.execPath, [installed.cli, "init", "--agent", "codex"], { cwd: fixture.root });
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toContain("EXSPECSO_CONTAINMENT_UNAVAILABLE");
+    expect(await readdir(fixture.root)).toEqual(before);
+  }, 60_000);
+
+  for (const site of ["leaf", "parent", "ancestor"] as const) {
+    it(`contained promotion tracer reaches the native ${site} substitution boundary`, async () => {
+      const fixture = await useFixture(createGitFixture);
+      expect((await packAndRun(fixture.root)).exitCode).toBe(0);
+      const relativeAdapter = ".agents/skills/exspecso-start/SKILL.md";
+      const adapter = join(fixture.root, relativeAdapter);
+      await writeFile(adapter, "user-modified adapter\n");
+      const outside = await createTemporaryDirectory("exspecso-sentinel-");
+      const externalTarget = site === "ancestor" ? join(outside, "exspecso-start", "SKILL.md") : join(outside, "SKILL.md");
+      if (site === "ancestor") await mkdir(join(outside, "exspecso-start"));
+      await writeFile(externalTarget, "external sentinel\n");
+      const installed = await installContainedPackage("test");
+      temporaryPaths.push(installed.directory);
+      const moved = join(fixture.root, "held-original");
+      const result = await runAtNativeReplacement(installed.cli, fixture.root, async () => {
+        if (site === "leaf") {
+          await rename(adapter, moved);
+          await symlink(externalTarget, adapter);
+        } else {
+          const directory = join(fixture.root, site === "parent" ? ".agents/skills/exspecso-start" : ".agents/skills");
+          await rename(directory, moved);
+          await symlink(outside, directory, "dir");
+        }
+      });
+      expect(result.record.operation).toBe("replace:before");
+      expect(await readFile(externalTarget, "utf8")).toBe("external sentinel\n");
+      expect(installed.provider).toContain("node_modules/exspecso/dist/native/");
+      expect(await realpath(result.record.providerPath)).toBe(installed.provider);
+      if (site === "leaf") {
+        expect(result.exitCode).not.toBe(0);
+        expect(result.stderr).toContain("EXSPECSO_CONTAINMENT");
+        expect(result.stdout).toBe("");
+      } else {
+        // Approved limitation: the held original object can be written after relocation.
+        expect(result.exitCode).toBe(0);
+        const heldTarget = site === "parent" ? join(moved, "SKILL.md") : join(moved, "exspecso-start", "SKILL.md");
+        expect(await readFile(heldTarget, "utf8")).toContain("exspecso-start");
+      }
+      console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", limitation: site !== "leaf", provider: installed.provider, providerSHA256: installed.sha256, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, reached: result.record, exitCode: result.exitCode }));
+    }, 60_000);
+  }
+
   it("contained promotion tracer preserves an external hardlink during an additive rerun", async () => {
     const fixture = await useFixture(createGitFixture);
     expect((await packAndRun(fixture.root)).exitCode).toBe(0);

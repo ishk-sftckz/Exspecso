@@ -4,6 +4,7 @@ import { projectConfigSchema } from "../artifacts/schema.js";
 import { validateProject } from "../artifacts/validate.js";
 import { renderDiagnostics } from "../errors/diagnostic.js";
 import { findGitRoot } from "../filesystem/git-root.js";
+import { openContainedFilesystem } from "../filesystem/contained-fs.js";
 import { recoverInterruptedTransaction } from "../filesystem/recovery.js";
 import { commitTransaction } from "../filesystem/transaction.js";
 import { acquireInitOwnership, inspectInitOwnership, releaseInitOwnership } from "../filesystem/ownership.js";
@@ -65,6 +66,15 @@ export async function runInit(input: InitInput): Promise<number> {
       input.stderr.write(renderDiagnostics(preliminaryDiagnostics));
       return 1;
     }
+  }
+
+  // A missing host binary must fail before ownership/recovery can create state.
+  try {
+    const preflight = openContainedFilesystem(repositoryRoot);
+    preflight.close();
+  } catch (error) {
+    writeError(input.stderr, "EXSPECSO_INIT_PREFLIGHT_FAILED", error instanceof Error ? error.message : "The bundled filesystem provider is unavailable.");
+    return 1;
   }
 
   const observedOwnership = await inspectInitOwnership(repositoryRoot);

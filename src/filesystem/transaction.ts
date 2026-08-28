@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { copyFile, lstat, mkdir, open, readFile, rm, rmdir, writeFile } from "node:fs/promises";
+import { lstat, mkdir, open, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import type { PlannedWrite } from "../init/plan.js";
 import { assertSafeTarget, assertSafeTransactionPaths } from "./safe-path.js";
 import { acquireInitOwnership, inspectInitOwnership, releaseInitOwnership, type InitOwnership } from "./ownership.js";
+import { openContainedFilesystem, type RootCapability } from "./contained-fs.js";
 
 export const transactionSchemaVersion = 1;
 export const stagingRelativePath = ".exspecso/.staging";
@@ -87,18 +88,6 @@ async function syncDirectory(path: string): Promise<void> {
   }
 }
 
-async function copySynced(source: string, destination: string): Promise<void> {
-  await mkdir(dirname(destination), { recursive: true });
-  await copyFile(source, destination);
-  const handle = await open(destination, "r");
-  try {
-    await handle.sync();
-  } finally {
-    await handle.close();
-  }
-  await syncDirectory(dirname(destination));
-}
-
 async function readOptional(path: string): Promise<string | undefined> {
   try {
     return await readFile(path, "utf8");
@@ -159,18 +148,26 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
   const root = resolve(plan.repositoryRoot);
   if (plan.writes.length === 0) return { kind: "no-op" };
   const transactionId = randomUUID();
+  let filesystem: RootCapability | undefined;
   try {
+    filesystem = openContainedFilesystem(root);
     await assertSafeTransactionPaths(root, plan.writes);
   } catch (error) {
+    filesystem?.close();
     return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
   }
   let ownership = options.ownership;
   let ownsLease = false;
   if (ownership === undefined) {
-    const acquisition = await acquireInitOwnership(root);
-    if (acquisition.kind !== "acquired") return { kind: "busy" };
-    ownership = acquisition.ownership;
-    ownsLease = true;
+    try {
+      const acquisition = await acquireInitOwnership(root);
+      if (acquisition.kind !== "acquired") { filesystem.close(); return { kind: "busy" }; }
+      ownership = acquisition.ownership;
+      ownsLease = true;
+    } catch (error) {
+      filesystem.close();
+      return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
+    }
   }
   const stageRoot = join(root, stagingRelativePath, transactionId);
   let journal: TransactionJournal | undefined;
@@ -216,8 +213,30 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       const write = plan.writes.find((candidate) => candidate.relativePath === relativePath);
       if (write === undefined) throw new Error(`EXSPECSO_TRANSACTION_JOURNAL_TARGET: ${relativePath}`);
       await assertSafeTarget(root, write);
-      await copySynced(stageFile(stageRoot, relativePath), write.target);
-      if (sha256(await readFile(write.target, "utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_HASH: ${relativePath}`);
+      const components = relativePath.split("/");
+      const name = components.pop()!;
+      let parent = filesystem.root;
+      for (const component of components) parent = parent.openDirectory(component, true);
+      let existing: string | undefined;
+      try {
+        const file = parent.openFile(name);
+        try { existing = file.read().toString("utf8"); } finally { file.close(); }
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "EXSPECSO_CONTAINMENT_ENOENT") throw error;
+      }
+      if (existing === undefined ? write.expectedExists : !write.expectedExists || sha256(existing) !== write.expectedPreimageHash) {
+        throw new Error(`EXSPECSO_TRANSACTION_STALE_PREIMAGE: ${relativePath}`);
+      }
+      const staged = await readFile(stageFile(stageRoot, relativePath));
+      if (sha256(staged.toString("utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_STAGED_HASH: ${relativePath}`);
+      const temporary = parent.createFile(`.exspecso-tmp-${randomUUID()}`);
+      try {
+        temporary.write(staged);
+        temporary.sync();
+        parent.replace(temporary, name);
+        if (sha256(temporary.read().toString("utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_HASH: ${relativePath}`);
+        parent.sync();
+      } finally { temporary.close(); }
       journal = await updateJournal(stageRoot, { ...journal, completedStep: index });
       const point = faultPoint(relativePath);
       await options.onPromotion?.(point);
@@ -233,8 +252,12 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
   } catch (error) {
     return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
   } finally {
-    if (committed && journal !== undefined) await rmdir(join(root, ".exspecso", ".staging")).catch(() => undefined);
-    if (ownsLease && ownership !== undefined) await releaseInitOwnership(ownership);
+    try {
+      filesystem.close();
+      if (committed && journal !== undefined) await rmdir(join(root, ".exspecso", ".staging")).catch(() => undefined);
+    } finally {
+      if (ownsLease && ownership !== undefined) await releaseInitOwnership(ownership);
+    }
   }
 }
 
