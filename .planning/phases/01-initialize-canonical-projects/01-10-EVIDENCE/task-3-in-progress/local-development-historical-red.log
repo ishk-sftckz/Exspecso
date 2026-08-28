@@ -1,0 +1,63 @@
+
+> exspecso@0.1.0 test
+> vitest --run tests/integration/init-codex-tracer.test.ts -t native (leaf|parent|ancestor) substitution --reporter=default --reporter=json --outputFile=/tmp/exspecso-task3-local-red.json
+
+
+ RUN  v4.1.11 /Users/ishk.sftckz/Projects/exspecso
+
+stdout | tests/integration/init-codex-tracer.test.ts > packed Codex initializer tracer > contained promotion tracer reaches the native leaf substitution boundary
+{"family":"TR-01-RED","site":"leaf","mode":"instrumented historical CLI","baselineCommit":"bbe2e5db32e06bc66f7c9e1a87252270f174d9a3","sources":{"src/adapters/managed-file.ts":"8a2a9f7735e52aa04bfb797b65018b66993d073e606be05763f7c5a35df73bb4","src/adapters/registry.ts":"5d8edc0e43b6a80022d73c3cd34ee26322067a89ecf74ca9e4378f156d0e3fc3","src/artifacts/resolve.ts":"19e60702c1d48e603ffdaee80a56c7f4a70cc390301545660dc135ba6d80144e","src/artifacts/schema.ts":"09bf30f719384b35f9937005c72e2537b5b6a34220ccc14c57e39dfbe090e68a","src/artifacts/templates.ts":"d061abd013474d038057484746a39c600092ef236d468defcda7eaca5f4e86d6","src/artifacts/validate.ts":"48a956d7a8001f7b00eae23ee988c5619967ae0939eb615cf04f62811b3cad50","src/cli/arguments.ts":"c2d569ff84de1f6f161bb79d14b53798d370e1f575eb1545f80f576d1d914d59","src/cli/main.ts":"c5bbead2ea830229fc131ab6e15dfa2ceeb714956996769f5f568bacc5f944e9","src/errors/diagnostic.ts":"f666742ec3416a7c1c3d2e955b6a1d9ddf90cf7e2719f8950d1ea98dddb846c9","src/filesystem/git-root.ts":"dd50a498e4d6ad37fdf95c32694a24750003cd526eb288648bc836336280abc4","src/filesystem/ownership.ts":"9c7dc436adc20542cc4349a00f4ce1775e6029b3a242587c0ae45964da37b790","src/filesystem/recovery.ts":"88990271a38aa1f4093b8b6d3645824bf3dbc417426cd8dad94b6cab58696e84","src/filesystem/safe-path.ts":"3e39230fff11ee50c63f71f2596e88c6eee1b8db7c1829282c84c4ad28aab65b","src/filesystem/transaction.ts":"a66b886b425ccd9d2cb762bc90aab5a292f393ffa1a3474c666539c4a755ed8f","src/init/completion.ts":"502f4dd63861ca5d25d57cce1988e4325e245d8ff5ad5283b5335b71868a3071","src/init/plan.ts":"f759506c81bd9d171028f35166be66a3135cf2e5444cae0bbbe25ab7cdc5d244","src/init/run-init.ts":"0cd02a1d7d5aa5972a9efaffc83c27b0c9a72546aecf5ea78783ab157768a80c","src/init/runtime-selection.ts":"86150991e73d9cb8deaf45fee97349c56db87a9f7c180c6f0df9b7fb4b0d13f7"},"instrumentedModuleSHA256":"954b31a088f9d26b1d9fa047d00284c882ac4f6b84414d16fbef4cb0b03193bb","tarballSHA256":"06ede5e2c0caf255c27795de4dbf8b93beb50d16c25ab261c9af0758d40c9ee7","reached":{"operation":"copy:before","pid":94942,"module":"file:///private/var/folders/gb/rm0q4rln62b29shqvhmg3d5c0000gn/T/exspecso-historical-install-vbkxGe/runner/node_modules/exspecso/dist/filesystem/transaction.js"},"exitCode":0,"externalChanged":true}
+
+stdout | tests/integration/init-codex-tracer.test.ts > packed Codex initializer tracer > contained promotion tracer reaches the native parent substitution boundary
+{"family":"TR-01-RED","site":"parent","mode":"instrumented historical CLI","baselineCommit":"bbe2e5db32e06bc66f7c9e1a87252270f174d9a3","sources":{"src/adapters/managed-file.ts":"8a2a9f7735e52aa04bfb797b65018b66993d073e606be05763f7c5a35df73bb4","src/adapters/registry.ts":"5d8edc0e43b6a80022d73c3cd34ee26322067a89ecf74ca9e4378f156d0e3fc3","src/artifacts/resolve.ts":"19e60702c1d48e603ffdaee80a56c7f4a70cc390301545660dc135ba6d80144e","src/artifacts/schema.ts":"09bf30f719384b35f9937005c72e2537b5b6a34220ccc14c57e39dfbe090e68a","src/artifacts/templates.ts":"d061abd013474d038057484746a39c600092ef236d468defcda7eaca5f4e86d6","src/artifacts/validate.ts":"48a956d7a8001f7b00eae23ee988c5619967ae0939eb615cf04f62811b3cad50","src/cli/arguments.ts":"c2d569ff84de1f6f161bb79d14b53798d370e1f575eb1545f80f576d1d914d59","src/cli/main.ts":"c5bbead2ea830229fc131ab6e15dfa2ceeb714956996769f5f568bacc5f944e9","src/errors/diagnostic.ts":"f666742ec3416a7c1c3d2e955b6a1d9ddf90cf7e2719f8950d1ea98dddb846c9","src/filesystem/git-root.ts":"dd50a498e4d6ad37fdf95c32694a24750003cd526eb288648bc836336280abc4","src/filesystem/ownership.ts":"9c7dc436adc20542cc4349a00f4ce1775e6029b3a242587c0ae45964da37b790","src/filesystem/recovery.ts":"88990271a38aa1f4093b8b6d3645824bf3dbc417426cd8dad94b6cab58696e84","src/filesystem/safe-path.ts":"3e39230fff11ee50c63f71f2596e88c6eee1b8db7c1829282c84c4ad28aab65b","src/filesystem/transaction.ts":"a66b886b425ccd9d2cb762bc90aab5a292f393ffa1a3474c666539c4a755ed8f","src/init/completion.ts":"502f4dd63861ca5d25d57cce1988e4325e245d8ff5ad5283b5335b71868a3071","src/init/plan.ts":"f759506c81bd9d171028f35166be66a3135cf2e5444cae0bbbe25ab7cdc5d244","src/init/run-init.ts":"0cd02a1d7d5aa5972a9efaffc83c27b0c9a72546aecf5ea78783ab157768a80c","src/init/runtime-selection.ts":"86150991e73d9cb8deaf45fee97349c56db87a9f7c180c6f0df9b7fb4b0d13f7"},"instrumentedModuleSHA256":"954b31a088f9d26b1d9fa047d00284c882ac4f6b84414d16fbef4cb0b03193bb","tarballSHA256":"06ede5e2c0caf255c27795de4dbf8b93beb50d16c25ab261c9af0758d40c9ee7","reached":{"operation":"copy:before","pid":94960,"module":"file:///private/var/folders/gb/rm0q4rln62b29shqvhmg3d5c0000gn/T/exspecso-historical-install-0NkJcL/runner/node_modules/exspecso/dist/filesystem/transaction.js"},"exitCode":0,"externalChanged":true}
+
+stdout | tests/integration/init-codex-tracer.test.ts > packed Codex initializer tracer > contained promotion tracer reaches the native ancestor substitution boundary
+{"family":"TR-01-RED","site":"ancestor","mode":"instrumented historical CLI","baselineCommit":"bbe2e5db32e06bc66f7c9e1a87252270f174d9a3","sources":{"src/adapters/managed-file.ts":"8a2a9f7735e52aa04bfb797b65018b66993d073e606be05763f7c5a35df73bb4","src/adapters/registry.ts":"5d8edc0e43b6a80022d73c3cd34ee26322067a89ecf74ca9e4378f156d0e3fc3","src/artifacts/resolve.ts":"19e60702c1d48e603ffdaee80a56c7f4a70cc390301545660dc135ba6d80144e","src/artifacts/schema.ts":"09bf30f719384b35f9937005c72e2537b5b6a34220ccc14c57e39dfbe090e68a","src/artifacts/templates.ts":"d061abd013474d038057484746a39c600092ef236d468defcda7eaca5f4e86d6","src/artifacts/validate.ts":"48a956d7a8001f7b00eae23ee988c5619967ae0939eb615cf04f62811b3cad50","src/cli/arguments.ts":"c2d569ff84de1f6f161bb79d14b53798d370e1f575eb1545f80f576d1d914d59","src/cli/main.ts":"c5bbead2ea830229fc131ab6e15dfa2ceeb714956996769f5f568bacc5f944e9","src/errors/diagnostic.ts":"f666742ec3416a7c1c3d2e955b6a1d9ddf90cf7e2719f8950d1ea98dddb846c9","src/filesystem/git-root.ts":"dd50a498e4d6ad37fdf95c32694a24750003cd526eb288648bc836336280abc4","src/filesystem/ownership.ts":"9c7dc436adc20542cc4349a00f4ce1775e6029b3a242587c0ae45964da37b790","src/filesystem/recovery.ts":"88990271a38aa1f4093b8b6d3645824bf3dbc417426cd8dad94b6cab58696e84","src/filesystem/safe-path.ts":"3e39230fff11ee50c63f71f2596e88c6eee1b8db7c1829282c84c4ad28aab65b","src/filesystem/transaction.ts":"a66b886b425ccd9d2cb762bc90aab5a292f393ffa1a3474c666539c4a755ed8f","src/init/completion.ts":"502f4dd63861ca5d25d57cce1988e4325e245d8ff5ad5283b5335b71868a3071","src/init/plan.ts":"f759506c81bd9d171028f35166be66a3135cf2e5444cae0bbbe25ab7cdc5d244","src/init/run-init.ts":"0cd02a1d7d5aa5972a9efaffc83c27b0c9a72546aecf5ea78783ab157768a80c","src/init/runtime-selection.ts":"86150991e73d9cb8deaf45fee97349c56db87a9f7c180c6f0df9b7fb4b0d13f7"},"instrumentedModuleSHA256":"954b31a088f9d26b1d9fa047d00284c882ac4f6b84414d16fbef4cb0b03193bb","tarballSHA256":"06ede5e2c0caf255c27795de4dbf8b93beb50d16c25ab261c9af0758d40c9ee7","reached":{"operation":"copy:before","pid":94969,"module":"file:///private/var/folders/gb/rm0q4rln62b29shqvhmg3d5c0000gn/T/exspecso-historical-install-PeyKQv/runner/node_modules/exspecso/dist/filesystem/transaction.js"},"exitCode":0,"externalChanged":true}
+
+ ❯ tests/integration/init-codex-tracer.test.ts (11 tests | 3 failed | 8 skipped) 4959ms
+     ↓ contained promotion tracer rejects a missing installed provider before any project mutation
+     × contained promotion tracer reaches the native leaf substitution boundary 2506ms
+     × contained promotion tracer reaches the native parent substitution boundary 1307ms
+     × contained promotion tracer reaches the native ancestor substitution boundary 1146ms
+     ↓ contained promotion tracer preserves an external hardlink during an additive rerun
+     ↓ creates only the canonical foundation and Codex adapter
+     ↓ returns an error before writing when the selected agent is unsupported
+     ↓ resolves the containing Git root before initialization
+     ↓ initializes at the nearest containing Git root from a deep nested cwd
+     ↓ uses a nested Git repository instead of its parent repository
+     ↓ reports a repairable no-repository diagnostic without writes
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/init-codex-tracer.test.ts > packed Codex initializer tracer > contained promotion tracer reaches the native leaf substitution boundary
+ FAIL  tests/integration/init-codex-tracer.test.ts > packed Codex initializer tracer > contained promotion tracer reaches the native parent substitution boundary
+ FAIL  tests/integration/init-codex-tracer.test.ts > packed Codex initializer tracer > contained promotion tracer reaches the native ancestor substitution boundary
+AssertionError: expected '<!-- exspecso:managed template-versio…' to be 'external sentinel\n' // Object.is equality
+
+- Expected
++ Received
+
+- external sentinel
++ <!-- exspecso:managed template-version=1 original-body-sha256=b1a9d929f72767a90863bbe15f1023926b0a704e80d4f3ec0f1c313dd48e88ac -->
++ ---
++ name: exspecso-start
++ description: Begin Exspecso project orientation from the canonical repository artifacts.
++ ---
++
++ # Exspecso Start
++
++ Use the repository's canonical Exspecso artifacts to begin project orientation in OpenAI Codex. The portable operation identity is `exspecso-start`, documented as `/exspecso-start`; invoke it here as `$exspecso-start`. Preserve approved intent, surface uncertainty for human resolution, and write only the artifacts required by the approved workflow.
+
+
+ ❯ tests/integration/init-codex-tracer.test.ts:96:31
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 8 skipped (11)
+   Start at  12:26:48
+   Duration  5.15s (transform 67ms, setup 0ms, import 90ms, tests 4.96s, environment 0ms)
+
+JSON report written to /tmp/exspecso-task3-local-red.json

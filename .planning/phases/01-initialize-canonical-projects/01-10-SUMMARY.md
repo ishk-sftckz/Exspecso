@@ -69,3 +69,8 @@ The user replied exactly `approve` on 2026-08-28 to the verified Task 1 slice; t
 ## Resume
 
 Read `.continue-here.md`, `01-10-TRACER-REVIEW.md`, the approved SUPPORT contract and `01-10-PLAN.md`. The tracer approval is recorded. Continue Task 3 without redoing Tasks 1–2 or re-requesting either approval. Preserve the halted summary until the plan is actually complete; explicitly resume the current checkpoint rather than relying on summary-file counts.
+
+
+## Task 3 partial continuity — not completion
+
+Task 3 has uncommitted historical/installed test infrastructure. Run 33144791900 reproduced all three historical external writes on macOS and passed macOS 21 focused / 77 regression tests; Windows provider 11/11 passed, but the historical Windows CLI failed at its initial normal invocation before reaching a race. No Windows installed tracer pass is claimed. Evidence is retained in `01-10-EVIDENCE/task-3-in-progress/`. The user then raised a Trusted Access platform banner; new test runs paused for account-access clarification. See `.continue-here.md` for exact resume details and the concurrent user commit that must be preserved. Plan remains 2/3 tasks, Phase 1 remains 9/18 plans, and both prior approvals remain recorded.
