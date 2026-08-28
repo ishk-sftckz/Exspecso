@@ -52,7 +52,7 @@ if (process.platform === "darwin") {
 } else if (process.platform === "win32") {
   execFileSync(join(process.env.ProgramFiles, "PowerShell/7/pwsh.exe"), ["-NoProfile", "-NonInteractive", "-File", join(root, "native/windows-preflight.ps1")], { cwd: root, stdio: "inherit" });
   windows = JSON.parse(readFileSync(join(root, "windows-preflight/environment.json"), "utf8").replace(/^\uFEFF/, ""));
-  if (supportRow.os.family !== "windows" || windows.version !== supportRow.os.version || !`${windows.build}.${windows.ubr}`.startsWith(`${supportRow.os.version.split(".").at(-1)}.`)) throw new Error("Selected support row does not match Windows build");
+  if (supportRow.os.family !== "windows" || windows.version !== supportRow.os.version || `${windows.build}.${windows.ubr}` !== supportRow.os.build) throw new Error("Selected support row does not match Windows build");
   if (process.arch === "x64" && (windows.ubr !== 33296 || windows.compilerFileVersion !== "19.44.35228.0" || windows.compilerSHA256 !== "88c8344236a27a6e727e0a8edc49aaa2690bdc7a9464b9d18cc7abe70a9f1c0d")) throw new Error("Windows x64 OS patch/compiler pin drift");
   if (process.arch === "arm64" && (!windows.ubr || !windows.compilerFileVersion || !windows.compilerSHA256)) throw new Error("Windows ARM64 observation is incomplete");
   const expectedHeaders = { "um/winternl.h": "a43424486349c38f697c009512dfe4eb8fca733d7665afab42f50752170b9785", "um/WinBase.h": "ec538199f5ebe8cec2dfd4f1ba48316ef776c82d37277aed3a677965e494f192", "um/fileapi.h": "f8927178c75de487c0e57f044a215e455522bf6eaa0b660421be09cd06ae05a1" };

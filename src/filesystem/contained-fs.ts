@@ -4,7 +4,7 @@ import { lstatSync, readFileSync, realpathSync, statfsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadSupportMatrix, resolveSupportRow, type RuntimeObservation } from "./support-matrix.js";
+import { loadSupportMatrix, resolveManifestEntry, type RuntimeObservation, type SupportManifestEntry } from "./support-matrix.js";
 
 interface NativeProvider {
   readonly variant: "release" | "test";
@@ -20,10 +20,7 @@ interface NativeProvider {
   unlink(parent: object, name: string, directory: boolean): void;
   stat(handle: object): { device: bigint; inode: bigint; size: bigint };
 }
-interface Target {
-  supportRowId: string; target: string; platform: string; arch: string; osVersion: string; osBuild: string;
-  filesystem: string; libc?: string; napiVersion: number; byteLength: number; sha256: string; path: string;
-}
+interface Target extends SupportManifestEntry { readonly byteLength: number; readonly sha256: string; }
 interface Manifest { schemaVersion: 2; packageVersion: string; buildCommit: string; variant: "release" | "test"; targets: Target[] }
 export interface ProviderProvenance { readonly path: string; readonly sha256: string; readonly buildCommit: string; readonly variant: "release" | "test"; readonly supportRowId: string }
 export type BoundEntryKind = "directory" | "file";
@@ -95,14 +92,14 @@ function observeRuntime(operationRoot: string): RuntimeObservation {
 function loadProvider(operationRoot: string): { native: NativeProvider; provenance: ProviderProvenance } {
   try {
     const matrix = loadSupportMatrix();
-    const supportRow = resolveSupportRow(matrix, observeRuntime(operationRoot));
+    const observation = observeRuntime(operationRoot);
     const manifest = JSON.parse(readFileSync(join(packageRoot, "dist/native/manifest.json"), "utf8")) as Manifest;
     const metadata = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as { version: string };
     if (manifest.schemaVersion !== 2 || manifest.packageVersion !== metadata.version || !/^[a-f0-9]{40}$/.test(manifest.buildCommit) || !["release", "test"].includes(manifest.variant) || !Array.isArray(manifest.targets)) unavailable("invalid provider manifest");
-    const entries = manifest.targets.filter((entry) => entry.target === supportRow.target && entry.supportRowId === supportRow.id);
-    if (entries.length !== 1) unavailable("missing or duplicate native support row");
-    const entry = entries[0];
-    if (entry.platform !== process.platform || entry.arch !== process.arch || entry.osVersion !== supportRow.os.version || entry.osBuild !== (supportRow.os.build ?? supportRow.os.kernel) || entry.filesystem !== supportRow.filesystem || entry.libc !== supportRow.libc || entry.napiVersion !== matrix.nodePolicy.napi || Number(process.versions.napi) < entry.napiVersion || entry.path !== `${supportRow.id}/${supportRow.target}/contained-fs.node` || !Number.isSafeInteger(entry.byteLength) || entry.byteLength <= 0 || !/^[a-f0-9]{64}$/.test(entry.sha256)) unavailable("incompatible native support row");
+    const resolved = resolveManifestEntry(matrix, observation, manifest.targets);
+    const supportRow = resolved.supportRow;
+    const entry = resolved.entry as Target;
+    if (Number(process.versions.napi) < entry.napiVersion || !Number.isSafeInteger(entry.byteLength) || entry.byteLength <= 0 || !/^[a-f0-9]{64}$/.test(entry.sha256)) unavailable("incompatible native support row");
     const binary = join(packageRoot, "dist/native", entry.path);
     if (!lstatSync(binary).isFile()) unavailable("provider must be an in-package regular file");
     const actual = realpathSync(binary);

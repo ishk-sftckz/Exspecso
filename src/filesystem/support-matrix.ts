@@ -39,6 +39,19 @@ export interface SupportMatrix {
   readonly rows: readonly SupportRow[];
 }
 
+export interface SupportManifestEntry {
+  readonly supportRowId: string;
+  readonly target: string;
+  readonly platform: string;
+  readonly arch: string;
+  readonly osVersion: string;
+  readonly osBuild: string;
+  readonly filesystem: string;
+  readonly libc?: string;
+  readonly napiVersion: number;
+  readonly path: string;
+}
+
 function fail(message: string): never {
   throw new Error(`EXSPECSO_CONTAINMENT_UNAVAILABLE: invalid support matrix: ${message}`);
 }
@@ -127,4 +140,18 @@ export function resolveSupportRow(matrix: SupportMatrix, observation: RuntimeObs
     && row.cpu === observation.arch && row.filesystem === observation.filesystem && row.libc === observation.libc);
   if (matches.length !== 1) throw new Error(`EXSPECSO_CONTAINMENT_UNAVAILABLE: ${matches.length ? "ambiguous" : "undeclared"} runtime support row`);
   return matches[0];
+}
+
+export function resolveManifestEntry(matrix: SupportMatrix, observation: RuntimeObservation, entries: readonly SupportManifestEntry[]): { readonly supportRow: SupportRow; readonly entry: SupportManifestEntry } {
+  const supportRow = resolveSupportRow(matrix, observation);
+  const matching = entries.filter((entry) => entry.target === supportRow.target && entry.supportRowId === supportRow.id);
+  if (matching.length !== 1) throw new Error(`EXSPECSO_CONTAINMENT_UNAVAILABLE: ${matching.length ? "duplicate" : "missing"} native support row`);
+  const entry = matching[0];
+  if (entry.platform !== observation.platform || entry.arch !== observation.arch || entry.osVersion !== supportRow.os.version
+    || entry.osBuild !== (supportRow.os.build ?? supportRow.os.kernel) || entry.filesystem !== supportRow.filesystem
+    || entry.libc !== supportRow.libc || entry.napiVersion !== matrix.nodePolicy.napi
+    || entry.path !== `${supportRow.id}/${supportRow.target}/contained-fs.node`) {
+    throw new Error("EXSPECSO_CONTAINMENT_UNAVAILABLE: incompatible native support row");
+  }
+  return { supportRow, entry };
 }
