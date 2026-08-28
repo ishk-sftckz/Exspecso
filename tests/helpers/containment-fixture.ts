@@ -87,12 +87,12 @@ export async function runAtHistoricalReplacement(cli: string, cwd: string, attac
   });
   let stdout = "", stderr = "";
   child.stdout!.on("data", bytes => { stdout += bytes; }); child.stderr!.on("data", bytes => { stderr += bytes; });
-  const exited = new Promise<number | null>((resolveExit, reject) => { child.once("error", reject); child.once("close", resolveExit); });
+  const exited = new Promise<number | null>((resolveExit, reject) => { child.once("error", reject); child.once("exit", resolveExit); });
   const timer = setTimeout(() => child.kill("SIGKILL"), 15_000);
   try {
     const record = await new Promise<{ operation: string; pid: number; module: string }>((resolveReach, reject) => {
       child.once("message", value => resolveReach(value as { operation: string; pid: number; module: string }));
-      child.once("error", reject); child.once("close", () => reject(new Error("Historical barrier not reached: " + stderr)));
+      child.once("error", reject); child.once("exit", () => reject(new Error("Historical barrier not reached: " + stderr)));
     });
     if (record.operation !== "copy:before" || record.pid !== child.pid) throw new Error("Unexpected historical barrier");
     await attack(); child.send({ operation: "copy:continue" }); child.disconnect();

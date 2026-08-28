@@ -19,6 +19,7 @@ jobs:
           git remote add origin https://github.com/ishk-sftckz/exspecso.git
           git fetch --depth=1 origin $env:GITHUB_SHA
           if ($LASTEXITCODE) { throw 'git fetch failed' }
+          git config core.autocrlf false
           git checkout --detach FETCH_HEAD
           if ($LASTEXITCODE) { throw 'git checkout failed' }
       - name: Inspect the pinned native Windows SDK and toolchain
