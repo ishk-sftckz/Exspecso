@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { lstatSync, readFileSync, realpathSync } from "node:fs";
+import { lstatSync, readFileSync, realpathSync, statfsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,8 +27,16 @@ interface Manifest { schemaVersion: number; packageVersion: string; buildCommit:
 export interface ProviderProvenance { readonly path: string; readonly sha256: string; readonly buildCommit: string; readonly variant: "release" | "test" }
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);
+const APPROVED_LINUX_FILESYSTEM_MAGIC = 0xef53n;
 function unavailable(message: string): never { throw new Error(`EXSPECSO_CONTAINMENT_UNAVAILABLE: ${message}`); }
-function loadProvider(): { native: NativeProvider; provenance: ProviderProvenance } {
+export function normalizeLinuxFilesystemType(type: bigint): bigint { return BigInt.asUintN(32, type); }
+export function isApprovedLinuxFilesystemType(type: bigint): boolean { return normalizeLinuxFilesystemType(type) === APPROVED_LINUX_FILESYSTEM_MAGIC; }
+function observeLinuxOperationRootFilesystem(root: string): { raw: bigint; normalized: bigint; hex: string; mapping: "ext2/ext3" | "unapproved" } {
+  const raw = BigInt(statfsSync(root, { bigint: true }).type);
+  const normalized = normalizeLinuxFilesystemType(raw);
+  return Object.freeze({ raw, normalized, hex: `0x${normalized.toString(16).padStart(8, "0")}`, mapping: isApprovedLinuxFilesystemType(raw) ? "ext2/ext3" : "unapproved" });
+}
+function loadProvider(operationRoot: string): { native: NativeProvider; provenance: ProviderProvenance } {
   try {
     const [major, minor, patch] = process.versions.node.split(".").map(Number);
     if (!(major === 20 && (minor > 19 || minor === 19 && patch >= 0) || major === 22 && minor >= 13 || major === 24 || major === 26)) unavailable("unsupported Node version");
@@ -55,12 +63,12 @@ function loadProvider(): { native: NativeProvider; provenance: ProviderProvenanc
       if (!approved || observed.version !== entry.osVersion || !`${observed.build}.${observed.ubr}`.startsWith(`${entry.osBuild?.split(".")[0]}.`)) unavailable("unverified Windows version; no project changes made");
     } else if (process.platform === "linux" && ["x64", "arm64"].includes(process.arch) && entry.filesystem === "ext4" && entry.osVersion === "Ubuntu 24.04.4 LTS") {
       const kernel = execFileSync("uname", ["-r"], { encoding: "utf8" }).trim();
-      const filesystem = execFileSync("stat", ["-f", "-c", "%T", packageRoot], { encoding: "utf8" }).trim();
+      const filesystem = observeLinuxOperationRootFilesystem(operationRoot);
       const libc = execFileSync("getconf", ["GNU_LIBC_VERSION"], { encoding: "utf8" }).trim();
-      if (kernel !== entry.osBuild || filesystem !== "ext2/ext3" || (entry.libc === "glibc-2.39" && libc !== "glibc 2.39")) unavailable("unverified Linux version/filesystem/libc; no project changes made");
+      if (kernel !== entry.osBuild || filesystem.mapping !== "ext2/ext3" || (entry.libc === "glibc-2.39" && libc !== "glibc 2.39")) unavailable(`unverified Linux version/filesystem/libc (${kernel}/raw=${filesystem.raw.toString()} normalized=${filesystem.normalized.toString()} hex=${filesystem.hex} mapping=${filesystem.mapping}/${libc}); no project changes made`);
     } else if (process.platform === "linux" && ["x64", "arm64"].includes(process.arch) && entry.filesystem === "ext4" && entry.osVersion === "Alpine 3.24" && entry.libc === "musl-1.2.6-r2") {
       const kernel = execFileSync("uname", ["-r"], { encoding: "utf8" }).trim();
-      const filesystem = execFileSync("stat", ["-f", "-c", "%T", packageRoot], { encoding: "utf8" }).trim();
+      const filesystem = observeLinuxOperationRootFilesystem(operationRoot);
       let libc: string;
       try {
         libc = execFileSync("ldd", ["--version"], { encoding: "utf8" }).toString();
@@ -68,7 +76,7 @@ function loadProvider(): { native: NativeProvider; provenance: ProviderProvenanc
         if (typeof error?.stderr !== "string" || !error.stderr.includes("musl libc")) throw error;
         libc = error.stderr;
       }
-      if (!kernel || filesystem !== "ext2/ext3" || !libc.includes("Version 1.2.6")) unavailable(`unverified Alpine Linux/filesystem/libc (${kernel}/${filesystem}/${libc.replace(/\s+/g, " ").trim()}); no project changes made`);
+      if (!kernel || filesystem.mapping !== "ext2/ext3" || !libc.includes("Version 1.2.6")) unavailable(`unverified Alpine Linux/filesystem/libc (${kernel}/raw=${filesystem.raw.toString()} normalized=${filesystem.normalized.toString()} hex=${filesystem.hex} mapping=${filesystem.mapping}/${libc.replace(/\s+/g, " ").trim()}); no project changes made`);
     } else unavailable("this tracer has no verified provider for the host");
     const binary = join(packageRoot, "dist/native", entry.path);
     if (!lstatSync(binary).isFile()) unavailable("provider must be an in-package regular file");
@@ -112,9 +120,10 @@ export interface RootCapability {
 }
 /** Synchronous native primitives never take a path after the initial root open. */
 export function openContainedFilesystem(path: string): RootCapability {
-  const { native, provenance } = loadProvider();
+  const operationRoot = realpathSync(path);
+  const { native, provenance } = loadProvider(operationRoot);
   const capabilities: Capability[] = [];
-  const root = new DirectoryCapability(native, native.openRoot(realpathSync(path)), (capability) => capabilities.push(capability));
+  const root = new DirectoryCapability(native, native.openRoot(operationRoot), (capability) => capabilities.push(capability));
   return { root, provenance, close() {
     let failure: unknown;
     for (const capability of capabilities.splice(0).reverse().concat(root)) {

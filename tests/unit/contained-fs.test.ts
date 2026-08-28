@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { afterEach, describe, expect, it } from "vitest";
-import { openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
+import { isApprovedLinuxFilesystemType, normalizeLinuxFilesystemType, openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 
 const fixtures: GitFixture[] = [];
@@ -23,6 +23,13 @@ function keep<T extends { close(): void }>(capability: T): T {
 }
 
 describe("contained filesystem provider", () => {
+  it("accepts only the approved ext-family statfs magic after unsigned normalization", () => {
+    expect(normalizeLinuxFilesystemType(0xef53n)).toBe(0xef53n);
+    expect(normalizeLinuxFilesystemType(-1n)).toBe(0xffffffffn);
+    expect(isApprovedLinuxFilesystemType(0xef53n)).toBe(true);
+    expect(isApprovedLinuxFilesystemType(0x794c7630n)).toBe(false);
+  });
+
   it("NP-01 rejects invalid components and wrong types without creating entries", async () => {
     const directory = await fixture();
     const fs = keep(openContainedFilesystem(directory.root));

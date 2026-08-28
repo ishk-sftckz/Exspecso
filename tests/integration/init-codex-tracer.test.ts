@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { link, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, join, resolve } from "node:path";
+import { basename, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { findGitRoot } from "../../src/filesystem/git-root.js";
@@ -19,7 +19,11 @@ afterEach(async () => {
 });
 
 async function createTemporaryDirectory(prefix: string): Promise<string> {
-  const path = await mkdtemp(join(tmpdir(), prefix));
+  const configured = process.env.EXSPECSO_TEST_TMPDIR;
+  const parent = configured === undefined ? tmpdir() : configured;
+  if (configured !== undefined && (!isAbsolute(parent) || resolve(parent) !== parent)) throw new Error("EXSPECSO_TEST_TMPDIR must be an absolute canonical test fixture path");
+  await mkdir(parent, { recursive: true });
+  const path = await mkdtemp(join(parent, prefix));
   temporaryPaths.push(path);
   return path;
 }
@@ -79,6 +83,7 @@ describe("packed Codex initializer tracer", () => {
       if (release) {
         expect(release.installed.manifest.variant).toBe("release");
         expect(release.installed.sha256).toBe(release.installed.manifest.targets[0].sha256);
+        expect(await realpath(fixture.root)).not.toBe(await realpath(release.installed));
         console.log(JSON.stringify({ family: "TR-02", mode: "uninstrumented release CLI", provider: release.installed.provider, providerSHA256: release.installed.sha256, tarballSHA256: release.tarballSHA256, manifest: release.installed.manifest, provenance: release.installed.provenance, packageInventory: release.installed.packageInventory, exitCode: release.exitCode }));
       }
       const relativeAdapter = ".agents/skills/exspecso-start/SKILL.md";

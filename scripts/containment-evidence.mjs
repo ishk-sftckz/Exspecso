@@ -20,6 +20,18 @@ if (!files.length) fail("no evidence records found");
 const records = files.map((file) => JSON.parse(readFileSync(join(evidenceDir, file), "utf8")));
 const seen = new Map();
 let sourceCommit;
+const approvedLinuxFilesystemMagic = 0xef53n;
+function normalizedHex(value) { return `0x${value.toString(16).padStart(8, "0")}`; }
+function verifyOperationRootFilesystem(record, row) {
+  if (row.os.family !== "linux") return;
+  const observation = record.environment?.operationRootFilesystem;
+  if (!observation || typeof observation.path !== "string" || !Array.isArray(observation.mountinfo) || !observation.mountinfo.length || typeof observation.statText !== "string") fail(`${record.rowId} lacks operation-root filesystem observation`);
+  if (!/^-?\d+$/.test(observation.rawMagicDecimal ?? "") || !/^\d+$/.test(observation.normalizedMagicDecimal ?? "")) fail(`${record.rowId} lacks numeric operation-root filesystem magic`);
+  const raw = BigInt(observation.rawMagicDecimal);
+  const normalized = BigInt.asUintN(32, raw);
+  if (observation.normalizedMagicDecimal !== normalized.toString() || observation.normalizedMagicHex !== normalizedHex(normalized)) fail(`${record.rowId} operation-root filesystem magic encoding mismatches`);
+  if (normalized !== approvedLinuxFilesystemMagic || observation.mapping !== "ext2/ext3") fail(`${record.rowId} operation-root filesystem is unapproved (${observation.mapping ?? "UNKNOWN"}/${observation.normalizedMagicHex ?? "UNKNOWN"})`);
+}
 for (const record of records) {
   if (record.schemaVersion !== 1 || record.stage !== stage) fail("record schema or stage is invalid");
   if (record.matrixRevision !== matrix.revision) fail(`wrong matrix revision for ${record.rowId}`);
@@ -31,6 +43,7 @@ for (const record of records) {
   if (record.evidenceMode !== "release") fail(`${record.rowId} evidence mode is not release`);
   if (record.environment?.native !== true) fail(`${record.rowId} is emulated or not native`);
   if (record.environment?.cpu !== row.cpu || record.environment?.filesystem !== row.filesystem || record.environment?.libc !== row.libc) fail(`${record.rowId} environment does not match approved target`);
+  verifyOperationRootFilesystem(record, row);
   if (record.environment?.node?.version !== row.node.baseline || record.environment?.node?.napi !== matrix.nodePolicy.napi) fail(`${record.rowId} Node/N-API mismatch`);
   if (!record.environment?.os || !record.environment?.kernel || !record.environment?.compiler || !record.environment?.toolchain) fail(`${record.rowId} lacks exact environment observations`);
   if (!Array.isArray(record.tracer?.requiredTestIds) || !record.tracer.requiredTestIds.includes("installed-native-promotion") || !Array.isArray(record.tracer?.reachedTestIds) || !record.tracer.reachedTestIds.includes("installed-native-promotion") || record.tracer.exitCode !== 0) fail(`${record.rowId} did not reach the installed tracer`);
