@@ -57,10 +57,14 @@ jobs:
         run: |
           npm ci --ignore-scripts
           if ($LASTEXITCODE) { throw 'npm ci failed' }
-      - name: Observe RED provider tests before Windows implementation
+      - name: Build the native Windows release provider and TypeScript
         run: |
-          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 30000 --reporter=default --reporter=json --outputFile=windows-red-results.json
-          if ($LASTEXITCODE -eq 0) { throw 'Expected RED before the Windows provider exists' }
+          node native/build.mjs --variant release --target win32-x64 --out . --headers "$env:EXSPECSO_NODE_HEADERS" --node-lib "$env:EXSPECSO_NODE_LIB"
+          if ($LASTEXITCODE) { throw 'Native build failed' }
+          npm run build
+          if ($LASTEXITCODE) { throw 'TypeScript build failed' }
+      - name: Prove native Windows provider parity
+        run: npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 30000 --reporter=default --reporter=json --outputFile=windows-provider-results.json
       - name: Preserve actual Windows observations
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -68,6 +72,7 @@ jobs:
           name: containment-windows-parity
           path: |
             windows-preflight/
-            windows-red-results.json
+            windows-provider-results.json
+            dist/native/
           if-no-files-found: error
           retention-days: 7
