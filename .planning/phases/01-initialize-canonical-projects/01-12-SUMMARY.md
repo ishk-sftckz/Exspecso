@@ -3,8 +3,8 @@ phase: 01-initialize-canonical-projects
 plan: 12
 subsystem: contained artifact and initializer reads
 tags: [native-containment, bound-reader, artifact-validation, init-preflight]
-status: complete
-plan_complete: true
+status: halted
+plan_complete: false
 dependency_graph:
   requires: [01-11]
   provides: [bound-read-facade, root-bound-artifact-scan, pre-mutation-provider-preflight]
@@ -13,7 +13,7 @@ tech_stack:
   added: []
   patterns: [relative-component-bound-reader, caller-owned-root-lifetime, read-only-preflight]
 key_files:
-  created: [01-12-EVIDENCE/hosted-33156479915]
+  created: [01-12-EVIDENCE/hosted-33156479915, 01-12-EVIDENCE/hosted-33156890796]
   modified: [src/filesystem/contained-fs.ts, src/artifacts/resolve.ts, src/artifacts/validate.ts, src/init/plan.ts, src/init/run-init.ts, src/errors/diagnostic.ts, tests/unit/artifacts.test.ts, tests/integration/validation-errors.test.ts]
 decisions:
   - Artifact scans and preimage checks use one BoundReader made of validated relative components; unsafe or unreadable entries are explicit diagnostics, never absence.
@@ -49,9 +49,17 @@ coverage:
     requirement: SETUP-01
     verification:
       - kind: e2e
-        ref: 01-12-EVIDENCE/hosted-33156479915/*/tracer-results.json
+        ref: 01-12-EVIDENCE/hosted-33156890796/*/tracer-results.json
         status: pass
     human_judgment: false
+  - id: D4
+    description: All Plan 12 focused suites and the full regression suite run against the final source snapshot on an approved provider host.
+    verification:
+      - kind: other
+        ref: npm test -- --run tests/unit/artifacts.test.ts; npm test -- --run tests/integration/validation-errors.test.ts tests/integration/init-rerun.test.ts tests/integration/minimal-artifacts.test.ts; npm test -- --run
+        status: unknown
+    human_judgment: true
+    rationale: The local host is intentionally rejected by the provider gate, and the available approved workflow only runs the installed tracer suite.
 ---
 
 # Phase 01 Plan 12: Bound Artifact Reads Summary
@@ -82,9 +90,11 @@ Artifact scanning, validation, and init preflight now share an opened native roo
 - `npm test -- --run tests/unit/artifacts.test.ts -t "reports substituted artifact entries"` passed (1 test).
 - `npm test -- --run tests/integration/validation-errors.test.ts -t "actual provider failure"` passed (1 test).
 - `git diff --check HEAD~4..HEAD` passed.
-- Hosted run `33156479915` executed the exact source commit `6a9d1ba2f50fc1daca80ecb2e636b5a47f02f2c3` on all eight approved native rows. Each retained `tracer-results.json` reports 12/12 passing installed initializer checks (96/96 total), and every paired `evidence.json` reports `status: passed`, matching source commit, provider hash, and native environment.
+- Hosted run `33156890796` executed the final source commit `c400384a993862e75b29d5c49a1a7374b27f2cc5` on all eight approved native rows. Each retained `tracer-results.json` reports 12/12 passing installed initializer checks (96/96 total), and every paired `evidence.json` reports `status: passed`, matching source commit, provider hash, and native environment. The earlier `33156479915` evidence remains retained for the pre-lifecycle-fix snapshot.
 
 The current local macOS 26.5.1 / 25F80 host is deliberately outside the approved macOS 15.7.7 provider contract. The complete focused suites therefore cannot be rerun locally without weakening the provider gate; the exact-source hosted evidence above is the authoritative native verification.
+
+The explicit plan-level focused and full regression commands remain unverified on the final source snapshot. The existing approved POSIX full-regression workflow is pinned to a branch that rejects a non-force update, while the all-target workflow runs only the installed tracer suite. This plan is therefore halted for verification rather than complete.
 
 ## Files Created/Modified
 
@@ -92,7 +102,7 @@ The current local macOS 26.5.1 / 25F80 host is deliberately outside the approved
 - `src/artifacts/resolve.ts` and `src/artifacts/validate.ts` — use bound enumeration and reads with explicit unsafe-read diagnostics.
 - `src/init/plan.ts` and `src/init/run-init.ts` — reuse one root capability through all pre-mutation reads and close owned handles.
 - `tests/unit/artifacts.test.ts` and `tests/integration/validation-errors.test.ts` — cover substitution diagnostics and provider preflight no-write behavior.
-- `01-12-EVIDENCE/hosted-33156479915/` — retained all-row exact-source native test and environment evidence.
+- `01-12-EVIDENCE/hosted-33156890796/` — retained final all-row exact-source native test and environment evidence.
 
 ## Decisions Made
 
@@ -115,9 +125,9 @@ None.
 ## Self-Check: PASSED
 
 - All five Task commits exist in Git history.
-- Every retained hosted evidence record names source commit `6a9d1ba2f50fc1daca80ecb2e636b5a47f02f2c3` and reports a passing result.
+- Every final hosted evidence record names source commit `c400384a993862e75b29d5c49a1a7374b27f2cc5` and reports a passing result.
 - All files listed under `key_files` exist.
 
 ## Next Phase Readiness
 
-Plan 01-13 can bind ownership and staging operations to the same native capability model. The native provider remains fail-closed on hosts outside the approved support matrix; no fallback was introduced.
+**Blocked:** Run the plan's focused and full regression commands on an approved provider host, either by enabling an existing approved full-regression workflow for the guarded snapshot without changing its test contract, or by explicitly accepting the all-target installed-tracer evidence as the scoped substitute. The native provider remains fail-closed on hosts outside the approved support matrix; no fallback was introduced.
