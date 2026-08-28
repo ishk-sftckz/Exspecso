@@ -58,7 +58,10 @@ describe("declared and undeclared support tuples", () => {
       expect(() => resolveSupportRow(matrix, observationFor(row, version))).toThrow(/unsupported Node runtime/);
     }
     expect(() => resolveSupportRow({ ...matrix, rows: [...matrix.rows, row] }, observation)).toThrow(/duplicate row id/);
+    expect(() => resolveSupportRow({ ...matrix, rows: [...matrix.rows, {} as typeof row] }, observation)).toThrow(/rows are missing or malformed/);
+    expect(() => resolveManifestEntry(matrix, observation, [])).toThrow(/missing native support row/);
     expect(() => resolveManifestEntry(matrix, observation, [{ ...manifest[0], supportRowId: "ENV-MA" }])).toThrow(/native support row/);
+    expect(() => resolveManifestEntry(matrix, observation, [{ ...manifest[0], osVersion: "wrong-os" }])).toThrow(/incompatible native support row/);
     expect(() => resolveManifestEntry(matrix, observation, [{ ...manifest[0], path: "darwin-arm64/contained-fs.node" }])).toThrow(/native support row/);
     expect(() => resolveManifestEntry(matrix, observation, [{ ...manifest[0], napiVersion: 7 }])).toThrow(/native support row/);
     expect(() => resolveManifestEntry(matrix, observation, [...manifest, manifest[0]])).toThrow(/duplicate native support row/);
