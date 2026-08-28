@@ -159,10 +159,15 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
   let ownership = options.ownership;
   let ownsLease = false;
   if (ownership === undefined) {
-    const acquisition = await acquireInitOwnership(root);
-    if (acquisition.kind !== "acquired") { filesystem.close(); return { kind: "busy" }; }
-    ownership = acquisition.ownership;
-    ownsLease = true;
+    try {
+      const acquisition = await acquireInitOwnership(root);
+      if (acquisition.kind !== "acquired") { filesystem.close(); return { kind: "busy" }; }
+      ownership = acquisition.ownership;
+      ownsLease = true;
+    } catch (error) {
+      filesystem.close();
+      return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
+    }
   }
   const stageRoot = join(root, stagingRelativePath, transactionId);
   let journal: TransactionJournal | undefined;
@@ -247,9 +252,12 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
   } catch (error) {
     return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
   } finally {
-    filesystem.close();
-    if (committed && journal !== undefined) await rmdir(join(root, ".exspecso", ".staging")).catch(() => undefined);
-    if (ownsLease && ownership !== undefined) await releaseInitOwnership(ownership);
+    try {
+      filesystem.close();
+      if (committed && journal !== undefined) await rmdir(join(root, ".exspecso", ".staging")).catch(() => undefined);
+    } finally {
+      if (ownsLease && ownership !== undefined) await releaseInitOwnership(ownership);
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { link, mkdir, mkdtemp, readFile, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
+import { link, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -52,6 +52,20 @@ async function packAndRun(
 }
 
 describe("packed Codex initializer tracer", () => {
+  it("contained promotion tracer rejects a missing installed provider before any project mutation", async () => {
+    const fixture = await useFixture(createGitFixture);
+    const before = await readdir(fixture.root);
+    const installed = await installContainedPackage("release");
+    temporaryPaths.push(installed.directory);
+    expect((await readFile(installed.provider)).includes(Buffer.from("EXSPECSO_TEST_NATIVE_OPERATION"))).toBe(false);
+    await rename(installed.provider, `${installed.provider}.removed`);
+    const result = await runCli(process.execPath, [installed.cli, "init", "--agent", "codex"], { cwd: fixture.root });
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toContain("EXSPECSO_CONTAINMENT_UNAVAILABLE");
+    expect(await readdir(fixture.root)).toEqual(before);
+  }, 60_000);
+
   for (const site of ["leaf", "parent", "ancestor"] as const) {
     it(`contained promotion tracer reaches the native ${site} substitution boundary`, async () => {
       const fixture = await useFixture(createGitFixture);

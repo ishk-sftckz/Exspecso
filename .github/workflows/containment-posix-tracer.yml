@@ -56,6 +56,8 @@ jobs:
           npm run build
       - name: Run the provider and installed tracer tests
         run: npm test -- --run tests/unit/contained-fs.test.ts tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=default --reporter=json --outputFile=tracer-results.json
+      - name: Run the existing regression suite with the host provider
+        run: npm test -- --run --testTimeout 60000 --reporter=default --reporter=json --outputFile=regression-results.json
       - name: Preserve the actual host binaries and test report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -64,5 +66,6 @@ jobs:
           path: |
             dist/native/
             tracer-results.json
+            regression-results.json
           if-no-files-found: warn
           retention-days: 7
