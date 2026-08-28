@@ -4,11 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: Plan 01-10 complete; executing native target matrix
-stopped_at: Completed 01-10-PLAN.md; ready for 01-11
+status: Plan 01-11 blocked on native-musl filesystem observation
+stopped_at: Plan 01-11 native-musl rows report filesystem UNKNOWN
 last_updated: "2026-08-28T07:01:59.888Z"
 last_activity: 2026-08-28
-last_activity_desc: Completed Plan 01-10 installed native promotion tracer on approved macOS and Windows hosts; Plan 01-11 target-matrix evidence is next.
+last_activity_desc: Six native matrix rows pass; both musl rows are blocked because the installed runtime reports filesystem UNKNOWN instead of the approved ext4/ext2/ext3 observation.
 progress:
   total_phases: 1
   completed_phases: 0
@@ -29,8 +29,8 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
 Plan: 11 of 18; Plan 01-10 complete
-Status: Executing native target matrix
-Last activity: 2026-08-28 — Completed Plan 01-10. Final hosted run 33149316926 passed macOS tracer 22/22 and regression 95/95, Windows provider 11/11 and active tracer 12/12.
+Status: Plan 01-11 blocked on native-musl filesystem observation
+Last activity: 2026-08-28 — Hosted run 33152941157 passed six native rows. Both musl providers built, but their runtime filesystem observation is `UNKNOWN`; the all-eight aggregate correctly rejects them.
 
 Plan execution: 10 completed plans; 8 pending plans (18 total). Contract approval and the two-host installed tracer are complete; all-target evidence and wider containment migration remain.
 
@@ -40,6 +40,7 @@ Plan execution: 10 completed plans; 8 pending plans (18 total). Contract approva
 - Windows parent/ancestor relocation was blocked at the controller directory rename with `EPERM`; evidence labels this `blocked-before-relocation` and `movedObjectOracle: not exercised`. NP-02 remains the separate moved-object proof and Plan 17 retains the full relocation matrix.
 - Final Task 3 evidence: hosted run 33149316926, snapshot `0af7365726d0a43ba8fb4d9a2b27a8dda46e37a9`; see `01-10-SUMMARY.md` and `01-10-TASK-3-WINDOWS-REVIEW.md`.
 - Next: execute Plan 01-11 on all eight approved native target rows. Missing/skipped/emulated evidence must block later migrations.
+- Plan 01-11 checkpoint `f4fd243`: six rows pass; LMX/LMA remain blocked on the exact filesystem observation. Plan 12 has not started. Continue only after a reviewed observation repair or explicit contract decision.
 
 - On 2026-08-28 the user asked to continue after completing Trusted Access verification and explicitly requested subagents to reduce repeated context compaction. Resume Plan 01-10 Task 3 with one implementation executor and an independent read-only evidence reviewer; dependent implementation remains serial. The earlier platform-message explanation is not a new project approval gate. No account access state is inferred, and any actual platform denial must be reported without bypass.
 - On 2026-08-28 the user replied `approve` to the resolved proposal in `59d99e9`. Approval record: `8f160dc`; completed decision summary: `4072370` / `01-09-SUMMARY.md`.
