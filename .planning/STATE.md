@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
-status: Plan 01-12 complete; execute support prerequisites 01-19 and 01-20 before 01-13
-stopped_at: Completed 01-12-PLAN.md
+status: Plan 01-12 implementation committed but verification halted; execute 01-19 and 01-20 to close it before 01-13
+stopped_at: Halted 01-12-PLAN.md pending local provider/full-suite evidence
 last_updated: "2026-08-28T16:31:10+07:00"
 last_activity: 2026-08-28
 last_activity_desc: Bound artifact reads and root-bound init preflight are complete with exact-source hosted proof; corrected support Plans 01-19 and 01-20 are next.
@@ -13,7 +13,7 @@ progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 20
-  completed_plans: 12
+  completed_plans: 11
 ---
 
 # Project State
@@ -28,15 +28,15 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 19 of 20; Plans 01-10, 01-11, and 01-12 complete
-Status: Execute the corrected local support and full-regression prerequisites before bound ownership/staging
+Plan: 19 of 20; Plans 01-10 and 01-11 complete; Plan 01-12 implementation is committed but its verification status is halted
+Status: Execute the corrected local support and full-regression prerequisites, formally close 01-12 in 01-20, then begin bound ownership/staging
 Last activity: 2026-08-28 — Plan 01-12 bound artifact and initializer reads to the approved native capability.
 
-Plan execution: 12 completed plans; 8 pending plans (20 total). The all-target tracer and artifact-read migration are complete. Plans 01-19 and 01-20 add the current macOS 26.5.1 / arm64 / APFS / Node 25.2.1 tuple as a real support row and require its complete local regression evidence before ownership/staging containment resumes in 01-13.
+Plan execution: 11 completed plans; Plan 01-12 is halted after its implementation commits, and 8 later plans remain pending (20 total). The all-target tracer is complete and the artifact-read migration exists as halted work-in-place. Plan 01-19 is runnable from completed 01-11 and consumes that committed work; Plan 01-20 adds the complete local regression evidence, changes 01-12 to complete, resolves its continuation checkpoint, and only then unblocks ownership/staging containment in 01-13.
 
 ### Active Execution — Native target matrix
 
-- Post-Wave-12 support correction: the current macOS 26.5.1 build 25F80 / arm64 / local APFS / Node 25.2.1 machine is required as a supported target, not development-only. Execute 01-19 then 01-20; 01-13 now depends on 01-20. All prior rows and lanes remain obligations.
+- Post-Wave-12 support correction: the current macOS 26.5.1 build 25F80 / arm64 / local APFS / Node 25.2.1 machine is required as a supported target, not development-only. Plan 01-19 depends on the last genuinely completed prerequisite, 01-11, while preserving and consuming Plan 01-12's committed halted work-in-place. Execute 01-19 then 01-20; after the local provider/full-suite evidence passes, 01-20 must set 01-12 complete and mark its continuation checkpoint resolved. Plan 01-13 remains dependent on 01-20. All prior rows and lanes remain obligations.
 
 - Plan 01-10 is complete (`c9e6a38`). Task 3 uses separate release and instrumented packages and records exact installed provider provenance. The final Windows leaf swap is rejected after handle-relative revalidation.
 - Windows parent/ancestor relocation was blocked at the controller directory rename with `EPERM`; evidence labels this `blocked-before-relocation` and `movedObjectOracle: not exercised`. NP-02 remains the separate moved-object proof and Plan 17 retains the full relocation matrix.
