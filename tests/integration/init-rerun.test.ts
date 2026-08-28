@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { inspectManagedFile, renderManagedFile } from "../../src/adapters/managed-file.js";
 import { ADAPTER_REGISTRY } from "../../src/adapters/registry.js";
 import { parseInitArguments } from "../../src/cli/arguments.js";
+import { openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
 import { buildInitPlan, validateInitPlan } from "../../src/init/plan.js";
 import { runInit } from "../../src/init/run-init.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
@@ -107,35 +108,39 @@ describe("skill migration preflight", () => {
     const fixture = await useFixture();
     const target = join(fixture.root, ADAPTER_REGISTRY[agent].relativePath);
     await mkdir(dirname(target), { recursive: true });
+    const capability = openContainedFilesystem(fixture.root);
+    try {
+      for (const original of [legacySkill(agent), ADAPTER_REGISTRY[agent].render()]) {
+        for (const [content, state] of [
+          [original.replace("description: Begin", "description: User edit. Begin"), "owned-modified"],
+          [original + "User instruction.\n", "owned-modified"],
+          [original.replace("template-version=1", "template-version=99"), "malformed-header"],
+          [original.replace("original-body-sha256=", "broken-hash="), "malformed-header"],
+          ["---\nname: exspecso-start\ndescription: User skill.\n---\nUser instructions.\n", "unowned"],
+        ]) {
+          await writeFile(target, content);
+          const before = await snapshot(fixture.root);
+          const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: [agent], reader: capability.reader });
+          expect(plan.conflicts).toEqual([expect.objectContaining({ agent, state })]);
+          expect(plan.writes.some((write) => write.target === target)).toBe(false);
+          await expect(validateInitPlan(plan, capability.reader)).resolves.toEqual(expect.arrayContaining([
+            expect.objectContaining({ code: "EXSPECSO_INIT_ADAPTER_CONFLICT" }),
+          ]));
 
-    for (const original of [legacySkill(agent), ADAPTER_REGISTRY[agent].render()]) {
-      for (const [content, state] of [
-        [original.replace("description: Begin", "description: User edit. Begin"), "owned-modified"],
-        [original + "User instruction.\n", "owned-modified"],
-        [original.replace("template-version=1", "template-version=99"), "malformed-header"],
-        [original.replace("original-body-sha256=", "broken-hash="), "malformed-header"],
-        ["---\nname: exspecso-start\ndescription: User skill.\n---\nUser instructions.\n", "unowned"],
-      ]) {
-        await writeFile(target, content);
-        const before = await snapshot(fixture.root);
-        const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: [agent] });
-        expect(plan.conflicts).toEqual([expect.objectContaining({ agent, state })]);
-        expect(plan.writes.some((write) => write.target === target)).toBe(false);
-        await expect(validateInitPlan(plan)).resolves.toEqual(expect.arrayContaining([
-          expect.objectContaining({ code: "EXSPECSO_INIT_ADAPTER_CONFLICT" }),
-        ]));
+          const approved = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: [agent], replaceAgents: [agent], reader: capability.reader });
+          expect(approved.conflicts).toEqual([]);
+          expect(approved.writes.find((write) => write.target === target)?.content).toBe(ADAPTER_REGISTRY[agent].render());
+          await expect(validateInitPlan(approved, capability.reader)).resolves.toEqual([]);
+          await expect(snapshot(fixture.root)).resolves.toEqual(before);
 
-        const approved = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: [agent], replaceAgents: [agent] });
-        expect(approved.conflicts).toEqual([]);
-        expect(approved.writes.find((write) => write.target === target)?.content).toBe(ADAPTER_REGISTRY[agent].render());
-        await expect(validateInitPlan(approved)).resolves.toEqual([]);
-        await expect(snapshot(fixture.root)).resolves.toEqual(before);
-
-        await writeFile(target, content + "Changed after approval.\n");
-        await expect(validateInitPlan(approved)).resolves.toEqual(expect.arrayContaining([
-          expect.objectContaining({ code: "EXSPECSO_INIT_STALE_PREIMAGE" }),
-        ]));
+          await writeFile(target, content + "Changed after approval.\n");
+          await expect(validateInitPlan(approved, capability.reader)).resolves.toEqual(expect.arrayContaining([
+            expect.objectContaining({ code: "EXSPECSO_INIT_STALE_PREIMAGE" }),
+          ]));
+        }
       }
+    } finally {
+      capability.close();
     }
   });
 });

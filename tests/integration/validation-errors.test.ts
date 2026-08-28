@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, readdir, readlink, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, readlink, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { PassThrough, Writable } from "node:stream";
@@ -6,7 +6,9 @@ import { afterEach, describe, expect, it } from "vitest";
 import { resolveArtifact } from "../../src/artifacts/resolve.js";
 import { runInit } from "../../src/init/run-init.js";
 import { validateProject, validateProjectConfig } from "../../src/artifacts/validate.js";
+import { installContainedPackage } from "../helpers/containment-fixture.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
+import { runCli } from "../helpers/run-cli.js";
 
 const fixtures: GitFixture[] = [];
 
@@ -66,20 +68,19 @@ describe("direct-edit validation", () => {
   it("reports an actual provider failure before any ownership or staging write", async () => {
     const fixture = await useFixture();
     const before = await snapshot(fixture.root);
-    const stderr = capturedOutput();
+    const installed = await installContainedPackage("release");
+    try {
+      await rename(installed.provider, `${installed.provider}.removed`);
+      const result = await runCli(process.execPath, [installed.cli, "init", "--agent", "codex"], { cwd: fixture.root });
 
-    const exitCode = await runInit({
-      selectedAgents: ["codex"],
-      cwd: fixture.root,
-      stdin: new PassThrough(),
-      stdout: memoryOutput(),
-      stderr: stderr.output,
-    });
-
-    expect(exitCode).toBe(1);
-    expect(stderr.read()).toContain("EXSPECSO_INIT_PREFLIGHT_FAILED");
-    expect(stderr.read()).toContain("EXSPECSO_CONTAINMENT_UNAVAILABLE");
-    await expect(snapshot(fixture.root)).resolves.toEqual(before);
+      expect(result.exitCode).toBe(1);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toContain("EXSPECSO_INIT_PREFLIGHT_FAILED");
+      expect(result.stderr).toContain("EXSPECSO_CONTAINMENT_UNAVAILABLE");
+      await expect(snapshot(fixture.root)).resolves.toEqual(before);
+    } finally {
+      await installed.dispose();
+    }
   });
 
   it("rejects an invalid JSON parent before init writes anything", async () => {
