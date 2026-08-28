@@ -118,6 +118,19 @@ function cleanupBoundTransaction(stage: DirectoryCapability, staging: DirectoryC
   removeBound(stage, ["journal.json"]); stage.close(); staging.removeDirectory(journal.transactionId); staging.close();
 }
 
+/** Recovery reaches the operational journal through its already-held directory. */
+export function readBoundTransactionJournal(stage: DirectoryCapability): unknown {
+  return JSON.parse(readBound(stage, ["journal.json"]).toString("utf8")) as unknown;
+}
+
+/** Remove only entries named by validated recovery evidence. */
+export function removeRecoveredTransactionBound(root: DirectoryCapability, stage: DirectoryCapability, staging: DirectoryCapability, journal: TransactionJournal): void {
+  cleanupBoundTransaction(stage, staging, journal);
+  for (const entry of journal.entries) {
+    if (entry.preimageHash === null) removeEmptyDirectories(root, components(entry.relativePath).slice(0, -1));
+  }
+}
+
 async function updateJournal(stage: DirectoryCapability, journal: TransactionJournal): Promise<TransactionJournal> {
   replaceBound(stage, ["journal.json"], `${JSON.stringify(journal, null, 2)}\n`);
   stage.sync();

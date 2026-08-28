@@ -1,19 +1,15 @@
-import { lstat, readFile, readdir, rm, writeFile } from "node:fs/promises";
-import { join, relative, resolve, sep } from "node:path";
+import { randomUUID } from "node:crypto";
+import { resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import { validateProject } from "../artifacts/validate.js";
-import { assertSafeTarget } from "./safe-path.js";
+import { type DirectoryCapability } from "./contained-fs.js";
 import {
-  backupFile,
-  isRegularFile,
-  readTransactionJournal,
-  removeRecoveredTransaction,
-  stageFile,
-  stagingRelativePath,
-  transactionSchemaVersion,
-  transactionStageRoot,
+  parseTransactionJournal,
+  type LegacyTransactionJournal,
   type TransactionJournal,
-} from "./transaction.js";
+  type TransactionJournalEntry,
+} from "./journal.js";
+import { readBoundTransactionJournal, removeRecoveredTransactionBound, stagingRelativePath } from "./transaction.js";
 import { acquireInitOwnership, inspectInitOwnership, releaseInitOwnership, type InitOwnership } from "./ownership.js";
 
 export type RecoveryResult =
@@ -22,84 +18,108 @@ export type RecoveryResult =
   | { readonly kind: "busy" }
   | { readonly kind: "ambiguous"; readonly message: string };
 
-function containedRelativePath(path: string): boolean {
-  return path !== "" && !path.startsWith("../") && !path.includes("\\") && !path.split("/").some((part) => part === "" || part === "." || part === "..");
-}
-
-async function hashOptional(path: string): Promise<string | null> {
+function components(path: string): string[] { return path.split("/").filter(Boolean); }
+function absent(error: unknown): boolean { return error instanceof Error && error.message.includes("EXSPECSO_CONTAINMENT_ENOENT"); }
+function withDirectory<T>(root: DirectoryCapability, path: readonly string[], create: boolean, action: (directory: DirectoryCapability) => T): T {
+  let directory = root;
+  const opened: DirectoryCapability[] = [];
   try {
-    const metadata = await lstat(path);
-    if (!metadata.isFile()) return null;
-    return sha256(await readFile(path, "utf8"));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
-    throw error;
-  }
+    for (const component of path) { directory = directory.openDirectory(component, create); opened.push(directory); }
+    return action(directory);
+  } finally { for (const capability of opened.reverse()) capability.close(); }
 }
-
-function journalShapeIsValid(journal: TransactionJournal, transactionId: string, root: string): string | null {
-  if (journal.schemaVersion !== transactionSchemaVersion) return "unsupported journal schema";
-  if (journal.transactionId !== transactionId) return "journal transaction identity does not match its directory";
-  if (journal.repositoryRootFingerprint !== sha256(root)) return "journal repository root fingerprint does not match";
-  if (!Array.isArray(journal.entries) || journal.entries.length === 0) return "journal has no entries";
-  if (journal.promotionOrder.length !== journal.entries.length || journal.completedStep < -1 || journal.completedStep >= journal.entries.length) return "journal promotion state is invalid";
-  const names = new Set(journal.entries.map((entry) => entry.relativePath));
-  if (names.size !== journal.entries.length || journal.promotionOrder.some((path, index) => path !== journal.entries[index].relativePath)) return "journal promotion order is invalid";
-  if (journal.entries.some((entry) => !containedRelativePath(entry.relativePath) || !/^[a-f0-9]{64}$/.test(entry.stagedHash) || (entry.preimageHash !== null && !/^[a-f0-9]{64}$/.test(entry.preimageHash)) || (entry.backupHash !== null && !/^[a-f0-9]{64}$/.test(entry.backupHash)))) return "journal hashes or paths are invalid";
-  return null;
-}
-
-async function validateEvidence(root: string, stageRoot: string, journal: TransactionJournal): Promise<string | null> {
-  for (const [index, entry] of journal.entries.entries()) {
-    const target = join(root, entry.relativePath);
-    try {
-      await assertSafeTarget(root, {
-        target,
-        relativePath: entry.relativePath,
-        expectedExists: index > journal.completedStep ? entry.preimageHash !== null : true,
-        ...(index > journal.completedStep && entry.preimageHash !== null ? { expectedPreimageHash: entry.preimageHash } : {}),
-      });
-    } catch {
-      // A promoted target has a staged hash rather than its preimage. Its
-      // containment/type checks are independently repeated below.
-      const fromRoot = relative(root, resolve(target));
-      if (!containedRelativePath(fromRoot) || !(await isRegularFile(target)) && index <= journal.completedStep) return `unsafe target ${entry.relativePath}`;
-    }
-    if (await hashOptional(stageFile(stageRoot, entry.relativePath)) !== entry.stagedHash) return `staged hash mismatch for ${entry.relativePath}`;
-    if (entry.preimageHash === null) {
-      if (entry.backupPath !== null || entry.backupHash !== null) return `unexpected backup for ${entry.relativePath}`;
-    } else if (entry.backupPath !== join("backups", entry.relativePath) || await hashOptional(backupFile(stageRoot, entry.relativePath)) !== entry.backupHash || entry.backupHash !== entry.preimageHash) {
-      return `backup hash mismatch for ${entry.relativePath}`;
-    }
-    const currentHash = await hashOptional(target);
-    const expected = index <= journal.completedStep ? entry.stagedHash : entry.preimageHash;
-    if (currentHash !== expected) return `canonical hash mismatch for ${entry.relativePath}`;
-  }
-  return null;
-}
-
-async function restorePrior(root: string, stageRoot: string, journal: TransactionJournal): Promise<void> {
-  for (const [index, entry] of journal.entries.entries()) {
-    const target = join(root, entry.relativePath);
-    if (entry.preimageHash === null) {
-      await rm(target, { force: true });
-      continue;
-    }
-    await assertSafeTarget(root, {
-      target,
-      relativePath: entry.relativePath,
-      expectedExists: true,
-      expectedPreimageHash: index <= journal.completedStep ? entry.stagedHash : entry.preimageHash,
+function readOptionalBound(root: DirectoryCapability, path: readonly string[]): Buffer | undefined {
+  const name = path.at(-1);
+  if (!name) throw new Error("EXSPECSO_RECOVERY_PATH");
+  try {
+    return withDirectory(root, path.slice(0, -1), false, (parent) => {
+      const file = parent.openFile(name);
+      try { return file.read(); } finally { file.close(); }
     });
-    await writeFile(target, await readFile(backupFile(stageRoot, entry.relativePath), "utf8"), "utf8");
-    if (await hashOptional(target) !== entry.preimageHash) throw new Error(`restore hash mismatch for ${entry.relativePath}`);
+  } catch (error) { if (absent(error)) return undefined; throw error; }
+}
+function hash(bytes: Buffer | undefined): string | null { return bytes === undefined ? null : sha256(bytes.toString("utf8")); }
+function priorHash(entry: TransactionJournalEntry): string | null { return entry.preimageHash; }
+function expectedBackup(entry: TransactionJournalEntry): string | null { return entry.preimageHash === null ? null : entry.preimageHash; }
+
+function allowedHashes(journal: TransactionJournal, entry: TransactionJournalEntry): readonly (string | null)[] {
+  if (journal.state === "restoring") return [priorHash(entry), entry.stagedHash];
+  if (journal.state === "cleaning") return [priorHash(entry)];
+  if (journal.completedPromotions.includes(entry.relativePath)) return [entry.stagedHash];
+  if (journal.inFlight?.relativePath === entry.relativePath && journal.inFlight.operation === "replace") return [priorHash(entry), entry.stagedHash];
+  return [priorHash(entry)];
+}
+function evidenceError(root: DirectoryCapability, stage: DirectoryCapability, journal: TransactionJournal): string | null {
+  for (const entry of journal.entries) {
+    const target = readOptionalBound(root, components(entry.relativePath));
+    const staged = readOptionalBound(stage, ["files", ...components(entry.relativePath)]);
+    if (hash(staged) !== entry.stagedHash) return `staged hash mismatch for ${entry.relativePath}`;
+    const backup = entry.backupPath === null ? undefined : readOptionalBound(stage, components(entry.backupPath));
+    if (hash(backup) !== expectedBackup(entry) || entry.backupHash !== expectedBackup(entry)) return `backup hash mismatch for ${entry.relativePath}`;
+    if (!allowedHashes(journal, entry).includes(hash(target))) return `canonical hash mismatch for ${entry.relativePath}`;
   }
+  return null;
+}
+function legacyEvidenceError(root: DirectoryCapability, stage: DirectoryCapability, journal: LegacyTransactionJournal): string | null {
+  // Schema 1 did not record intent before replacement. Only untouched prior
+  // evidence is safe to inspect; every other historical state is retained.
+  if (journal.completedStep !== -1) return "legacy journal has insufficient replacement evidence";
+  for (const entry of journal.entries) {
+    const target = readOptionalBound(root, components(entry.relativePath));
+    const staged = readOptionalBound(stage, ["files", ...components(entry.relativePath)]);
+    if (hash(staged) !== entry.stagedHash) return `staged hash mismatch for ${entry.relativePath}`;
+    const backup = entry.backupPath === null ? undefined : readOptionalBound(stage, components(entry.backupPath));
+    if (hash(backup) !== expectedBackup(entry) || entry.backupHash !== expectedBackup(entry)) return `backup hash mismatch for ${entry.relativePath}`;
+    if (hash(target) !== priorHash(entry)) return `legacy journal prior state is incomplete for ${entry.relativePath}`;
+  }
+  return null;
+}
+function writeJournal(stage: DirectoryCapability, journal: TransactionJournal): void {
+  const temporary = stage.createFile(`.exspecso-journal-${randomUUID()}`);
+  try {
+    temporary.write(Buffer.from(`${JSON.stringify(journal, null, 2)}\n`, "utf8"));
+    temporary.sync();
+    stage.replace(temporary, "journal.json");
+    stage.sync();
+  } finally { temporary.close(); }
+}
+function replaceFromBound(parent: DirectoryCapability, target: string, content: Buffer): void {
+  const temporary = parent.createFile(`.exspecso-recover-${randomUUID()}`);
+  try {
+    temporary.write(content);
+    temporary.sync();
+    parent.replace(temporary, target, true);
+    parent.sync();
+  } finally { temporary.close(); }
+}
+function restorePrior(root: DirectoryCapability, stage: DirectoryCapability, journal: TransactionJournal): TransactionJournal {
+  let current: TransactionJournal = { ...journal, state: "restoring", inFlight: null };
+  writeJournal(stage, current);
+  for (const entry of current.entries) {
+    const observed = hash(readOptionalBound(root, components(entry.relativePath)));
+    if (observed === priorHash(entry)) continue;
+    if (observed !== entry.stagedHash) throw new Error(`EXSPECSO_RECOVERY_AMBIGUOUS_TARGET: ${entry.relativePath}`);
+    current = { ...current, inFlight: { relativePath: entry.relativePath, operation: entry.preimageHash === null ? "remove" as const : "restore" as const } };
+    writeJournal(stage, current);
+    withDirectory(root, components(entry.relativePath).slice(0, -1), false, (parent) => {
+      const name = components(entry.relativePath).at(-1)!;
+      if (entry.preimageHash === null) parent.unlink(name);
+      else {
+        const backup = readOptionalBound(stage, components(entry.backupPath!));
+        if (backup === undefined || hash(backup) !== entry.preimageHash) throw new Error(`EXSPECSO_RECOVERY_BACKUP: ${entry.relativePath}`);
+        replaceFromBound(parent, name, backup);
+      }
+    });
+    if (hash(readOptionalBound(root, components(entry.relativePath))) !== priorHash(entry)) throw new Error(`EXSPECSO_RECOVERY_HASH: ${entry.relativePath}`);
+    current = { ...current, inFlight: null };
+    writeJournal(stage, current);
+  }
+  current = { ...current, state: "cleaning", inFlight: null };
+  writeJournal(stage, current);
+  return current;
 }
 
-/**
- * Recovers only a complete, self-identifying journal. Any unexpected path,
- * hash, root, or external canonical change is left untouched for inspection.
- */
+/** Recovery follows only held directory capabilities; ambiguous evidence is retained. */
 export async function recoverInterruptedTransaction(rootInput: string, ownership?: InitOwnership): Promise<RecoveryResult> {
   const root = resolve(rootInput);
   let heldOwnership = ownership;
@@ -111,39 +131,63 @@ export async function recoverInterruptedTransaction(rootInput: string, ownership
     heldOwnership = acquisition.ownership;
     ownsLease = true;
   }
-  const stagingRoot = join(root, stagingRelativePath);
+  let staging: DirectoryCapability | undefined;
+  let stage: DirectoryCapability | undefined;
   try {
-    let directories: string[];
-    try {
-      directories = (await readdir(stagingRoot, { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") return { kind: "none" };
-      return { kind: "ambiguous", message: "cannot inspect transaction staging directory" };
-    }
+    try { staging = heldOwnership.operationalDirectory.openDirectory(".staging"); }
+    catch (error) { return absent(error) ? { kind: "none" } : { kind: "ambiguous", message: "cannot inspect transaction staging directory" }; }
+    const directories = staging.list().sort();
     if (directories.length === 0) return { kind: "none" };
     if (directories.length !== 1) return { kind: "ambiguous", message: "multiple transaction staging directories found" };
-    const transactionId = directories[0];
-    const stageRoot = transactionStageRoot(root, transactionId);
-    let journal: TransactionJournal;
-    try {
-      journal = await readTransactionJournal(stageRoot);
-    } catch {
-      return { kind: "ambiguous", message: "transaction journal is unreadable" };
+    const transactionId = directories[0]!;
+    try { stage = staging.openDirectory(transactionId); }
+    catch { return { kind: "ambiguous", message: "transaction staging entry is unreadable" }; }
+    let raw: unknown;
+    try { raw = readBoundTransactionJournal(stage); }
+    catch { return { kind: "ambiguous", message: "transaction journal is unreadable" }; }
+    const parsed = parseTransactionJournal(raw, transactionId, sha256(root));
+    if (parsed.kind === "invalid") return { kind: "ambiguous", message: parsed.message };
+    if (parsed.kind === "legacy") {
+      let issue: string | null;
+      try { issue = legacyEvidenceError(heldOwnership.rootDirectory, stage, parsed.journal); }
+      catch { return { kind: "ambiguous", message: "legacy journal evidence cannot be read through containment" }; }
+      if (issue !== null) return { kind: "ambiguous", message: issue };
+      try {
+        // The only accepted schema-1 state proves no replacement happened.
+        // Its canonical bytes are already prior, so remove just its identified
+        // operational evidence without rewriting any product artifact.
+        removeRecoveredTransactionBound(heldOwnership.rootDirectory, stage, staging, {
+          ...parsed.journal,
+          schemaVersion: 2,
+          state: "cleaning",
+          inFlight: null,
+          completedPromotions: [],
+        });
+        stage = undefined;
+        staging = undefined;
+        try { heldOwnership.operationalDirectory.removeDirectory(".staging"); } catch { /* unknown staging evidence remains */ }
+        return { kind: "recovered", transactionId, disposition: "restored-prior" };
+      } catch { return { kind: "ambiguous", message: "legacy journal evidence could not be cleaned safely" }; }
     }
-    const shapeError = journalShapeIsValid(journal, transactionId, root);
-    if (shapeError !== null) return { kind: "ambiguous", message: shapeError };
-    const evidenceError = await validateEvidence(root, stageRoot, journal);
-    if (evidenceError !== null) return { kind: "ambiguous", message: evidenceError };
+    let issue: string | null;
+    try { issue = evidenceError(heldOwnership.rootDirectory, stage, parsed.journal); }
+    catch { return { kind: "ambiguous", message: "transaction evidence cannot be read through containment" }; }
+    if (issue !== null) return { kind: "ambiguous", message: issue };
+    let recovered: TransactionJournal;
     try {
-      await restorePrior(root, stageRoot, journal);
-      const diagnostics = await validateProject(root);
-      if (diagnostics.length > 0) return { kind: "ambiguous", message: "restored canonical set does not validate" };
-      await removeRecoveredTransaction(root, stageRoot, journal);
+      recovered = restorePrior(heldOwnership.rootDirectory, stage, parsed.journal);
+      if ((await validateProject(root)).length > 0) return { kind: "ambiguous", message: "restored canonical set does not validate" };
+    } catch { return { kind: "ambiguous", message: "could not restore the validated prior canonical set" }; }
+    try {
+      removeRecoveredTransactionBound(heldOwnership.rootDirectory, stage, staging, recovered);
+      stage = undefined;
+      staging = undefined;
+      try { heldOwnership.operationalDirectory.removeDirectory(".staging"); } catch { /* unknown staging evidence remains */ }
       return { kind: "recovered", transactionId, disposition: "restored-prior" };
-    } catch {
-      return { kind: "ambiguous", message: "could not restore the validated prior canonical set" };
-    }
+    } catch { return { kind: "ambiguous", message: "restored evidence could not be cleaned safely" }; }
   } finally {
+    stage?.close();
+    staging?.close();
     if (ownsLease && heldOwnership !== undefined) await releaseInitOwnership(heldOwnership);
   }
 }
