@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
-status: Plan 01-12 implementation committed but verification halted; Plan 01-19 complete; execute 01-20 before 01-13
-stopped_at: Completed 01-19-PLAN.md
-last_updated: "2026-08-28T10:34:01.609Z"
+status: Plan 01-20 complete; Plan 01-12 verification halt resolved; resume Plan 01-13
+stopped_at: Completed 01-20-PLAN.md
+last_updated: "2026-08-28T11:28:15.337Z"
 last_activity: 2026-08-28
-last_activity_desc: Bound artifact reads and root-bound init preflight are complete with exact-source hosted proof; corrected support Plans 01-19 and 01-20 are next.
+last_activity_desc: Plan 01-20 retained ENV-MA25's local Node-API 8 provider and 123/123 full-suite evidence, formally resolving the Plan 01-12 halt.
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 20
-  completed_plans: 13
+  total_plans: 22
+  completed_plans: 14
 ---
 
 # Project State
@@ -28,15 +28,15 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 19 of 20; Plan 01-19 is complete; Plan 01-12 implementation remains verification-halted
-Status: Execute Plan 01-20 to close the historical evidence gate, then begin bound ownership/staging
-Last activity: 2026-08-28 — Plan 01-19 built and loaded the exact local ENV-MA25 native support row.
+Plan: 13 of 20; Plan 01-20 and its Plan 01-12 evidence closure are complete
+Status: Resume Plan 01-13 bound ownership and staging work
+Last activity: 2026-08-28 — Plan 01-20 built the declared ENV-MA25 provider and passed the complete unfiltered 123-test local gate.
 
-Plan execution: 13 plans are implementation-complete; Plan 01-12 remains verification-halted after its implementation commits, and 7 plans remain pending (20 total). The all-target tracer is complete and the artifact-read migration exists as halted work-in-place. Plan 01-19 is complete and consumed that committed work; Plan 01-20 may formally close 01-12 and resolve its continuation checkpoint only after exact ENV-MA25 proof and the full unfiltered local regression pass, and only then may ownership/staging containment begin in 01-13.
+Plan execution: 14 plans are implementation-complete and 6 remain pending (20 total). Plan 01-20 completed the exact ENV-MA25 provider/full-suite evidence contract, set Plan 01-12 complete, and resolved its retained continuation checkpoint. Ownership/staging containment may now begin in 01-13.
 
 ### Active Execution — Native target matrix
 
-- Post-Wave-12 support correction: the current macOS 26.5.1 build 25F80 / arm64 / local APFS / Node 25.2.1 machine is a declared support row, not development-only. Plan 01-19 built and loaded its real Node-API 8 provider through the data-driven matrix while preserving Plan 01-12's halted work-in-place. Execute 01-20 next; after exact local provider/full-suite evidence passes, it must set 01-12 complete and mark its continuation checkpoint resolved. Plan 01-13 remains dependent on 01-20. All prior rows and lanes remain obligations.
+- Post-Wave-12 support correction: the current macOS 26.5.1 build 25F80 / arm64 / local APFS / Node 25.2.1 machine is a declared support row, not development-only. Plan 01-20 built its real Node-API 8 release provider and retained an unfiltered 123/123 local regression result, then set Plan 01-12 complete and marked its continuation checkpoint resolved. Plan 01-13 is now unblocked; all prior rows and lanes remain final-candidate obligations.
 
 - Plan 01-10 is complete (`c9e6a38`). Task 3 uses separate release and instrumented packages and records exact installed provider provenance. The final Windows leaf swap is rejected after handle-relative revalidation.
 - Windows parent/ancestor relocation was blocked at the controller directory rename with `EPERM`; evidence labels this `blocked-before-relocation` and `movedObjectOracle: not exercised`. NP-02 remains the separate moved-object proof and Plan 17 retains the full relocation matrix.
@@ -113,6 +113,7 @@ Plan execution: 13 plans are implementation-complete; Plan 01-12 remains verific
 | Phase 01 P08 | 20min | 2 tasks | 5 files |
 | Phase 01 P12 | 15min | 2 tasks | 8 files |
 | Phase 01 P19 | 14min | 2 tasks | 12 files |
+| Phase 01 P20 | 11min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -148,6 +149,9 @@ Recent decisions affecting current work:
 - [Phase ?]: The root capability stays open for the full init preflight and is closed on every exit before transaction completion.
 - [Phase ?]: Use unique support rows and supportRowId-bound manifests; native target alone is insufficient when environments share an architecture.
 - [Phase ?]: Permit only Node 25.2.1 as an exact exception beside the declared even-major Node ranges.
+- [Phase ?]: Derive final support evidence from declared matrix rows and named Node lanes, including ENV-MA25 and Node 25.2.1.
+- [Phase ?]: Treat ENV-MA25 as retained local release evidence; never substitute a hosted runner record for it.
+- [Phase ?]: Close Plan 01-12 only after the declared local release provider passes the unfiltered full suite.
 
 ### Pending Todos
 
@@ -179,6 +183,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-28T10:34:01.602Z
-Stopped at: Completed 01-19-PLAN.md
+Last session: 2026-08-28T11:28:15.320Z
+Stopped at: Completed 01-20-PLAN.md
 Resume file: None
