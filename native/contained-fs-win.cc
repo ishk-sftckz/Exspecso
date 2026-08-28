@@ -2,6 +2,7 @@
 #define NOMINMAX
 #include <windows.h>
 #include <winternl.h>
+#include <io.h>
 #include <array>
 #include <cerrno>
 #include <cstddef>
@@ -191,6 +192,49 @@ std::vector<std::string> list(Handle& h) {
   }
   return names;
 }
+void barrier() {
+#if defined(EXSPECSO_CONTAINMENT_TEST)
+  static bool reached = false;
+  const char* point = std::getenv("EXSPECSO_TEST_NATIVE_OPERATION");
+  if (reached || !point || std::strcmp(point, "replace:before") != 0) return;
+  reached = true;
+  const intptr_t traceDescriptor = _get_osfhandle(3);
+  const intptr_t acknowledgementDescriptor = _get_osfhandle(4);
+  require(traceDescriptor != -1 && acknowledgementDescriptor != -1, "test channels were not inherited by the native provider");
+  HMODULE image{};
+  require(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+    reinterpret_cast<LPCWSTR>(&barrier), &image) != 0, "cannot identify loaded test provider");
+  std::array<wchar_t, 32768> providerPath{};
+  const DWORD length = GetModuleFileNameW(image, providerPath.data(), static_cast<DWORD>(providerPath.size()));
+  require(length > 0 && length < providerPath.size(), "cannot read loaded test provider path");
+  const auto path = utf8(providerPath.data(), static_cast<int>(length));
+  std::string escaped;
+  for (const unsigned char c : path) {
+    require(c >= 32, "unsupported control character in test provider path");
+    if (c == '\\' || c == '\"') escaped += '\\';
+    escaped += static_cast<char>(c);
+  }
+  const std::string message = "{\"operation\":\"replace:before\",\"pid\":" + std::to_string(GetCurrentProcessId()) + ",\"providerPath\":\"" + escaped + "\"}\\n";
+  size_t offset = 0;
+  while (offset < message.size()) {
+    DWORD written = 0;
+    require(WriteFile(reinterpret_cast<HANDLE>(traceDescriptor), message.data() + offset,
+      static_cast<DWORD>(message.size() - offset), &written, nullptr) != 0 && written > 0, "test channel write failed");
+    offset += written;
+  }
+  DWORD available = 0;
+  const ULONGLONG deadline = GetTickCount64() + 10'000;
+  do {
+    if (!PeekNamedPipe(reinterpret_cast<HANDLE>(acknowledgementDescriptor), nullptr, 0, nullptr, &available, nullptr)) fail("test acknowledgement probe");
+    if (available > 0) break;
+    Sleep(10);
+  } while (GetTickCount64() < deadline);
+  require(available > 0, "test barrier timeout");
+  char acknowledgement{};
+  DWORD read = 0;
+  require(ReadFile(reinterpret_cast<HANDLE>(acknowledgementDescriptor), &acknowledgement, 1, &read, nullptr) != 0 && read == 1 && acknowledgement == '1', "invalid test acknowledgement");
+#endif
+}
 void replace(Handle& parent, Handle& source, const std::string& target) {
   directory(parent); active(source);
   require(!source.directory && source.writable && !source.consumed && parent.authority == source.authority && sameIdentity(identity(parent), source.parentIdentity), "private sibling from this parent required");
@@ -198,6 +242,7 @@ void replace(Handle& parent, Handle& source, const std::string& target) {
   require(sameIdentity(identity(*named), identity(source)), "private sibling identity changed");
   try { auto destination = openFile(parent, target, false); }
   catch (const std::system_error& error) { if (error.code() != std::errc::no_such_file_or_directory) throw; }
+  barrier(); // Test-only final-use boundary; absent in the release binary.
   auto name = wide(target);
   // SDK FILE_RENAME_INFO matches the documented NT FILE_RENAME_INFORMATION layout.
   // Win32 SetFileInformationByHandle does not document relative RootDirectory support.

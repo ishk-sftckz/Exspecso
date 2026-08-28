@@ -1,6 +1,6 @@
 import { execFile, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cp, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -12,6 +12,31 @@ export function runNpm(args: string[], options: { cwd?: string } = {}) {
   const npm = process.env.npm_execpath;
   if (!npm || !npm.endsWith("npm-cli.js")) throw new Error("Run package tests through npm test so the actual npm CLI is available");
   return exec(process.execPath, [npm, ...args], { ...options, maxBuffer: 2 * 1024 * 1024 });
+}
+
+async function packageInventory(installed: string): Promise<Record<string, string>> {
+  const inventory: Record<string, string> = {};
+  async function visit(directory: string, relative: string): Promise<void> {
+    for (const name of await readdir(directory)) {
+      const path = join(directory, name);
+      const entry = relative ? `${relative}/${name}` : name;
+      const metadata = await lstat(path);
+      if (metadata.isDirectory()) await visit(path, entry);
+      else if (metadata.isFile() && (entry === "package.json" || (entry.startsWith("dist/") && !entry.startsWith("dist/native/")))) {
+        inventory[entry] = createHash("sha256").update(await readFile(path)).digest("hex");
+      }
+    }
+  }
+  await visit(installed, "");
+  return Object.fromEntries(Object.entries(inventory).sort(([left], [right]) => left.localeCompare(right)));
+}
+
+export async function inspectInstalledPackage(installed: string) {
+  const manifest = JSON.parse(await readFile(join(installed, "dist/native/manifest.json"), "utf8"));
+  const provider = await realpath(join(installed, "dist/native", manifest.targets[0].path));
+  const sha256 = createHash("sha256").update(await readFile(provider)).digest("hex");
+  const provenance = JSON.parse(await readFile(join(installed, "dist/native/build-provenance.json"), "utf8"));
+  return { installed, provider, sha256, manifest, provenance, packageInventory: await packageInventory(installed) };
 }
 export async function installContainedPackage(variant: "release" | "test") {
   const directory = await mkdtemp(join(tmpdir(), `exspecso-${variant}-install-`));
@@ -27,17 +52,15 @@ export async function installContainedPackage(variant: "release" | "test") {
     const runner = join(directory, "runner");
     await runNpm(["install", "--ignore-scripts", "--no-package-lock", "--prefix", runner, join(directory, filename)]);
     const installed = join(runner, "node_modules", "exspecso");
-    const manifest = JSON.parse(await readFile(join(installed, "dist/native/manifest.json"), "utf8"));
-    const provider = await realpath(join(installed, "dist/native", manifest.targets[0].path));
-    const sha256 = createHash("sha256").update(await readFile(provider)).digest("hex");
+    const inspected = await inspectInstalledPackage(installed);
+    const { manifest, provider, sha256, provenance } = inspected;
     if (sha256 !== manifest.targets[0].sha256 || manifest.variant !== variant) throw new Error("installed provider provenance mismatch");
-    const provenance = JSON.parse(await readFile(join(installed, "dist/native/build-provenance.json"), "utf8"));
     const release = JSON.parse(await readFile(join(root, "dist/native/build-provenance.json"), "utf8"));
     for (const key of ["buildCommit", "sources", "headerHash", "compilerVersion", "sdkVersion", "xcode", "osVersion", "osBuild", "windows", "nodeLibHash"]) {
       if (JSON.stringify(release[key]) !== JSON.stringify(provenance[key])) throw new Error(`release/test build mismatch: ${key}`);
     }
     const tarballSHA256 = createHash("sha256").update(await readFile(join(directory, filename))).digest("hex");
-    return { directory, installed, provider, sha256, manifest, provenance, tarballSHA256, cli: join(installed, "dist/cli/main.js"), async dispose() { await rm(directory, { recursive: true, force: true }); } };
+    return { directory, ...inspected, tarballSHA256, cli: join(installed, "dist/cli/main.js"), async dispose() { await rm(directory, { recursive: true, force: true }); } };
   } catch (error) { await rm(directory, { recursive: true, force: true }); throw error; }
 }
 
@@ -49,7 +72,7 @@ export async function installVulnerablePackage() {
     const ledger = JSON.parse(await readFile(join(fixture, "source-ledger.json"), "utf8")) as { baselineCommit: string; sources: Record<string, string> };
     const staged = join(directory, "package");
     for (const [name, expected] of Object.entries(ledger.sources)) {
-      const alternate = name === "src/filesystem/transaction.ts" ? "transaction.ts.txt" : name === "src/init/run-init.ts" ? "run-init.ts.txt" : undefined;
+      const alternate = name === "src/adapters/managed-file.ts" ? "managed-file.ts.txt" : name === "src/filesystem/transaction.ts" ? "transaction.ts.txt" : name === "src/init/run-init.ts" ? "run-init.ts.txt" : undefined;
       const bytes = await readFile(alternate ? join(fixture, alternate) : join(root, name));
       if (createHash("sha256").update(bytes).digest("hex") !== expected) throw new Error("Historical source mismatch: " + name);
       await mkdir(dirname(join(staged, name)), { recursive: true });
