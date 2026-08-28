@@ -94,7 +94,7 @@ export async function runInit(input: InitInput): Promise<number> {
       }
     }
 
-  const observedOwnership = await inspectInitOwnership(repositoryRoot);
+  const observedOwnership = await inspectInitOwnership(repositoryRoot, capability.root);
   if (observedOwnership.kind === "busy") {
     writeError(input.stderr, "EXSPECSO_INIT_TRANSACTION_BUSY", "Initialization is already in progress; retry after the active transaction finishes.");
     return 1;
@@ -105,7 +105,7 @@ export async function runInit(input: InitInput): Promise<number> {
   }
 
   await input.beforeOwnershipAcquire?.();
-  const acquisition = await acquireInitOwnership(repositoryRoot);
+  const acquisition = await acquireInitOwnership(repositoryRoot, { rootDirectory: capability.root });
   if (acquisition.kind === "busy") {
     writeError(input.stderr, "EXSPECSO_INIT_TRANSACTION_BUSY", "Initialization is already in progress; no files were changed.");
     return 1;

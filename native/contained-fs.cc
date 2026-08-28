@@ -67,6 +67,7 @@ napi_value wrap(napi_env env, contained::Owned h) {
 }
 napi_value OpenRoot(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,1); return wrap(e,contained::openRoot(string(e,a[0],false))); }); }
 napi_value OpenDirectory(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,3); bool create; check(napi_get_value_bool(e,a[2],&create)); return wrap(e,contained::openDirectory(handle(e,a[0]),string(e,a[1]),create)); }); }
+napi_value CreateDirectory(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,2); return wrap(e,contained::createDirectory(handle(e,a[0]),string(e,a[1]))); }); }
 napi_value OpenFile(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,3); bool create; check(napi_get_value_bool(e,a[2],&create)); return wrap(e,contained::openFile(handle(e,a[0]),string(e,a[1]),create)); }); }
 napi_value Read(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,1); auto bytes=contained::read(handle(e,a[0])); napi_value v; check(napi_create_buffer_copy(e,bytes.size(),bytes.data(),nullptr,&v)); return v; }); }
 napi_value Write(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,2); bool buffer; check(napi_is_buffer(e,a[1],&buffer)); contained::require(buffer,"Buffer required"); void* bytes; size_t size; check(napi_get_buffer_info(e,a[1],&bytes,&size)); contained::write(handle(e,a[0]),bytes,size); return undefined(e); }); }
@@ -74,6 +75,7 @@ napi_value Sync(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a
 napi_value Close(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,1); contained::close(handle(e,a[0])); return undefined(e); }); }
 napi_value List(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,1); auto names=contained::list(handle(e,a[0])); std::sort(names.begin(),names.end()); napi_value v; check(napi_create_array_with_length(e,names.size(),&v)); for(size_t n=0;n<names.size();n++) { napi_value s; check(napi_create_string_utf8(e,names[n].data(),names[n].size(),&s)); check(napi_set_element(e,v,n,s)); } return v; }); }
 napi_value Replace(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,3); contained::replace(handle(e,a[0]),handle(e,a[1]),string(e,a[2])); return undefined(e); }); }
+napi_value PublishDirectory(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,3); contained::publishDirectory(handle(e,a[0]),handle(e,a[1]),string(e,a[2])); return undefined(e); }); }
 napi_value Unlink(napi_env e, napi_callback_info i) { return guard(e, [&] { auto a=arguments(e,i,3); bool dir; check(napi_get_value_bool(e,a[2],&dir)); contained::unlink(handle(e,a[0]),string(e,a[1]),dir); return undefined(e); }); }
 napi_value Stat(napi_env e, napi_callback_info i) { return guard(e, [&] {
   auto a=arguments(e,i,1); auto st=contained::metadata(handle(e,a[0])); napi_value v;
@@ -92,7 +94,7 @@ napi_value Stat(napi_env e, napi_callback_info i) { return guard(e, [&] {
 }); }
 napi_value Init(napi_env env, napi_value exports) {
   return guard(env,[&] {
-    for(auto method : {std::pair<const char*,napi_callback>{"openRoot",OpenRoot},{"openDirectory",OpenDirectory},{"openFile",OpenFile},{"read",Read},{"write",Write},{"sync",Sync},{"close",Close},{"list",List},{"replace",Replace},{"unlink",Unlink},{"stat",Stat}}) {
+    for(auto method : {std::pair<const char*,napi_callback>{"openRoot",OpenRoot},{"openDirectory",OpenDirectory},{"createDirectory",CreateDirectory},{"openFile",OpenFile},{"read",Read},{"write",Write},{"sync",Sync},{"close",Close},{"list",List},{"replace",Replace},{"publishDirectory",PublishDirectory},{"unlink",Unlink},{"stat",Stat}}) {
       napi_value fn; check(napi_create_function(env,method.first,NAPI_AUTO_LENGTH,method.second,nullptr,&fn)); check(napi_set_named_property(env,exports,method.first,fn));
     }
     napi_value variant;

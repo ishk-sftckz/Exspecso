@@ -10,6 +10,7 @@ interface NativeProvider {
   readonly variant: "release" | "test";
   openRoot(path: string): object;
   openDirectory(parent: object, name: string, create: boolean): object;
+  createDirectory(parent: object, name: string): object;
   openFile(parent: object, name: string, create: boolean): object;
   read(file: object): Buffer;
   write(file: object, bytes: Buffer): void;
@@ -17,6 +18,7 @@ interface NativeProvider {
   close(handle: object): void;
   list(directory: object): string[];
   replace(parent: object, source: object, target: string): void;
+  publishDirectory(parent: object, source: object, target: string): void;
   unlink(parent: object, name: string, directory: boolean): void;
   stat(handle: object): { device: bigint; inode: bigint; size: bigint };
 }
@@ -128,10 +130,12 @@ export class FileCapability extends Capability {
 export class DirectoryCapability extends Capability {
   constructor(native: NativeProvider, handle: object, private readonly track: (capability: Capability) => void) { super(native, handle); }
   openDirectory(name: string, create = false): DirectoryCapability { const value = new DirectoryCapability(this.native, this.native.openDirectory(this.handle, name, create), this.track); this.track(value); return value; }
+  createDirectory(name: string): DirectoryCapability { const value = new DirectoryCapability(this.native, this.native.createDirectory(this.handle, name), this.track); this.track(value); return value; }
   openFile(name: string): FileCapability { const value = new FileCapability(this.native, this.native.openFile(this.handle, name, false)); this.track(value); return value; }
   createFile(name: string): FileCapability { const value = new FileCapability(this.native, this.native.openFile(this.handle, name, true)); this.track(value); return value; }
   list(): string[] { return this.native.list(this.handle); }
   replace(source: FileCapability, target: string): void { const handle = handles.get(source); if (!handle) unavailable("closed or foreign source"); this.native.replace(this.handle, handle, target); }
+  publishDirectory(source: DirectoryCapability, target: string): void { const handle = handles.get(source); if (!handle) unavailable("closed or foreign source"); this.native.publishDirectory(this.handle, handle, target); }
   unlink(name: string): void { this.native.unlink(this.handle, name, false); }
   removeDirectory(name: string): void { this.native.unlink(this.handle, name, true); }
 }

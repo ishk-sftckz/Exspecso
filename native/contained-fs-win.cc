@@ -106,8 +106,18 @@ Owned acquire(HANDLE parent, const std::wstring& name, bool isDirectory, ULONG d
 }
 Owned openDirectory(Handle& parent, const std::string& name, bool create) {
   directory(parent);
-  auto h = acquire(parent.value, wide(name), true, create ? FILE_OPEN_IF : FILE_OPEN, 0, parent.authority);
-  require(identity(parent).VolumeSerialNumber == identity(*h).VolumeSerialNumber, "cross-volume descent rejected");
+  auto h = acquire(parent.value, wide(name), true, create ? FILE_OPEN_IF : FILE_OPEN, DELETE, parent.authority);
+  const auto parentId = identity(parent);
+  require(parentId.VolumeSerialNumber == identity(*h).VolumeSerialNumber, "cross-volume descent rejected");
+  h->parentIdentity = parentId; h->name = name;
+  return h;
+}
+Owned createDirectory(Handle& parent, const std::string& name) {
+  directory(parent);
+  auto h = acquire(parent.value, wide(name), true, FILE_CREATE, DELETE, parent.authority);
+  const auto parentId = identity(parent);
+  require(parentId.VolumeSerialNumber == identity(*h).VolumeSerialNumber, "cross-volume descent rejected");
+  h->parentIdentity = parentId; h->name = name;
   return h;
 }
 Owned openRoot(const std::string& path) {
@@ -369,6 +379,26 @@ void replace(Handle& parent, Handle& source, const std::string& target) {
   // Documented FILE_INFORMATION_CLASS: FileRenameInformationEx = 65 (not a bypass-access class).
   ntCheck(systemFunction<NtSet>("NtSetInformationFile")(source.value, &io, info, static_cast<ULONG>(size), static_cast<FILE_INFORMATION_CLASS>(65)), "NtSetInformationFile rename");
   source.consumed = true; source.writable = false;
+}
+void publishDirectory(Handle& parent, Handle& source, const std::string& target) {
+  directory(parent); directory(source);
+  require(!source.root && !source.consumed && parent.authority == source.authority &&
+    sameIdentity(identity(parent), source.parentIdentity), "private sibling directory required");
+  require(target != source.name, "source and target must differ");
+  auto named = openDirectory(parent, source.name, false);
+  require(sameIdentity(identity(*named), identity(source)), "publication source changed");
+  auto name = wide(target);
+  static_assert(sizeof(HANDLE) == 8 && offsetof(FILE_RENAME_INFO, RootDirectory) == 8 && offsetof(FILE_RENAME_INFO, FileName) == 20);
+  const size_t size = sizeof(FILE_RENAME_INFO) + name.size() * sizeof(wchar_t);
+  std::vector<uint64_t> storage((size + 7) / 8, 0);
+  auto info = reinterpret_cast<FILE_RENAME_INFO*>(storage.data());
+  // Deliberately omit REPLACE_IF_EXISTS: a contended lock name must fail, never replace.
+  info->Flags = FILE_RENAME_FLAG_POSIX_SEMANTICS;
+  info->RootDirectory = parent.value; info->FileNameLength = static_cast<DWORD>(name.size() * sizeof(wchar_t));
+  std::memcpy(info->FileName, name.data(), info->FileNameLength);
+  IO_STATUS_BLOCK io{};
+  ntCheck(systemFunction<NtSet>("NtSetInformationFile")(source.value, &io, info, static_cast<ULONG>(size), static_cast<FILE_INFORMATION_CLASS>(65)), "NtSetInformationFile exclusive directory rename");
+  source.consumed = true;
 }
 void unlink(Handle& parent, const std::string& name, bool isDirectory) {
   directory(parent);

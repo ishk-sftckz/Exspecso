@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, readdir, realpath, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";

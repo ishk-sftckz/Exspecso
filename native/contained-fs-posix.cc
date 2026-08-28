@@ -16,6 +16,7 @@
 #include <unistd.h>
 #if defined(__APPLE__)
 #include <sys/mount.h>
+#include <stdio.h>
 #else
 #include <sys/vfs.h>
 #include <sys/syscall.h>
@@ -98,7 +99,14 @@ Owned openDirectory(Handle& parent, const std::string& name, bool create) {
   directory(parent);
   if (create && mkdirat(parent.fd, name.c_str(), 0700) < 0 && errno != EEXIST) fail("mkdirat");
   auto h = adopt(componentOpen(parent.fd, name.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC), true, parent.authority);
-  sameFilesystem(parent, h->fd); return h;
+  sameFilesystem(parent, h->fd);
+  auto st = metadata(parent); h->parentDevice = st.st_dev; h->parentInode = st.st_ino; h->name = name;
+  return h;
+}
+Owned createDirectory(Handle& parent, const std::string& name) {
+  directory(parent);
+  if (mkdirat(parent.fd, name.c_str(), 0700) < 0) fail("mkdirat exclusive");
+  return openDirectory(parent, name, false);
 }
 Owned openFile(Handle& parent, const std::string& name, bool create) {
   directory(parent);
@@ -209,6 +217,23 @@ void replace(Handle& parent, Handle& source, const std::string& target) {
   } else if (errno != ENOENT) fail("stat replacement destination");
   if (renameat(parent.fd, source.name.c_str(), parent.fd, target.c_str()) < 0) fail("renameat");
   source.consumed = true; source.writable = false;
+}
+void publishDirectory(Handle& parent, Handle& source, const std::string& target) {
+  directory(parent); directory(source);
+  const auto p = metadata(parent);
+  require(!source.root && !source.consumed && parent.authority == source.authority &&
+    p.st_dev == source.parentDevice && p.st_ino == source.parentInode, "private sibling directory required");
+  require(target != source.name, "source and target must differ");
+  struct stat observed{};
+  if (fstatat(parent.fd, source.name.c_str(), &observed, AT_SYMLINK_NOFOLLOW) < 0) fail("stat publication source");
+  const auto held = metadata(source);
+  require(S_ISDIR(observed.st_mode) && observed.st_dev == held.st_dev && observed.st_ino == held.st_ino, "publication source changed");
+#if defined(__APPLE__)
+  if (renameatx_np(parent.fd, source.name.c_str(), parent.fd, target.c_str(), RENAME_EXCL) < 0) fail("renameatx_np exclusive publication");
+#else
+  if (syscall(SYS_renameat2, parent.fd, source.name.c_str(), parent.fd, target.c_str(), RENAME_NOREPLACE) < 0) fail("renameat2 exclusive publication");
+#endif
+  source.consumed = true;
 }
 void unlink(Handle& parent, const std::string& name, bool isDirectory) {
   directory(parent);

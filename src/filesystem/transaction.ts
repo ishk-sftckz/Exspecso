@@ -160,7 +160,7 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
   let ownsLease = false;
   if (ownership === undefined) {
     try {
-      const acquisition = await acquireInitOwnership(root);
+      const acquisition = await acquireInitOwnership(root, { rootDirectory: filesystem.root });
       if (acquisition.kind !== "acquired") { filesystem.close(); return { kind: "busy" }; }
       ownership = acquisition.ownership;
       ownsLease = true;
