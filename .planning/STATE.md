@@ -4,11 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: Metadata inspection complete; portable contract approval pending
-stopped_at: 01-09 inventory recorded for six runners; musl proposal and native contract remain pending
-last_updated: "2026-08-28T04:24:11.998Z"
+status: Resolved portable repair proposal awaiting approval
+stopped_at: 01-09 exact repair proposal recorded; explicit human decision pending
+last_updated: "2026-08-28T04:33:03.485Z"
 last_activity: 2026-08-28
-last_activity_desc: Completed the approved six-runner metadata inspection after user-granted workflow permission; musl setup and the full native/safety contract remain unapproved.
+last_activity_desc: Recorded the resolved native repair proposal using the runner inventory and public musl image/package metadata; no implementation approval, installation or new CI run.
 progress:
   total_phases: 1
   completed_phases: 0
@@ -30,11 +30,13 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
 Plan: 9 of 18; revised 01-09 Task 1 blocking-human decision; 0/1 task complete
 Status: Awaiting portable contract approval
-Last activity: 2026-08-28 — GitHub run 33141513892 completed six metadata-only jobs; no implementation or application verification ran. The portable containment contract remains awaiting explicit approval.
+Last activity: 2026-08-28 — Completed the proposed support/provider/Node/evidence ledger, including immutable musl image inputs and explicit modern-OS/Node-floor dispositions. Awaiting the user decision; no implementation or application verification ran.
 
 Plan execution: 8 completed plans preserved; 10 revised/new plans pending (18 total). The larger denominator reflects the portable replan, not lost completed work. Phase completion remains blocked by verification gaps and human/security gates.
 
 ### Active Execution Checkpoint — revised portable contract
+
+- The resolved 2026-08-28 proposal is appended to `01-CONTAINMENT-SUPPORT.md`. It preserves eight platform rows and three adapters, proposes exact modern acceptance environments (not the older researched OS floors), nine Node lanes and an explicit engine correction, C Node-API 8 with pinned headers/toolchains, same-package prebuilts, Mode B evidence, journal schema-2 compatibility and bounded free CI authorization. All are proposed, not approved. Public registry manifests confirm both musl architectures are published; no image was pulled or executed. Do not reinterpret the earlier metadata-only approval as acceptance.
 
 - The user authorized replanning for Windows, macOS, Linux, all three agent adapters, and comprehensive tests; implementation remains paused.
 - On 2026-08-28 the user replied `i approve` to metadata-only GitHub inspection, then `done` after granting the missing workflow scope. Run 33141513892 completed on native Mac/Windows/Linux x64 and arm64 runners. Logs and exact observed inputs are in `01-CONTAINMENT-PREFLIGHT.json`, `.yml`, and `01-CONTAINMENT-PREFLIGHT-LOGS/`; the SUPPORT proposal has a readable inventory. Neither musl target was inspected or installed. No application tests or native build ran. The full contract is still unapproved and 01-10 remains blocked; plan order and all eight platform obligations are unchanged.
@@ -159,6 +161,6 @@ Research note: `docs/research/initialization-runtime-comparison.md` records a ge
 
 ## Session Continuity
 
-Last session: 2026-08-28T04:24:11.998Z
-Stopped at: 01-09 six-runner metadata inspection complete; musl proposal and full native contract remain pending
+Last session: 2026-08-28T04:33:03.485Z
+Stopped at: 01-09 resolved proposal complete; awaiting explicit approval of its scope and safety limits
 Resume file: .planning/phases/01-initialize-canonical-projects/01-09-PLAN.md
