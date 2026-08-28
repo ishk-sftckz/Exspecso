@@ -13,13 +13,13 @@ concurrency:
   cancel-in-progress: false
 jobs:
   native:
-    name: ${{ matrix.id }}
-    runs-on: ${{ matrix.runner }}
+    name: ${{ matrix.row.id }} / Node ${{ matrix.nodeLane }}
+    runs-on: ${{ matrix.row.runner }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        include:
+        row:
           - {id: ENV-MA, runner: macos-15, family: macos, target: darwin-arm64}
           - {id: ENV-MX, runner: macos-15-intel, family: macos, target: darwin-x64}
           - {id: ENV-WX, runner: windows-2025, family: windows, target: win32-x64}
@@ -28,9 +28,10 @@ jobs:
           - {id: ENV-LGA, runner: ubuntu-24.04-arm, family: glibc, target: linux-arm64}
           - {id: ENV-LMX, runner: ubuntu-24.04, family: musl, target: linux-x64}
           - {id: ENV-LMA, runner: ubuntu-24.04-arm, family: musl, target: linux-arm64}
+        nodeLane: ["20.19.0", "20.19.5", "20.20.2", "22.13.0", "22.23.2", "24.0.0", "24.20.0", "25.2.1", "26.0.0", "26.8.1"]
     steps:
       - name: Fetch only the reviewed temporary snapshot
-        if: inputs.mode == 'full' || matrix.family == 'musl'
+        if: inputs.mode == 'full' || matrix.row.family == 'musl'
         shell: bash
         run: |
           git init .
@@ -38,10 +39,10 @@ jobs:
           git fetch --depth=1 origin "$GITHUB_SHA"
           git checkout --detach FETCH_HEAD
       - name: Fetch checksum-verified Node 20.19.0 inputs
-        if: (inputs.mode == 'full' || matrix.family == 'musl') && (matrix.family == 'macos' || matrix.family == 'glibc')
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && (matrix.row.family == 'macos' || matrix.row.family == 'glibc')
         shell: bash
         env:
-          TARGET: ${{ matrix.target }}
+          TARGET: ${{ matrix.row.target }}
         run: |
           set -euo pipefail
           archive="node-v20.19.0-$TARGET.tar.gz"
@@ -54,12 +55,13 @@ jobs:
           echo "$PWD/node-v20.19.0-$TARGET/bin" >> "$GITHUB_PATH"
           echo "EXSPECSO_NODE_HEADERS=$PWD/node-v20.19.0-headers.tar.gz" >> "$GITHUB_ENV"
       - name: Build and run the real installed tracer natively
-        if: (inputs.mode == 'full' || matrix.family == 'musl') && (matrix.family == 'macos' || matrix.family == 'glibc')
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && (matrix.row.family == 'macos' || matrix.row.family == 'glibc')
         shell: bash
         env:
-          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
-          TARGET: ${{ matrix.target }}
-          FAMILY: ${{ matrix.family }}
+          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.row.id }}
+          EXSPECSO_OBSERVED_NODE_LANE: ${{ matrix.nodeLane }}
+          TARGET: ${{ matrix.row.target }}
+          FAMILY: ${{ matrix.row.family }}
         run: |
           set -euo pipefail
           export EXSPECSO_TEST_TMPDIR="$PWD/.ci-fixtures"
@@ -74,10 +76,10 @@ jobs:
           if [ "$FAMILY" = glibc ]; then node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json; fi
           node scripts/write-containment-evidence.mjs
       - name: Fetch checksum-verified native Node inputs for Windows
-        if: (inputs.mode == 'full' || matrix.family == 'musl') && matrix.family == 'windows'
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && matrix.row.family == 'windows'
         shell: pwsh
         env:
-          TARGET: ${{ matrix.target }}
+          TARGET: ${{ matrix.row.target }}
         run: |
           $ErrorActionPreference = 'Stop'
           $nodeTarget = $env:TARGET.Replace('win32-', 'win-')
@@ -94,11 +96,12 @@ jobs:
           "EXSPECSO_NODE_HEADERS=$(Join-Path $env:RUNNER_TEMP 'node-v20.19.0-headers.tar.gz')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "EXSPECSO_NODE_LIB=$(Join-Path $env:RUNNER_TEMP 'node.lib')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Build and run the real installed Windows tracer
-        if: (inputs.mode == 'full' || matrix.family == 'musl') && matrix.family == 'windows'
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && matrix.row.family == 'windows'
         shell: pwsh
         env:
-          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
-          TARGET: ${{ matrix.target }}
+          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.row.id }}
+          EXSPECSO_OBSERVED_NODE_LANE: ${{ matrix.nodeLane }}
+          TARGET: ${{ matrix.row.target }}
         run: |
           $ErrorActionPreference = 'Stop'
           npm ci --ignore-scripts
@@ -110,11 +113,12 @@ jobs:
           node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
           node scripts/write-containment-evidence.mjs
       - name: Build and run the real native musl tracer in the pinned Alpine userland
-        if: (inputs.mode == 'full' || matrix.family == 'musl') && matrix.family == 'musl'
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && matrix.row.family == 'musl'
         shell: bash
         env:
-          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
-          TARGET: ${{ matrix.target }}
+          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.row.id }}
+          EXSPECSO_OBSERVED_NODE_LANE: ${{ matrix.nodeLane }}
+          TARGET: ${{ matrix.row.target }}
         run: |
           set -euo pipefail
           base=$(node -e "const m=require('./native/support-matrix.json');console.log(m.rows.find(x=>x.id===process.env.EXSPECSO_CONTAINMENT_ROW).image)")
@@ -144,10 +148,10 @@ jobs:
             node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
             node scripts/write-containment-evidence.mjs'
       - name: Upload actual target evidence and binaries
-        if: (inputs.mode == 'full' || matrix.family == 'musl') && always()
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: containment-${{ matrix.id }}
+          name: containment-${{ matrix.row.id }}-node-${{ matrix.nodeLane }}
           path: |
             evidence.json
             filesystem-observation.json

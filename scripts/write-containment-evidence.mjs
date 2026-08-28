@@ -4,11 +4,15 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 const rowId = process.env.EXSPECSO_CONTAINMENT_ROW;
 if (!rowId) throw new Error("EXSPECSO_CONTAINMENT_ROW is required");
+const observedNodeLane = process.env.EXSPECSO_OBSERVED_NODE_LANE;
+if (!observedNodeLane) throw new Error("EXSPECSO_OBSERVED_NODE_LANE is required");
 const stage = process.env.EXSPECSO_EVIDENCE_STAGE ?? "tracer";
 if (!new Set(["tracer", "prerequisite", "final"]).has(stage)) throw new Error("EXSPECSO_EVIDENCE_STAGE is invalid");
 const matrix = JSON.parse(readFileSync("native/support-matrix.json", "utf8"));
 const row = matrix.rows.find((candidate) => candidate.id === rowId);
 if (!row) throw new Error(`unknown containment row ${rowId}`);
+if (!matrix.nodePolicy.testedVersions.includes(observedNodeLane)) throw new Error(`unknown observed Node lane ${observedNodeLane}`);
+if (process.version.slice(1) !== observedNodeLane) throw new Error(`live Node ${process.version.slice(1)} does not match observed lane ${observedNodeLane}`);
 const manifestBytes = readFileSync("dist/native/manifest.json");
 const manifest = JSON.parse(manifestBytes);
 const provider = manifest.targets?.find((target) => target.supportRowId === rowId);
@@ -47,7 +51,7 @@ writeFileSync("evidence.json", JSON.stringify({
   sourceCommit,
   provider: { sha256: provider.sha256, buildSHA256: build.binarySHA256, napi: provider.napiVersion },
   manifest: { sha256: hash(manifestBytes) },
-  nodeLanes: stage === "final" ? matrix.nodePolicy.testedVersions : [row.node.testedVersion],
+  nodeLanes: [observedNodeLane],
   tracer: { requiredTestIds: ["installed-native-promotion"], reachedTestIds: ["installed-native-promotion"], exitCode: 0 },
   toolchain: { headerSha256: build.headerHash, compilerVersion: build.compilerVersion, sdkVersion: build.sdkVersion, sdkBuild: build.sdkBuild },
   environment: {
