@@ -1,32 +1,20 @@
 import { randomUUID } from "node:crypto";
-import { lstat, mkdir, open, readFile, rm, rmdir, writeFile } from "node:fs/promises";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { lstat, readFile, rm, rmdir, writeFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import type { PlannedWrite } from "../init/plan.js";
 import { assertSafeTransactionPaths } from "./safe-path.js";
 import { acquireInitOwnership, inspectInitOwnership, releaseInitOwnership, type InitOwnership } from "./ownership.js";
 import { openContainedFilesystem, type DirectoryCapability, type RootCapability } from "./contained-fs.js";
+import {
+  transactionSchemaVersion,
+  type TransactionJournal,
+  type TransactionJournalEntry,
+} from "./journal.js";
 
-export const transactionSchemaVersion = 1;
+export { transactionSchemaVersion, type TransactionJournal, type TransactionJournalEntry } from "./journal.js";
 export const stagingRelativePath = ".exspecso/.staging";
 export { lockRelativePath } from "./ownership.js";
-
-export interface TransactionJournalEntry {
-  readonly relativePath: string;
-  readonly preimageHash: string | null;
-  readonly stagedHash: string;
-  readonly backupPath: string | null;
-  readonly backupHash: string | null;
-}
-
-export interface TransactionJournal {
-  readonly schemaVersion: typeof transactionSchemaVersion;
-  readonly transactionId: string;
-  readonly repositoryRootFingerprint: string;
-  readonly entries: readonly TransactionJournalEntry[];
-  readonly promotionOrder: readonly string[];
-  readonly completedStep: number;
-}
 
 export type TransactionResult =
   | { readonly kind: "committed"; readonly transactionId: string }
@@ -34,7 +22,7 @@ export type TransactionResult =
   | { readonly kind: "busy" }
   | { readonly kind: "failed"; readonly transactionId: string; readonly error: Error };
 
-export type PromotionFaultPoint = `after-promotion:${string}`;
+export type PromotionFaultPoint = `before-promotion:${string}` | `after-promotion:${string}` | `after-journal:${string}`;
 
 export interface CommitTransactionOptions {
   /** Test-only deterministic seam. It never changes the production state machine. */
@@ -106,48 +94,6 @@ function removeEmptyDirectories(root: DirectoryCapability, path: readonly string
     try { withDirectory(root, path.slice(0, length - 1), false, (parent) => parent.removeDirectory(path[length - 1]!)); } catch { break; }
   }
 }
-function cleanupBoundTransaction(stage: DirectoryCapability, staging: DirectoryCapability, journal: TransactionJournal): void {
-  for (const entry of journal.entries) {
-    const staged = ["files", ...components(entry.relativePath)]; removeBound(stage, staged); removeEmptyDirectories(stage, staged.slice(0, -1));
-    if (entry.backupPath !== null) { const backup = components(entry.backupPath); removeBound(stage, backup); removeEmptyDirectories(stage, backup.slice(0, -1)); }
-  }
-  removeBound(stage, ["journal.json"]); stage.close(); staging.removeDirectory(journal.transactionId); staging.close();
-}
-
-async function writeSynced(path: string, content: string): Promise<void> {
-  await mkdir(dirname(path), { recursive: true });
-  const handle = await open(path, "w");
-  try {
-    await handle.writeFile(content, "utf8");
-    await handle.sync();
-  } finally {
-    await handle.close();
-  }
-}
-
-async function syncDirectory(path: string): Promise<void> {
-  try {
-    const handle = await open(path, "r");
-    try {
-      await handle.sync();
-    } finally {
-      await handle.close();
-    }
-  } catch {
-    // Directory syncing is unavailable on some supported filesystems. The
-    // journal/recovery contract remains explicitly process-level (D-19).
-  }
-}
-
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf8");
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
-    throw error;
-  }
-}
-
 async function removeKnownTransaction(stageRoot: string, journal: TransactionJournal): Promise<void> {
   const directories = new Set<string>([join(stageRoot, "files"), join(stageRoot, "backups"), stageRoot]);
   for (const entry of journal.entries) {
@@ -161,10 +107,15 @@ async function removeKnownTransaction(stageRoot: string, journal: TransactionJou
     }
   }
   await rm(journalPath(stageRoot), { force: true });
-  for (const directory of [...directories].sort((left, right) => right.length - left.length)) {
-    await rmdir(directory).catch(() => undefined);
-  }
+  for (const directory of [...directories].sort((left, right) => right.length - left.length)) await rmdir(directory).catch(() => undefined);
   await rmdir(dirname(stageRoot)).catch(() => undefined);
+}
+function cleanupBoundTransaction(stage: DirectoryCapability, staging: DirectoryCapability, journal: TransactionJournal): void {
+  for (const entry of journal.entries) {
+    const staged = ["files", ...components(entry.relativePath)]; removeBound(stage, staged); removeEmptyDirectories(stage, staged.slice(0, -1));
+    if (entry.backupPath !== null) { const backup = components(entry.backupPath); removeBound(stage, backup); removeEmptyDirectories(stage, backup.slice(0, -1)); }
+  }
+  removeBound(stage, ["journal.json"]); stage.close(); staging.removeDirectory(journal.transactionId); staging.close();
 }
 
 async function updateJournal(stage: DirectoryCapability, journal: TransactionJournal): Promise<TransactionJournal> {
@@ -184,7 +135,7 @@ async function signalExternalFault(point: PromotionFaultPoint): Promise<void> {
 
 function environmentFaultOptions(): CommitTransactionOptions {
   const point = process.env.EXSPECSO_TEST_FAULT_POINT;
-  if (point !== undefined && point.startsWith("after-promotion:")) {
+  if (point !== undefined && (point.startsWith("before-promotion:") || point.startsWith("after-promotion:") || point.startsWith("after-journal:"))) {
     return { faultAt: point as PromotionFaultPoint, faultMode: process.env.EXSPECSO_TEST_FAULT_MODE === "interrupt" ? "interrupt" : "throw" };
   }
   return {};
@@ -266,6 +217,9 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       repositoryRootFingerprint: sha256(root),
       entries,
       promotionOrder: entries.map((entry) => entry.relativePath),
+      state: "prepared",
+      inFlight: null,
+      completedPromotions: [],
       completedStep: -1,
     });
     await options.validateStaged?.({ read(path) { return readBound(stage!, path); } });
@@ -290,6 +244,9 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       }
       const staged = readBound(stage, ["files", ...components(relativePath)]);
       if (sha256(staged.toString("utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_STAGED_HASH: ${relativePath}`);
+      journal = await updateJournal(stage, { ...journal, state: "promoting", inFlight: { relativePath, operation: "replace" } });
+      const before = `before-promotion:${relativePath}` as PromotionFaultPoint;
+      if (options.faultAt === before) throw new Error(`EXSPECSO_TRANSACTION_TEST_FAULT: ${before}`);
       const temporary = parent.createFile(`.exspecso-tmp-${randomUUID()}`);
       try {
         temporary.write(staged);
@@ -298,7 +255,9 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
         if (sha256(temporary.read().toString("utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_HASH: ${relativePath}`);
         parent.sync();
       } finally { temporary.close(); }
-      journal = await updateJournal(stage, { ...journal, completedStep: index });
+      journal = await updateJournal(stage, { ...journal, state: "promoting", inFlight: null, completedPromotions: [...journal.completedPromotions, relativePath], completedStep: index });
+      const afterJournal = `after-journal:${relativePath}` as PromotionFaultPoint;
+      if (options.faultAt === afterJournal) throw new Error(`EXSPECSO_TRANSACTION_TEST_FAULT: ${afterJournal}`);
       const point = faultPoint(relativePath);
       await options.onPromotion?.(point);
       await signalExternalFault(point);
@@ -307,6 +266,7 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
         throw new Error(`EXSPECSO_TRANSACTION_TEST_FAULT: ${point}`);
       }
     }
+    journal = await updateJournal(stage, { ...journal, state: "cleaning", inFlight: null });
     committed = true;
     cleanupBoundTransaction(stage, staging, journal);
     stage = undefined; staging = undefined;
