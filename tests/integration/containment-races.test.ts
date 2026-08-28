@@ -32,4 +32,14 @@ describe("installed containment operation grid", () => {
     expect(workflow).toContain("EXSPECSO_OBSERVED_NODE_LANE");
     expect(workflow).not.toContain("nodeLanes: stage === \"final\" ? matrix.nodePolicy.testedVersions");
   });
+
+  it("installs the declared Node lane before checking the observed process version", async () => {
+    const root = resolve(import.meta.dirname, "../..");
+    const workflow = await readFile(resolve(root, ".github/workflows/containment.yml"), "utf8");
+
+    expect(workflow).toContain("NODE_LANE: ${{ matrix.nodeLane }}");
+    expect(workflow).toContain("node-v$NODE_LANE-$TARGET.tar.gz");
+    expect(workflow).toContain("node-v$env:NODE_LANE-$nodeTarget.zip");
+    expect(workflow).toContain('case "$NODE_LANE/$TARGET" in');
+  });
 });
