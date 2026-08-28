@@ -1,13 +1,21 @@
 ---
 phase: 01-initialize-canonical-projects
-reviewed: 2026-08-27T08:20:51Z
+reviewed: 2026-08-28T11:35:01Z
 depth: standard
-files_reviewed: 31
+files_reviewed: 44
 files_reviewed_list:
-  - .gitignore
+  - .github/workflows/containment.yml
+  - README.md
+  - native/build.mjs
+  - native/contained-fs-posix.cc
+  - native/contained-fs-win.cc
+  - native/contained-fs.cc
+  - native/support-matrix.json
   - package.json
-  - tsconfig.json
-  - vitest.config.ts
+  - scripts/capture-filesystem-observation.mjs
+  - scripts/containment-evidence.mjs
+  - scripts/run-local-containment-gate.mjs
+  - scripts/write-containment-evidence.mjs
   - src/adapters/managed-file.ts
   - src/adapters/registry.ts
   - src/artifacts/resolve.ts
@@ -17,16 +25,18 @@ files_reviewed_list:
   - src/cli/arguments.ts
   - src/cli/main.ts
   - src/errors/diagnostic.ts
-  - src/filesystem/git-root.ts
+  - src/filesystem/contained-fs.ts
+  - src/filesystem/ownership.ts
   - src/filesystem/recovery.ts
   - src/filesystem/safe-path.ts
+  - src/filesystem/support-matrix.ts
   - src/filesystem/transaction.ts
   - src/init/completion.ts
   - src/init/plan.ts
   - src/init/run-init.ts
   - src/init/runtime-selection.ts
+  - tests/helpers/containment-fixture.ts
   - tests/helpers/git-fixture.ts
-  - tests/helpers/run-cli.ts
   - tests/integration/init-codex-tracer.test.ts
   - tests/integration/init-rerun.test.ts
   - tests/integration/minimal-artifacts.test.ts
@@ -34,72 +44,87 @@ files_reviewed_list:
   - tests/integration/validation-errors.test.ts
   - tests/unit/adapters.test.ts
   - tests/unit/artifacts.test.ts
+  - tests/unit/contained-fs.test.ts
+  - tests/unit/containment-evidence.test.ts
+  - tests/unit/containment-support.test.ts
   - tests/unit/runtime-selection.test.ts
 findings:
-  critical: 3
-  warning: 0
+  critical: 4
+  warning: 1
   info: 0
-  total: 3
+  total: 5
 status: issues_found
 ---
 
 # Phase 01: Code Review Report
 
-**Reviewed:** 2026-08-27T08:20:51Z
+**Reviewed:** 2026-08-28T11:35:01Z
 **Depth:** standard
-**Files Reviewed:** 31
+**Files Reviewed:** 44
 **Status:** issues_found
 
 ## Summary
 
-The Phase 01 source, CLI, transaction/recovery paths, and test coverage were reviewed at standard depth. Three ship-blocking defects remain: invalid JSON artifact relationships bypass validation, recovery can destroy an active transaction, and the promotion path can be raced into following a symlink outside the repository. The focused test run passes despite these uncovered cases.
+The filesystem promotion path is substantially capability-based, but interrupted recovery falls back to unsafe pathname writes. The containment evidence controls are also self-attesting: a test provider or fabricated record can satisfy the aggregate gate, and local provenance can claim an uncommitted build is from `HEAD`.
+
+## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: Invalid JSON IDs and parents are silently discarded
+### CR-01: Recovery reintroduces the pathname substitution vulnerability
 
 **Classification:** BLOCKER
 
-**File:** `src/artifacts/resolve.ts:106-111`, `src/artifacts/validate.ts:72-98`
+**File:** `src/filesystem/recovery.ts:81-95`
 
-**Issue:** `jsonDefinition()` accepts a valid `id` but converts an invalid `parent` to `undefined`; an invalid JSON `id` makes the entire document disappear from the index. `validateRawArtifactIds()` only inspects Markdown, so `validateProject()` returns no diagnostic and `runInit()` proceeds with a malformed canonical relationship. This violates the required closed D-20 ID vocabulary and fail-closed direct-edit validation.
+**Issue:** `restorePrior` performs `rm()` and `writeFile()` through reconstructed path strings after `validateEvidence` has finished. The existing safety check is therefore a time-of-check/time-of-use check: an attacker can replace a target or one of its ancestor directories with a symlink between validation and `writeFile`, causing recovery to write the journal backup outside the repository. New-file recovery at line 85 does not perform an in-function safe-target check at all. This defeats the containment guarantee precisely during the fault-recovery path.
 
-**Reproduction:** In an otherwise empty temporary Git fixture, write `.exspecso/definition.json` containing `{"id":"SPEC-001","parent":"REQUIREMENT-001"}`. Calling `validateProject(root)` returns `[]`; it must report `EXSPECSO_ARTIFACT_INVALID_ID` for the parent and block init.
+**Fix:** Restore through `openContainedFilesystem(root)` capabilities, just as `commitTransaction` promotes files. Reopen every parent by validated components, verify the currently opened destination is the expected regular file/hash, create a private sibling, write and sync the backup, then use handle-relative `replace`. For a null preimage, use the capability's handle-relative unlink after rechecking the entry type. Add a deterministic recovery-boundary substitution test for leaf and ancestor swaps.
 
-**Fix:** Validate declared `id` and `parent` fields before building definitions for both JSON and frontmatter. Preserve invalid declarations as diagnostics rather than coercing them to absence. For example, have the scanner return parse diagnostics alongside definitions, then aggregate them in `validateProject()`:
-
-```ts
-if (typeof record.parent === "string" && parseArtifactId(record.parent) === null) {
-  diagnostics.push(invalidArtifactId(path, "parent", record.parent));
-}
-```
-
-### CR-02: Recovery can delete a live transaction after a non-atomic busy check
+### CR-02: Evidence can label an instrumented test provider as a release provider
 
 **Classification:** BLOCKER
 
-**File:** `src/init/run-init.ts:50-54`, `src/filesystem/recovery.ts:102-131`
+**File:** `scripts/write-containment-evidence.mjs:13-18,40-51`
 
-**Issue:** `runInit()` checks the lock and then invokes recovery without acquiring a recovery lock. A writer can acquire its lock after line 50 but before line 54. Recovery then treats that writer's fully staged, pre-promotion journal as interrupted, removes its staging directory and `.init.lock`, and returns `recovered`; the live writer subsequently fails when copying its deleted staged file. This breaks the exclusive writer/busy-reader contract and permits a competing invocation to interfere with an in-progress initialization.
+**Issue:** The writer unconditionally emits `evidenceMode: "release"` (line 46), but never verifies `manifest.variant` or `build.variant` is `"release"`. Running `native/build.mjs --variant test` and then this writer produces release-labelled evidence for an instrumented provider. The aggregate only checks the self-reported evidence mode, so it will accept that record. This permits approval evidence for a package different from the claimed production release.
 
-**Reproduction:** Hold `commitTransaction()` at `onReadyToPromote`, then call `recoverInterruptedTransaction(root)`. It returns `{ kind: "recovered" }` while the writer still owns the lock; releasing the writer yields `failed` with `ENOENT` for its staged source. This was reproduced in an isolated temporary Git fixture.
+**Fix:** Before emitting any record, require `manifest.variant === "release"`, `build.variant === "release"`, and that exactly one manifest target matches the requested support-row ID. Derive `evidenceMode` from the verified variant rather than a hard-coded string. Add a test that a test-variant manifest/provenance pair is rejected.
 
-**Fix:** Serialize recovery and transaction startup with one ownership protocol. Recovery must atomically acquire the same guard before inspecting or deleting staging; if a live owner exists, return busy. Handle stale-lock takeover atomically and retain ownership until recovery or the subsequent transaction completes. Add a race test that starts the writer between the initial busy observation and recovery acquisition.
-
-### CR-03: A symlink swap after validation can redirect promotion outside the repository
+### CR-03: The evidence aggregate trusts forged receipts instead of authenticating artifacts
 
 **Classification:** BLOCKER
 
-**File:** `src/filesystem/safe-path.ts:38-67`, `src/filesystem/transaction.ts:231-236`
+**File:** `scripts/containment-evidence.mjs:28-30,51-87`
 
-**Issue:** The code checks every existing segment with `lstat()`, then later calls `copyFile(source, destination)`. There is no descriptor or atomic replacement binding those operations. A process with repository write access can replace the validated target or an ancestor with a symlink in that interval; `copyFile` follows a destination symlink and overwrites its referent outside the Git root. The static symlink test does not cover this time-of-check/time-of-use race.
+**Issue:** The aggregate excludes the copied `provider-manifest.json`, `build-provenance.json`, and `full-suite.json`, then validates only values supplied in arbitrary evidence JSON records. It never reads a provider binary, verifies a manifest hash against its bytes, verifies build provenance against the manifest/provider, or validates the test report. The supplied unit test demonstrates the bypass: `completeRecord()` at `tests/unit/containment-evidence.test.ts:25-63` creates synthetic hashes and observations, and the aggregator accepts the complete fabricated matrix at lines 127-130. Consequently, `plan_complete: true` does not prove the claimed build or test happened.
 
-**Reproduction:** Node's `copyFile()` follows a destination symlink: after creating `target -> outside`, copying `source` to `target` changed `outside` from `old` to `new`. Replacing a checked destination with that symlink between `assertSafeTarget()` and `copySynced()` reaches the same primitive at line 235.
+**Fix:** Make each evidence bundle self-verifying: load the manifest, provenance, full-suite report, and selected binary from a row-specific artifact directory; hash their raw bytes; bind the provider target, provenance binary hash, manifest hash, source commit, and tarball to one another; and reject any extra/missing files. The aggregate should consume these artifacts directly rather than accepting self-reported hashes. Replace the synthetic success fixture with real, internally consistent fixture files and retain forged-record rejection cases.
 
-**Fix:** Do not promote with a pathname-following copy after a separate safety check. Use an atomic replacement strategy that writes a temporary file within a verified directory and renames it into place (replacing a final symlink rather than following it), with a directory-handle/openat-style containment mechanism where the platform permits it. Revalidate and fail closed on any pathname change; add a deterministic swap hook test around promotion.
+### CR-04: Local provenance binds dirty sources to a clean Git commit
+
+**Classification:** BLOCKER
+
+**File:** `scripts/run-local-containment-gate.mjs:22,42,65-66`
+
+**Issue:** The local gate records `git rev-parse HEAD` as `sourceCommit`, then compiles the current working tree without requiring that tree to be clean. `native/build.mjs` accepts that commit via `EXSPECSO_SOURCE_COMMIT` at `native/build.mjs:123-129`; the gate subsequently verifies only that the self-reported commit strings match. An uncommitted native or TypeScript change can therefore be built, tested, and retained as evidence for the previous committed snapshot.
+
+**Fix:** Fail before downloading/building unless the relevant source tree is clean (`git diff --quiet` plus `git diff --cached --quiet`, and explicitly account for untracked reviewed inputs), or replace the commit-only claim with a verified source-tree digest and have the aggregate validate it. Add a test invoking the gate from a deliberately modified tracked source and asserting it fails before producing evidence.
+
+## Warnings
+
+### WR-01: The local gate overwrites the caller’s package build outputs
+
+**Classification:** WARNING
+
+**File:** `scripts/run-local-containment-gate.mjs:42-43`
+
+**Issue:** The gate builds with `--out .` and runs `npm run build` in the repository root. It overwrites `dist/native/*` and TypeScript output in the caller’s checkout, including any provider for another support row, and does not restore those outputs. A failed or exploratory evidence run can therefore leave a misleading package tree for later packing or tests.
+
+**Fix:** Build in a temporary staged package directory, as the installation fixture does, and run the suite/pack verification against that directory. Copy only verified evidence artifacts to `--evidence-dir`; leave the repository checkout unchanged. Add an assertion that a gate run leaves a pre-existing `dist` inventory byte-identical.
 
 ---
 
-_Reviewed: 2026-08-27T08:20:51Z_
+_Reviewed: 2026-08-28T11:35:01Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
