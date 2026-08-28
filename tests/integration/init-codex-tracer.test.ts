@@ -55,6 +55,27 @@ async function packAndRun(
 }
 
 describe("packed Codex initializer tracer", () => {
+  it("PK-03 installs a scripts-disabled prebuilt tarball offline outside the checkout for root and nested CLI runs", async () => {
+    const fixture = await useFixture(createGitFixture);
+    const nested = await fixture.createNestedDirectory("packages", "cli", "deep");
+    const rootRun = await packAndRun(fixture.root);
+    const nestedRun = await packAndRun(nested, ["init", "--agent", "claude"]);
+    const installation = rootRun as typeof rootRun & { installation?: { offline: boolean; ignoreScripts: boolean; sanitizedLoaderPaths: boolean; compilerAndHeadersUnavailable: boolean } };
+
+    expect(rootRun.exitCode, rootRun.stderr).toBe(0);
+    expect(nestedRun.exitCode, nestedRun.stderr).toBe(0);
+    expect(installation.installation).toEqual({
+      offline: true,
+      ignoreScripts: true,
+      sanitizedLoaderPaths: true,
+      compilerAndHeadersUnavailable: true,
+    });
+    expect(rootRun.installed.provider).toContain(join("node_modules", "exspecso", "dist", "native"));
+    expect(await realpath(rootRun.installed.installed)).not.toBe(await realpath(packageRoot));
+    expect(rootRun.installed.sha256).toBe(rootRun.installed.manifest.targets[0].sha256);
+    expect(rootRun.installed.provenance.binarySHA256).toBe(rootRun.installed.sha256);
+  }, 60_000);
+
   it("contained promotion tracer rejects a missing installed provider before any project mutation", async () => {
     const fixture = await useFixture(createGitFixture);
     const before = await readdir(fixture.root);
