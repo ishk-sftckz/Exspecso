@@ -63,6 +63,7 @@ struct Handle {
 using Owned = std::unique_ptr<Handle>;
 void active(Handle& h) { require(h.value != INVALID_HANDLE_VALUE && h.authority && h.authority->active, "closed capability"); }
 void directory(Handle& h) { active(h); require(h.directory, "directory capability required"); }
+void testBarrier(const char* expectedPoint);
 template<class T> T query(HANDLE handle, FILE_INFO_BY_HANDLE_CLASS kind) {
   T result{};
   if (!GetFileInformationByHandleEx(handle, kind, &result, sizeof(result))) fail("GetFileInformationByHandleEx");
@@ -113,6 +114,7 @@ Owned openDirectory(Handle& parent, const std::string& name, bool create) {
   return h;
 }
 Owned createDirectory(Handle& parent, const std::string& name) {
+  testBarrier("create-directory:before");
   directory(parent);
   auto h = acquire(parent.value, wide(name), true, FILE_CREATE, DELETE, parent.authority);
   const auto parentId = identity(parent);
@@ -121,6 +123,7 @@ Owned createDirectory(Handle& parent, const std::string& name) {
   return h;
 }
 Owned openRoot(const std::string& path) {
+  testBarrier("open-root:before");
   require(path.size() >= 3 && std::isalpha(static_cast<unsigned char>(path[0])) && path[1] == ':' && path[2] == '\\', "local absolute drive root required");
   const auto drive = wide(path.substr(0, 3));
   require(GetDriveTypeW(drive.c_str()) == DRIVE_FIXED, "ordinary local fixed drive required");
@@ -148,6 +151,7 @@ Owned openFile(Handle& parent, const std::string& name, bool create) {
 }
 void seek(Handle& h) { LARGE_INTEGER zero{}; if (!SetFilePointerEx(h.value, zero, nullptr, FILE_BEGIN)) fail("SetFilePointerEx"); }
 std::vector<char> read(Handle& h) {
+  testBarrier("read:before");
   active(h); require(!h.directory, "file capability required");
   auto before = metadata(h); require(before.st_size <= 16 * 1024 * 1024, "file exceeds bounded read");
   std::vector<char> bytes(static_cast<size_t>(before.st_size)); seek(h);
@@ -305,20 +309,21 @@ std::string pipeRead(HANDLE pipe, const Deadline& deadline) {
   require(count > 0 && count < bytes.size(), "truncated containment test acknowledgement");
   return std::string(bytes.data(), count);
 }
-void barrier() {
+void testBarrier(const char* expectedPoint) {
   static bool reached = false;
   const auto operation = testEnvironment("EXSPECSO_CONTAINMENT_TEST_OPERATION");
   const auto channel = testEnvironment("EXSPECSO_CONTAINMENT_TEST_CHANNEL_ID");
   const auto controller = testEnvironment("EXSPECSO_CONTAINMENT_TEST_CONTROLLER_PID");
   if (!operation && !channel && !controller) return;
+  if (operation && *operation != expectedPoint) return;
   require(operation && channel && controller && !reached, "incomplete containment test activation");
-  require(*operation == "replace:before" && channel->size() == 64 && std::all_of(channel->begin(), channel->end(), [](unsigned char c) { return std::isdigit(c) || (c >= 'a' && c <= 'f'); }), "invalid containment test activation");
+  require(*operation == expectedPoint && channel->size() == 64 && std::all_of(channel->begin(), channel->end(), [](unsigned char c) { return std::isdigit(c) || (c >= 'a' && c <= 'f'); }), "invalid containment test activation");
   require(!controller->empty() && controller->size() <= 10 && controller->front() != '0' && std::all_of(controller->begin(), controller->end(), [](unsigned char c) { return std::isdigit(c); }), "invalid containment test controller PID");
   unsigned long long parsed = 0; try { parsed = std::stoull(*controller); } catch (...) { require(false, "invalid containment test controller PID"); }
   require(parsed > 0 && parsed <= MAXDWORD, "invalid containment test controller PID");
   reached = true;
   HMODULE image{};
-  require(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, reinterpret_cast<LPCWSTR>(&barrier), &image) != 0, "cannot identify loaded test provider");
+  require(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, reinterpret_cast<LPCWSTR>(&testBarrier), &image) != 0, "cannot identify loaded test provider");
   std::array<wchar_t, 32768> providerPath{};
   const DWORD length = GetModuleFileNameW(image, providerPath.data(), static_cast<DWORD>(providerPath.size()));
   require(length > 0 && length < providerPath.size(), "cannot read loaded test provider path");
@@ -344,13 +349,13 @@ void barrier() {
     else require(error == ERROR_PIPE_CONNECTED, "containment test pipe connect failed");
   }
   ULONG client = 0; require(GetNamedPipeClientProcessId(pipe.value, &client) != 0 && client == static_cast<DWORD>(parsed), "unexpected containment test pipe client");
-  const std::string event = "{\"op\":\"replace:before\",\"childpid\":" + std::to_string(GetCurrentProcessId()) + ",\"providerpath\":\"" + jsonString(utf8(providerPath.data(), static_cast<int>(length))) + "\",\"nonce\":\"" + nonce + "\"}";
+  const std::string event = "{\"op\":\"" + std::string(expectedPoint) + "\",\"childpid\":" + std::to_string(GetCurrentProcessId()) + ",\"providerpath\":\"" + jsonString(utf8(providerPath.data(), static_cast<int>(length))) + "\",\"nonce\":\"" + nonce + "\"}";
   pipeWrite(pipe.value, event, deadline);
   const auto acknowledgement = pipeRead(pipe.value, deadline);
   require(acknowledgement == "{\"ack\":\"" + nonce + "\"}", "invalid containment test acknowledgement");
 }
 #else
-void barrier() {}
+void testBarrier(const char*) {}
 #endif
 void replace(Handle& parent, Handle& source, const std::string& target, bool testBoundary) {
   directory(parent); active(source);
@@ -359,7 +364,7 @@ void replace(Handle& parent, Handle& source, const std::string& target, bool tes
   require(sameIdentity(identity(*named), identity(source)), "private sibling identity changed");
   try { auto destination = openFile(parent, target, false); }
   catch (const std::system_error& error) { if (error.code() != std::errc::no_such_file_or_directory) throw; }
-  if (testBoundary) barrier(); // Test-only final-use boundary; absent in the release binary.
+  if (testBoundary) testBarrier("replace:before"); // Test-only final-use boundary; absent in the release binary.
   // The destination name is attacker-controlled until the final handle-relative use.
   // Reopen it after the test boundary so a newly substituted reparse entry cannot
   // be replaced as though the pre-barrier observation still applied.
@@ -401,6 +406,7 @@ void publishDirectory(Handle& parent, Handle& source, const std::string& target)
   source.consumed = true;
 }
 void unlink(Handle& parent, const std::string& name, bool isDirectory) {
+  testBarrier("unlink:before");
   directory(parent);
   auto h = acquire(parent.value, wide(name), isDirectory, FILE_OPEN, DELETE, parent.authority);
   require(identity(parent).VolumeSerialNumber == identity(*h).VolumeSerialNumber, "cross-volume deletion rejected");

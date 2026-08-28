@@ -8,6 +8,22 @@ import { promisify } from "node:util";
 
 const exec = promisify(execFile);
 const root = resolve(import.meta.dirname, "../..");
+
+export interface ContainmentOperationCase {
+  readonly caseId: `RACE-0${number}`;
+  readonly operationId: string;
+  readonly boundaryId: "create-directory:before" | "read:before" | "open-root:before" | "replace:before" | "unlink:before";
+}
+
+/** Logical transaction cases must retain their fixed native observation point. */
+export const containmentOperationGrid: readonly ContainmentOperationCase[] = Object.freeze([
+  Object.freeze({ caseId: "RACE-01", operationId: "stage:create-directory", boundaryId: "create-directory:before" }),
+  Object.freeze({ caseId: "RACE-02", operationId: "read:bytes", boundaryId: "read:before" }),
+  Object.freeze({ caseId: "RACE-03", operationId: "ownership:open-root", boundaryId: "open-root:before" }),
+  Object.freeze({ caseId: "RACE-04", operationId: "promotion:replace", boundaryId: "replace:before" }),
+  Object.freeze({ caseId: "RACE-05", operationId: "restore:replace", boundaryId: "replace:before" }),
+  Object.freeze({ caseId: "RACE-06", operationId: "cleanup:unlink", boundaryId: "unlink:before" }),
+]);
 function testTemporaryRoot(): string {
   const configured = process.env.EXSPECSO_TEST_TMPDIR;
   if (!configured) return tmpdir();

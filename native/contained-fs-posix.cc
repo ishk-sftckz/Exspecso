@@ -40,6 +40,7 @@ struct Handle {
 using Owned = std::unique_ptr<Handle>;
 [[noreturn]] void fail(const char* operation) { throw std::system_error(errno, std::generic_category(), operation); }
 void require(bool condition, const char* message) { if (!condition) throw std::invalid_argument(message); }
+void testBarrier(const char* expectedPoint);
 void active(Handle& h) { require(h.fd >= 0 && h.authority && h.authority->active, "closed capability"); }
 void directory(Handle& h) { active(h); require(h.directory, "directory capability required"); }
 struct stat metadata(Handle& h) {
@@ -76,6 +77,7 @@ Owned adopt(int fd, bool isDirectory, std::shared_ptr<Authority> authority) {
   return h;
 }
 Owned openRoot(const std::string& path) {
+  testBarrier("open-root:before");
   require(!path.empty() && path[0] == '/', "absolute root required");
   auto h = adopt(open("/", O_RDONLY | O_DIRECTORY | O_CLOEXEC), true, std::make_shared<Authority>());
   size_t start = 1;
@@ -104,6 +106,7 @@ Owned openDirectory(Handle& parent, const std::string& name, bool create) {
   return h;
 }
 Owned createDirectory(Handle& parent, const std::string& name) {
+  testBarrier("create-directory:before");
   directory(parent);
   if (mkdirat(parent.fd, name.c_str(), 0700) < 0) fail("mkdirat exclusive");
   return openDirectory(parent, name, false);
@@ -117,6 +120,7 @@ Owned openFile(Handle& parent, const std::string& name, bool create) {
   h->name = name; h->writable = create; return h;
 }
 std::vector<char> read(Handle& h) {
+  testBarrier("read:before");
   active(h); require(!h.directory, "file capability required");
   auto st = metadata(h);
   constexpr size_t limit = 16 * 1024 * 1024;
@@ -163,29 +167,30 @@ std::vector<std::string> list(Handle& h) {
   }
   return entries;
 }
-void barrier() {
+void testBarrier(const char* expectedPoint) {
 #if defined(EXSPECSO_CONTAINMENT_TEST)
   static bool reached = false;
   const char* point = std::getenv("EXSPECSO_CONTAINMENT_TEST_OPERATION");
   const char* channel = std::getenv("EXSPECSO_CONTAINMENT_TEST_CHANNEL_ID");
   const char* controller = std::getenv("EXSPECSO_CONTAINMENT_TEST_CONTROLLER_PID");
   if (!point && !channel && !controller) return;
+  if (point && std::strcmp(point, expectedPoint) != 0) return;
   require(!reached && point && channel && controller, "incomplete containment test activation");
   const std::string nonce(channel);
-  require(std::strcmp(point, "replace:before") == 0 && nonce.size() == 64 &&
+  require(std::strcmp(point, expectedPoint) == 0 && nonce.size() == 64 &&
     std::all_of(nonce.begin(), nonce.end(), [](unsigned char c) { return std::isdigit(c) || (c >= 'a' && c <= 'f'); }) &&
     std::strlen(controller) > 0 && std::strlen(controller) <= 10 && controller[0] != '0' &&
     std::all_of(controller, controller + std::strlen(controller), [](unsigned char c) { return std::isdigit(c); }), "invalid containment test activation");
   reached = true;
   Dl_info image{};
-  require(dladdr(reinterpret_cast<const void*>(&barrier), &image) != 0 && image.dli_fname, "cannot identify loaded test provider");
+  require(dladdr(reinterpret_cast<const void*>(&testBarrier), &image) != 0 && image.dli_fname, "cannot identify loaded test provider");
   std::string path;
   for (const unsigned char c : std::string(image.dli_fname)) {
     require(c >= 32, "unsupported control character in test provider path");
     if (c == '\\' || c == '"') path += '\\';
     path += static_cast<char>(c);
   }
-  const std::string message = "{\"op\":\"replace:before\",\"childpid\":" + std::to_string(getpid()) + ",\"providerpath\":\"" + path + "\",\"nonce\":\"" + nonce + "\"}";
+  const std::string message = "{\"op\":\"" + std::string(expectedPoint) + "\",\"childpid\":" + std::to_string(getpid()) + ",\"providerpath\":\"" + path + "\",\"nonce\":\"" + nonce + "\"}";
   size_t offset = 0;
   while (offset < message.size()) {
     auto count = ::write(3, message.data() + offset, message.size() - offset);
@@ -199,6 +204,8 @@ void barrier() {
   std::array<char, 128> reply{};
   const auto count = ::read(4, reply.data(), reply.size());
   require(count == static_cast<ssize_t>(expected.size()) && std::string(reply.data(), static_cast<size_t>(count)) == expected, "invalid test acknowledgement");
+#else
+  (void)expectedPoint;
 #endif
 }
 void replace(Handle& parent, Handle& source, const std::string& target, bool testBoundary) {
@@ -207,7 +214,7 @@ void replace(Handle& parent, Handle& source, const std::string& target, bool tes
   const auto p = metadata(parent);
   require(parent.authority == source.authority && p.st_dev == source.parentDevice && p.st_ino == source.parentInode, "source belongs to another parent");
   require(target != source.name, "source and target must differ");
-  if (testBoundary) barrier(); // Test-only final-use boundary; absent in the release binary.
+  if (testBoundary) testBarrier("replace:before"); // Test-only final-use boundary; absent in the release binary.
   struct stat observed{};
   if (fstatat(parent.fd, source.name.c_str(), &observed, AT_SYMLINK_NOFOLLOW) < 0) fail("stat replacement source");
   const auto held = metadata(source);
@@ -236,6 +243,7 @@ void publishDirectory(Handle& parent, Handle& source, const std::string& target)
   source.consumed = true;
 }
 void unlink(Handle& parent, const std::string& name, bool isDirectory) {
+  testBarrier("unlink:before");
   directory(parent);
   struct stat st{}; if (fstatat(parent.fd, name.c_str(), &st, AT_SYMLINK_NOFOLLOW) < 0) fail("stat removal");
   require(isDirectory ? S_ISDIR(st.st_mode) : S_ISREG(st.st_mode), "unexpected removal kind");
