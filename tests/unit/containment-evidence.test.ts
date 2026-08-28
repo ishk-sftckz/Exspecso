@@ -64,6 +64,9 @@ describe("containment evidence aggregate", () => {
     expect(posix).toContain("#include <array>");
     expect(build).toContain('join(sdk, "Lib", sdkVersion, part, targetArchitecture)');
     expect(build).toContain('error.stderr.includes("musl libc")');
+    expect(build).toContain("EXSPECSO_SOURCE_COMMIT");
+    expect(readFileSync(join(root, "scripts/write-containment-evidence.mjs"), "utf8")).toContain("EXSPECSO_SOURCE_COMMIT");
+    expect(workflow).toContain('-e EXSPECSO_SOURCE_COMMIT="$GITHUB_SHA"');
     expect(workflow).toContain("wget -q https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz");
   });
 
