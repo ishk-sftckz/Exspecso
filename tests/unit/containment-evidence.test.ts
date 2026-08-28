@@ -57,6 +57,15 @@ describe("containment evidence aggregate", () => {
     }
   });
 
+  it("keeps native build prerequisites target-specific", () => {
+    const build = readFileSync(join(root, "native/build.mjs"), "utf8");
+    const posix = readFileSync(join(root, "native/contained-fs-posix.cc"), "utf8");
+    const workflow = readFileSync(join(root, ".github/workflows/containment.yml"), "utf8");
+    expect(posix).toContain("#include <array>");
+    expect(build).toContain('join(sdk, "Lib", sdkVersion, part, targetArchitecture)');
+    expect(workflow).toContain("wget -q https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz");
+  });
+
   it.each([
     ["missing", (records: unknown[]) => records.slice(1)],
     ["failed", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, status: "failed" } : record)],

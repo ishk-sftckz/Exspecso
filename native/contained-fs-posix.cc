@@ -1,4 +1,5 @@
 // Filesystem primitives only. Product policy, hashes and journals remain in TS.
+#include <array>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>

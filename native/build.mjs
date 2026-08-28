@@ -88,11 +88,11 @@ try {
     if (variant === "test") args.push("/DEXSPECSO_CONTAINMENT_TEST=1");
     args.push(join(root, "native/contained-fs.cc"), "/Fo" + join(work, "contained-fs.obj"), "/link", "/OUT:" + binary, "/IMPLIB:" + join(work, "contained-fs.lib"), nodeLib, "kernel32.lib");
     if (variant === "test") args.push("bcrypt.lib", "advapi32.lib");
-    args.push("/LIBPATH:" + join(msvc, "lib", process.arch));
-    for (const part of ["ucrt", "um"]) args.push("/LIBPATH:" + join(sdk, "Lib", sdkVersion, part, "x64"));
+    const targetArchitecture = process.arch;
+    args.push("/LIBPATH:" + join(msvc, "lib", targetArchitecture));
+    for (const part of ["ucrt", "um"]) args.push("/LIBPATH:" + join(sdk, "Lib", sdkVersion, part, targetArchitecture));
     if (process.arch === "arm64") {
       args.splice(args.length - 2, 0, "/MACHINE:ARM64");
-      for (let index = 0; index < args.length; index += 1) args[index] = args[index].replace(/\\\\Lib\\\\([^\\\\]+)\\\\(ucrt|um)\\\\x64$/, "\\\\Lib\\\\$1\\\\$2\\\\arm64");
     }
     buildEnvironment = { ...process.env, PATH: dirname(compiler) + ";" + process.env.PATH };
   } else {

@@ -109,7 +109,7 @@ jobs:
           chmod +x node20-musl
           docker run --rm --user root -e EXSPECSO_CONTAINMENT_ROW -e TARGET -v "$PWD:/work" -w /work "$base" sh -euxc '
             apk add --no-cache g++=15.2.0-r5 musl-dev=1.2.6-r2 linux-headers=7.0.0-r1
-            curl -fsSLO https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz
+            wget -q https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz
             test "$(sha256sum node-v20.19.0-headers.tar.gz | awk "{print \$1}")" = 800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb
             ln -sf /work/node20-musl /tmp/node
             export PATH=/tmp:$PATH EXSPECSO_NODE_HEADERS=/work/node-v20.19.0-headers.tar.gz EXSPECSO_CONTAINMENT_LIBC=musl
