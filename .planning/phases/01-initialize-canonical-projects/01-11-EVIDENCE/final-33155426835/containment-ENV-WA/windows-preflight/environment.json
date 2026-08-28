@@ -1,0 +1,37 @@
+{
+  "imageVersion": "20260823.149.1",
+  "imageOS": "win11-arm64",
+  "architecture": "Arm64",
+  "caption": "Microsoft Windows 11 Enterprise",
+  "version": "10.0.26200",
+  "build": "26200",
+  "ubr": 9168,
+  "displayVersion": "25H2",
+  "filesystem": "NTFS",
+  "visualStudio": [
+    {
+      "installationVersion": "17.14.37614.0",
+      "installationPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise"
+    }
+  ],
+  "sdkVersion": "10.0.26100.0",
+  "msvcVersion": "14.44.35207",
+  "targetArchitecture": "arm64",
+  "compiler": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostarm64\\arm64\\cl.exe",
+  "compilerFileVersion": "19.44.35228.0",
+  "compilerSHA256": "dd57fcd0ac8fdb6a11f80f01189a76b15f97257611a5001838fa2fec72fcff2b",
+  "headers": [
+    {
+      "sha256": "a43424486349c38f697c009512dfe4eb8fca733d7665afab42f50752170b9785",
+      "path": "um/winternl.h"
+    },
+    {
+      "sha256": "ec538199f5ebe8cec2dfd4f1ba48316ef776c82d37277aed3a677965e494f192",
+      "path": "um/WinBase.h"
+    },
+    {
+      "sha256": "f8927178c75de487c0e57f044a215e455522bf6eaa0b660421be09cd06ae05a1",
+      "path": "um/fileapi.h"
+    }
+  ]
+}

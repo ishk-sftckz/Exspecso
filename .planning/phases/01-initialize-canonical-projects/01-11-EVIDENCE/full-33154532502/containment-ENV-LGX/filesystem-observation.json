@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "fixtureRoot": {
+    "path": "/home/runner/work/exspecso/exspecso/.ci-fixtures",
+    "rawMagicDecimal": "61267",
+    "normalizedMagicDecimal": "61267",
+    "normalizedMagicHex": "0x0000ef53",
+    "mapping": "ext2/ext3",
+    "statText": "ext2/ext3",
+    "mountinfo": []
+  },
+  "work": {
+    "path": "/home/runner/work/exspecso/exspecso",
+    "rawMagicDecimal": "61267",
+    "normalizedMagicDecimal": "61267",
+    "normalizedMagicHex": "0x0000ef53",
+    "mapping": "ext2/ext3",
+    "statText": "ext2/ext3",
+    "mountinfo": []
+  },
+  "tmp": {
+    "path": "/tmp",
+    "rawMagicDecimal": "61267",
+    "normalizedMagicDecimal": "61267",
+    "normalizedMagicHex": "0x0000ef53",
+    "mapping": "ext2/ext3",
+    "statText": "ext2/ext3",
+    "mountinfo": []
+  }
+}

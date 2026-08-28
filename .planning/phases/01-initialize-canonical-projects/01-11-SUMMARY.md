@@ -2,93 +2,96 @@
 phase: 01-initialize-canonical-projects
 plan: 11
 subsystem: native containment tracer
-tags: [native, ci, tracer, evidence, blocked]
-status: blocked
-plan_complete: false
+tags: [native, ci, tracer, evidence, all-targets]
+status: complete
+plan_complete: true
 dependency_graph:
   requires: [01-10]
-  provides: [approved-target-matrix, rejecting-evidence-gate]
+  provides: [approved-target-matrix, rejecting-evidence-gate, native-tracer-proof]
   affects: [01-12]
 tech_stack:
   added: []
-  patterns: [pinned-native-target-matrix, source-and-hash-bound-evidence]
+  patterns: [pinned-native-target-matrix, source-hash-and-observation-bound-evidence, operation-root-filesystem-preflight]
 key_files:
-  created: [native/support-matrix.json, scripts/containment-evidence.mjs, scripts/write-containment-evidence.mjs]
-  modified: [native/build.mjs, native/windows-preflight.ps1, src/filesystem/contained-fs.ts, .github/workflows/containment.yml, tests/unit/containment-evidence.test.ts]
+  created: [scripts/capture-filesystem-observation.mjs]
+  modified: [src/filesystem/contained-fs.ts, scripts/write-containment-evidence.mjs, scripts/containment-evidence.mjs, .github/workflows/containment.yml, tests/unit/contained-fs.test.ts, tests/unit/containment-evidence.test.ts, tests/helpers/containment-fixture.ts, tests/helpers/git-fixture.ts, tests/integration/init-codex-tracer.test.ts]
 decisions:
-  - Kept all eight approved rows mandatory; unsupported musl filesystem observation remains a blocker.
-  - Bound musl provenance to the reviewed temporary GitHub snapshot rather than installing Git in the pinned builder.
+  - Linux filesystem eligibility is measured at the real resolved operation root, while the package root remains only a manifest and hash location.
+  - Observed libc is recorded separately from policy libc and must match before the aggregate emits a green result.
+  - The full matrix is accepted only from downloaded per-row artifacts bound to one guarded snapshot and matrix revision.
 metrics:
-  duration: blocked after six hosted all-target runs
+  duration: completed after diagnostic and final hosted matrix runs
   completed_date: 2026-08-28
 actuals:
-  tokens: 10987
-  tasks: 0
-  commits: 8
+  tokens: 21261
+  tasks: 2
+  commits: 7
 ---
 
 # Phase 01 Plan 11: Native Target Matrix Summary
 
-Implemented the native target matrix and rejecting evidence gate, but Plan 11 is blocked because both mandatory native-musl tracer rows observe filesystem `UNKNOWN` inside the approved pinned Alpine runtime and are correctly rejected.
+All eight approved native target rows ran the installed release tracer on native hosted runners, and the rejecting aggregate accepted the downloaded evidence from one guarded snapshot.
 
-## Work Completed
+## Completed Work
 
-- Added the eight-row machine-readable approved matrix and a bounded GitHub Actions workflow that builds release/test native providers and runs the installed tracer on macOS ARM64/x64, Windows ARM64/x64, Linux glibc ARM64/x64, and Linux musl ARM64/x64.
-- Added a rejecting tracer evidence aggregate and unit fixtures for missing, failed, skipped, cancelled, stale, wrong-hash, duplicate/conflicting, and emulated records.
-- Extended fixed target recognition only to the eight approved tuples, including direct Windows ARM64 tooling and native musl builds.
-- Added source-commit, provider-hash, evidence-mode, Node/provider-N-API, compiler, OS/kernel, filesystem, libc, and tracer-ID evidence fields.
+- Materialized and enforced the exact eight-row target matrix for macOS ARM64/x64, Windows ARM64/x64, Linux glibc ARM64/x64, and Linux musl ARM64/x64.
+- Moved Linux eligibility to the resolved fixture operation root using `fs.statfsSync(..., { bigint: true })`. Only normalized magic `0x0000ef53` maps to the approved `ext2/ext3` contract; overlay, unknown, absent, and mismatched observations reject.
+- Made fixtures deterministic through the strict test-only temporary-root input and placed musl fixtures at `/work/.ci-fixtures`, inside the native host bind mount.
+- Captured `filesystem-observation.json` for the fixture root, `/work`, and `/tmp`; evidence now consumes the operation-root observation rather than a provider-static filesystem value.
+- Bound policy libc and separately observed libc, provider/build SHA-256, Node/provider-N-API, OS/kernel, compiler/toolchain/image, matrix revision, source snapshot, installed tracer IDs, and evidence mode into every record.
+- Preserved mandatory rejection for missing, failed, skipped, cancelled, stale, wrong-hash, duplicate/conflicting, emulated, overlay, unknown, and policy/observation-mismatched records.
 
-## Hosted Evidence
+## Hosted Native Proof
 
-Latest guarded temporary snapshot: `587ab446eecb6a5681cf61f651781c3e9c463989` on `codex/containment-native-matrix-20260828`; no remote main push occurred.
+Guarded temporary branch: `codex/containment-native-matrix-20260828`. Remote `main` was not pushed.
 
-Run [`33152941157`](https://github.com/ishk-sftckz/exspecso/actions/runs/33152941157) was the final six-run diagnostic matrix:
+Final run: [33155426835](https://github.com/ishk-sftckz/exspecso/actions/runs/33155426835) from snapshot `371e0a56bf61acf56de0bceb46b5e8f61bead43b`, matrix revision `01-09-approved-2026-08-28`.
 
-| Required row | Result | Evidence |
-| --- | --- | --- |
-| ENV-MA | passed | installed native tracer artifact saved |
-| ENV-MX | passed | installed native tracer artifact saved |
-| ENV-WX | passed | installed native tracer artifact saved |
-| ENV-WA | passed | installed native tracer artifact saved |
-| ENV-LGX | passed | installed native tracer artifact saved |
-| ENV-LGA | passed | installed native tracer artifact saved |
-| ENV-LMX | blocked | installed tracer rejects observed filesystem `UNKNOWN` |
-| ENV-LMA | blocked | same observed filesystem contract failure |
+| Row | Native environment | Policy / observed libc | Operation-root observation | Provider SHA-256 | Result |
+| --- | --- | --- | --- | --- | --- |
+| ENV-MA | macOS 15.7.7 ARM64, kernel 24G720, APFS | system / system | n/a | `0f96f918…e4ede990e` | passed |
+| ENV-MX | macOS 15.7.9 x64, kernel 24G830, APFS | system / system | n/a | `a104c910…3a81cf9f` | passed |
+| ENV-WA | Windows 10.0.26200 ARM64, kernel 26200.9168, NTFS | system / system | n/a | `6ec2a41f…ee08c678` | passed |
+| ENV-WX | Windows 10.0.26100 x64, kernel 26100.33296, NTFS | system / system | n/a | `a764ea5a…46138731` | passed |
+| ENV-LGA | Ubuntu 24.04.4 ARM64, kernel 6.17.0-1022-azure, ext4 | glibc-2.39 / glibc 2.39 | `61267` / `0x0000ef53` / ext2/ext3 | `847a10f5…344f1bd1` | passed |
+| ENV-LGX | Ubuntu 24.04.4 x64, kernel 6.17.0-1022-azure, ext4 | glibc-2.39 / glibc 2.39 | `61267` / `0x0000ef53` / ext2/ext3 | `985fae3e…e67cd5b2` | passed |
+| ENV-LMA | Alpine 3.24 ARM64, kernel 6.17.0-1022-azure, ext4 | musl-1.2.6-r2 / musl-1.2.6-r2 | `61267` / `0x0000ef53` / ext2/ext3 | `497b8af3…455cda57` | passed |
+| ENV-LMX | Alpine 3.24 x64, kernel 6.17.0-1022-azure, ext4 | musl-1.2.6-r2 / musl-1.2.6-r2 | `61267` / `0x0000ef53` / ext2/ext3 | `a7244661…df9a7d6b` | passed |
 
-Artifacts, tracer JSON, Windows preflight observations, native binaries, and hashes are saved under `01-11-EVIDENCE/33150842384`, `01-11-EVIDENCE/33152481297`, and `01-11-EVIDENCE/33152941157`.
+Every final record reports Node `20.19.0`, provider N-API `8`, runtime N-API `9`, evidence mode `release`, and equal provider/build SHA-256. The artifact records include the full compiler, toolchain, image, tracer, mountinfo, and hash values under `01-11-EVIDENCE/final-33155426835/`.
 
-## Verification
+The downloaded aggregate result is:
 
+```json
+{"plan_complete":true,"stage":"tracer","matrixRevision":"01-09-approved-2026-08-28","sourceCommit":"371e0a56bf61acf56de0bceb46b5e8f61bead43b","rows":["ENV-LGA","ENV-LGX","ENV-LMA","ENV-LMX","ENV-MA","ENV-MX","ENV-WA","ENV-WX"]}
+```
+
+## Evidence and Verification
+
+- `npm test -- --run tests/unit/containment-evidence.test.ts` — passed, 14 tests.
 - `npm run build` — passed.
-- `npm test -- --run tests/unit/containment-evidence.test.ts` — passed (10 tests).
-- `node --check native/build.mjs` and `node --check scripts/write-containment-evidence.mjs` — passed.
-- Workflow YAML parse and `git diff --check` — passed.
-- Actual aggregate — intentionally not run as green: required ENV-LMX and ENV-LMA records are absent/failed, so the aggregate must reject them.
-
-## Blocker
-
-The pinned native Linux CPU runners and pinned Alpine images are available; their release providers compile with musl 1.2.6 and execute the installed test. The loader's exact runtime observation is:
-
-`6.17.0-1022-azure/UNKNOWN/musl libc ... Version 1.2.6`
-
-The approved musl target contract requires the supported filesystem form (`ext4` / observed `ext2/ext3`), so accepting `UNKNOWN` would weaken the evidence contract. No fallback, emulation, row removal, or Plan 12 work was performed.
+- `git diff --check HEAD~6..HEAD` — passed.
+- `node scripts/containment-evidence.mjs --stage tracer --evidence-dir .planning/phases/01-initialize-canonical-projects/01-11-EVIDENCE/final-33155426835/aggregate-input` — passed with `plan_complete: true`.
+- Downloaded diagnostic, failed full-matrix, repaired full-matrix, and final proof artifacts are retained in `01-11-EVIDENCE/` to preserve the strict rejection history and final proof.
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
-1. **[Rule 2 - Critical target recognition]** Added only the approved Linux and Windows ARM64/x64 target branches to the fixed loader/build path. Commit `a855320`.
-2. **[Rule 1 - Native build defects]** Fixed the POSIX test-barrier `<array>` include, Windows ARM64 SDK library architecture, and Alpine header fetch primitive. Commit `fc71b71`.
-3. **[Rule 1 - musl version semantics]** Preserved musl's `ldd --version` output when its documented command exits one. Commit `34ddb34`.
-4. **[Rule 1 - provenance]** Bound musl build/evidence records to the reviewed snapshot without adding a package. Commit `393d85e`.
-5. **[Rule 1 - loader runtime]** Applied the musl version semantics to the installed provider loader. Commit `a3843e0`.
-6. **[Rule 1 - evidence integrity]** Recorded provider N-API 8 separately from Node 20.19.0 runtime N-API 9 and exposed the rejecting musl tuple. Commit `ddff8f4`.
+1. **[Rule 2 - Operation-root observation]** The loader originally observed the package root, which is `/tmp` inside the Alpine container rather than the mounted fixture operation root. It now resolves and observes only the operation root; package-root checks remain limited to manifest/provider hashing. Commits `2b95d42`, `3a2dff1`.
+2. **[Rule 1 - Diagnostic workflow eligibility]** The first full dispatch exposed that GitHub Actions does not allow `matrix` in a job-level condition. Matrix jobs now gate at step level and require a passing musl diagnostic before the full dispatch. Commit `758fa9d`.
+3. **[Rule 1 - Fixture/test semantics]** Test fixtures had to preserve the no-git test's intentionally external temporary root, while installed tracer fixtures use the strict configured root. Musl `ldd` output is captured without leaking to tracer stderr. Commit `b1ffff9`.
+4. **[Rule 1 - Mount evidence]** Root mountinfo was omitted because `/` did not satisfy the non-root prefix rule. The capture script includes the root mount entry explicitly. Commit `aba572b`.
+5. **[Rule 1 - libc schema binding]** Hosted evidence exposed `glibc 2.39` as the measured value while the matrix uses the policy token `glibc-2.39`. The record now keeps both fields and the aggregate verifies their required correspondence. Commit `3e602c5`.
 
-## Next Step
+No target row was removed, emulated, skipped, or accepted through a fallback. No new dependencies, global installs, paid services, credentials, publication, or remote-main push were used.
 
-Obtain an explicit approved change to the exact musl filesystem primitive/observation, or provision an approved native-musl environment whose runtime package filesystem reports the required ext2/ext3 form. Then rerun all eight rows from one guarded snapshot and run the aggregate over the downloaded records. Do not delete or relax ENV-LMX/ENV-LMA.
+## Known Stubs
+
+None.
 
 ## Self-Check: PASSED
 
-- Commits `db01aae`, `a855320`, `fc71b71`, `34ddb34`, `393d85e`, `a3843e0`, and `ddff8f4` exist.
-- The final hosted artifacts and source changes exist on disk.
+- Commits `2b95d42`, `3a2dff1`, `758fa9d`, `b1ffff9`, `aba572b`, and `3e602c5` exist.
+- Final artifacts, eight aggregate input records, and `aggregate-result.json` exist under `01-11-EVIDENCE/final-33155426835/`.
+- The final aggregate is actual hosted-evidence proof, not a job-status substitution.
