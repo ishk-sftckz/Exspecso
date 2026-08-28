@@ -8,6 +8,14 @@ import type { Writable } from "node:stream";
 
 const exec = promisify(execFile);
 const root = resolve(import.meta.dirname, "../..");
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
 export function runNpm(args: string[], options: { cwd?: string } = {}) {
   const npm = process.env.npm_execpath;
   if (!npm || !npm.endsWith("npm-cli.js")) throw new Error("Run package tests through npm test so the actual npm CLI is available");
@@ -57,7 +65,7 @@ export async function installContainedPackage(variant: "release" | "test") {
     if (sha256 !== manifest.targets[0].sha256 || manifest.variant !== variant) throw new Error("installed provider provenance mismatch");
     const release = JSON.parse(await readFile(join(root, "dist/native/build-provenance.json"), "utf8"));
     for (const key of ["buildCommit", "sources", "headerHash", "compilerVersion", "sdkVersion", "xcode", "osVersion", "osBuild", "windows", "nodeLibHash"]) {
-      if (JSON.stringify(release[key]) !== JSON.stringify(provenance[key])) throw new Error(`release/test build mismatch: ${key}`);
+      if (canonicalJson(release[key]) !== canonicalJson(provenance[key])) throw new Error(`release/test build mismatch: ${key}`);
     }
     const tarballSHA256 = createHash("sha256").update(await readFile(join(directory, filename))).digest("hex");
     return { directory, ...inspected, tarballSHA256, cli: join(installed, "dist/cli/main.js"), async dispose() { await rm(directory, { recursive: true, force: true }); } };
