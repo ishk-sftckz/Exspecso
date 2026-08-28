@@ -68,6 +68,9 @@ jobs:
           node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
           npm run build
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+          node native/build.mjs --variant test --diagnostic address --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
+          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000
+          node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
           if [ "$FAMILY" = glibc ]; then node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json; fi
           node scripts/write-containment-evidence.mjs
       - name: Fetch checksum-verified native Node inputs for Windows
@@ -102,6 +105,9 @@ jobs:
           node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
           npm run build
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+          node native/build.mjs --variant test --diagnostic address --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
+          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000
+          node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
           node scripts/write-containment-evidence.mjs
       - name: Build and run the real native musl tracer in the pinned Alpine userland
         if: (inputs.mode == 'full' || matrix.family == 'musl') && matrix.family == 'musl'
@@ -133,6 +139,9 @@ jobs:
             set -e
             node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --out filesystem-observation.json
             test "$tracer_status" -eq 0
+            node native/build.mjs --variant test --diagnostic address --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
+            npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000
+            node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
             node scripts/write-containment-evidence.mjs'
       - name: Upload actual target evidence and binaries
         if: (inputs.mode == 'full' || matrix.family == 'musl') && always()

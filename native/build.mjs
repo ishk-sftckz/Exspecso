@@ -9,12 +9,14 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const values = new Map();
 for (let n = 2; n < process.argv.length; n += 2) {
   const key = process.argv[n];
-  if (!["--variant", "--row", "--out", "--headers", "--node-lib"].includes(key) || values.has(key) || !process.argv[n + 1]) throw new Error("Invalid build arguments");
+  if (!["--variant", "--diagnostic", "--row", "--out", "--headers", "--node-lib"].includes(key) || values.has(key) || !process.argv[n + 1]) throw new Error("Invalid build arguments");
   values.set(key, process.argv[n + 1]);
 }
 const variant = values.get("--variant");
+const diagnostic = values.get("--diagnostic");
 const rowId = values.get("--row");
 if (!["release", "test"].includes(variant)) throw new Error("--variant release|test is required");
+if (diagnostic !== undefined && diagnostic !== "address") throw new Error("--diagnostic address is the only supported native diagnostic");
 if (!rowId) throw new Error("--row must name a declared native support row");
 const matrix = JSON.parse(readFileSync(join(root, "native/support-matrix.json"), "utf8"));
 if (matrix.schemaVersion !== 2 || !Array.isArray(matrix.rows)) throw new Error("Invalid support matrix");
@@ -96,11 +98,13 @@ try {
   let args, buildEnvironment = process.env;
   if (process.platform === "darwin") {
     args = ["-std=c++17", "-O2", "-Wall", "-Wextra", "-fvisibility=hidden", "-bundle", "-undefined", "dynamic_lookup", "-isysroot", sdk, `-mmacosx-version-min=${osVersion}`, "-DNAPI_VERSION=8", "-DNODE_GYP_MODULE_NAME=contained_fs", "-I", include];
+    if (diagnostic === "address") args.push("-fsanitize=address", "-fno-omit-frame-pointer");
     if (variant === "test") args.push("-DEXSPECSO_CONTAINMENT_TEST=1");
     args.push(join(root, "native", "contained-fs.cc"), "-o", binary);
   } else if (process.platform === "win32") {
     const msvc = resolve(dirname(compiler), "../../..");
     args = ["/nologo", "/std:c++17", "/O2", "/W4", "/EHsc", "/MT", "/LD", "/utf-8", "/D_WIN32_WINNT=0x0A00", "/DNAPI_VERSION=8", "/DNODE_GYP_MODULE_NAME=contained_fs", "/I" + include, "/I" + join(msvc, "include")];
+    if (diagnostic === "address") args.push("/fsanitize=address");
     for (const part of ["ucrt", "shared", "um", "winrt"]) args.push("/I" + join(sdk, "Include", sdkVersion, part));
     if (variant === "test") args.push("/DEXSPECSO_CONTAINMENT_TEST=1");
     args.push(join(root, "native/contained-fs.cc"), "/Fo" + join(work, "contained-fs.obj"), "/link", "/OUT:" + binary, "/IMPLIB:" + join(work, "contained-fs.lib"), nodeLib, "kernel32.lib");
@@ -112,6 +116,7 @@ try {
     buildEnvironment = { ...process.env, PATH: dirname(compiler) + ";" + process.env.PATH };
   } else {
     args = ["-std=c++17", "-O2", "-Wall", "-Wextra", "-fvisibility=hidden", "-fPIC", "-shared", "-DNAPI_VERSION=8", "-DNODE_GYP_MODULE_NAME=contained_fs", "-I", include];
+    if (diagnostic === "address") args.push("-fsanitize=address", "-fno-omit-frame-pointer");
     if (variant === "test") args.push("-DEXSPECSO_CONTAINMENT_TEST=1");
     args.push(join(root, "native", "contained-fs.cc"), "-o", binary, "-ldl");
   }
@@ -126,6 +131,6 @@ try {
   const manifest = { schemaVersion: 2, packageVersion, buildCommit, variant, targets: [{ supportRowId: supportRow.id, target, platform: process.platform, arch: process.arch, osVersion, osBuild, filesystem: supportRow.filesystem, libc: supportRow.libc, napiVersion: 8, byteLength: bytes.length, sha256: hash(bytes), path: `${supportRow.id}/${target}/contained-fs.node` }] };
   writeFileSync(join(out, "dist", "native", "support-matrix.json"), JSON.stringify(matrix, null, 2) + "\n");
   writeFileSync(join(out, "dist", "native", "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
-  writeFileSync(join(out, "dist", "native", "build-provenance.json"), JSON.stringify({ supportRowId: supportRow.id, buildCommit, variant, sources, headerHash, compiler, compilerVersion, developerDirectory, sdk, sdkVersion, sdkBuild, xcode, osVersion, osBuild, windows, nodeLibHash, dependencies, args, binarySHA256: hash(bytes) }, null, 2) + "\n");
-  console.log(JSON.stringify({ variant, supportRowId: supportRow.id, target, binary, sha256: hash(bytes), buildCommit }));
+  writeFileSync(join(out, "dist", "native", "build-provenance.json"), JSON.stringify({ supportRowId: supportRow.id, buildCommit, variant, diagnostic, sources, headerHash, compiler, compilerVersion, developerDirectory, sdk, sdkVersion, sdkBuild, xcode, osVersion, osBuild, windows, nodeLibHash, dependencies, args, binarySHA256: hash(bytes) }, null, 2) + "\n");
+  console.log(JSON.stringify({ variant, diagnostic, supportRowId: supportRow.id, target, binary, sha256: hash(bytes), buildCommit }));
 } finally { rmSync(work, { recursive: true, force: true }); }
