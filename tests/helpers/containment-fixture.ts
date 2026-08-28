@@ -1,5 +1,6 @@
 import { execFile, spawn } from "node:child_process";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
+import { createConnection, createServer, type Socket } from "node:net";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -151,10 +152,50 @@ export async function runAtHistoricalReplacement(cli: string, cwd: string, attac
   } finally { clearTimeout(timer); if (child.exitCode === null && child.signalCode === null) { child.kill("SIGKILL"); await exited; } }
 }
 
+async function createWindowsAcknowledgementSocket() {
+  const endpoint = `\\\\.\\pipe\\exspecso-containment-${process.pid}-${randomUUID()}`;
+  const server = createServer();
+  const connected = new Promise<Socket>((resolveConnection, rejectConnection) => {
+    server.once("connection", resolveConnection);
+    server.once("error", rejectConnection);
+  });
+  await new Promise<void>((resolveListen, rejectListen) => {
+    server.once("error", rejectListen);
+    server.listen(endpoint, resolveListen);
+  });
+  const childSocket = createConnection(endpoint);
+  try {
+    await new Promise<void>((resolveConnection, rejectConnection) => {
+      childSocket.once("connect", resolveConnection);
+      childSocket.once("error", rejectConnection);
+    });
+    const controllerSocket = await connected;
+    return {
+      childSocket,
+      controllerSocket,
+      async dispose() {
+        childSocket.destroy();
+        controllerSocket.destroy();
+        await new Promise<void>((resolveClose, rejectClose) => server.close((error) => error ? rejectClose(error) : resolveClose()));
+      },
+    };
+  } catch (error) {
+    childSocket.destroy();
+    await new Promise<void>((resolveClose) => server.close(() => resolveClose()));
+    throw error;
+  }
+}
+
 export async function runAtNativeReplacement(cli: string, cwd: string, attack: () => Promise<void>) {
+  // Node creates stdio entries above fd 2 as child-writable output pipes. On
+  // Windows fd 4 therefore cannot carry an acknowledgement back to the child.
+  // Supplying this private duplex named-pipe socket at fd 4 preserves the
+  // fixed fd3/fd4 native contract; it is test-harness transport only and is
+  // neither packaged nor present in release provider builds.
+  const acknowledgement = process.platform === "win32" ? await createWindowsAcknowledgementSocket() : undefined;
   const child = spawn(process.execPath, [cli, "init", "--agent", "codex", "--replace-agent", "codex"], {
     cwd, env: { ...process.env, EXSPECSO_TEST_NATIVE_OPERATION: "replace:before" },
-    stdio: ["ignore", "pipe", "pipe", "pipe", "pipe"],
+    stdio: ["ignore", "pipe", "pipe", "pipe", acknowledgement?.childSocket ?? "pipe"],
   });
   let stdout = "", stderr = "", trace = "";
   child.stdout!.on("data", (bytes: Buffer) => { stdout += bytes.toString(); });
@@ -173,11 +214,12 @@ export async function runAtNativeReplacement(cli: string, cwd: string, attack: (
     const record = await reached;
     if (record.operation !== "replace:before" || record.pid !== child.pid) throw new Error("unexpected native barrier");
     await attack();
-    (child.stdio[4] as Writable).write("1");
+    (acknowledgement?.controllerSocket ?? child.stdio[4] as Writable).write("1");
     const exitCode = await exited;
     return { exitCode, stdout, stderr, record };
   } finally {
     clearTimeout(timer);
     if (child.exitCode === null && child.signalCode === null) { child.kill("SIGKILL"); await exited; }
+    if (acknowledgement) await acknowledgement.dispose();
   }
 }
