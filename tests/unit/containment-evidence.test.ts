@@ -59,11 +59,13 @@ describe("containment evidence aggregate", () => {
 
   it("keeps native build prerequisites target-specific", () => {
     const build = readFileSync(join(root, "native/build.mjs"), "utf8");
+    const loader = readFileSync(join(root, "src/filesystem/contained-fs.ts"), "utf8");
     const posix = readFileSync(join(root, "native/contained-fs-posix.cc"), "utf8");
     const workflow = readFileSync(join(root, ".github/workflows/containment.yml"), "utf8");
     expect(posix).toContain("#include <array>");
     expect(build).toContain('join(sdk, "Lib", sdkVersion, part, targetArchitecture)');
     expect(build).toContain('error.stderr.includes("musl libc")');
+    expect(loader).toContain('error.stderr.includes("musl libc")');
     expect(build).toContain("EXSPECSO_SOURCE_COMMIT");
     expect(readFileSync(join(root, "scripts/write-containment-evidence.mjs"), "utf8")).toContain("EXSPECSO_SOURCE_COMMIT");
     expect(workflow).toContain('-e EXSPECSO_SOURCE_COMMIT="$GITHUB_SHA"');
