@@ -209,12 +209,18 @@ export async function runAtNativeReplacement(cli: string, cwd: string, attack: (
     });
     const record = await reached;
     if (await realpath(record.providerpath) !== expected.provider || createHash("sha256").update(await readFile(record.providerpath)).digest("hex") !== expected.sha256 || expected.manifest.targets[0]?.sha256 !== expected.sha256) throw new Error("native barrier provider provenance mismatch");
-    await attack();
+    let attackBlocked: { code?: string; message: string } | undefined;
+    try { await attack(); }
+    catch (error) {
+      const value = error as NodeJS.ErrnoException;
+      if (process.platform !== "win32" || value.code !== "EPERM") throw error;
+      attackBlocked = { code: value.code, message: value.message };
+    }
     if (options.acknowledgement === "missing") return { exitCode: await exited, stdout, stderr, record };
     const acknowledgement = JSON.stringify({ ack: options.acknowledgement === "wrong" ? channelId : record.nonce });
     await new Promise<void>((resolveWrite, rejectWrite) => (controller ?? child.stdio[4]!).write(acknowledgement, (error?: Error | null) => error ? rejectWrite(error) : resolveWrite()));
     const exitCode = await exited;
-    return { exitCode, stdout, stderr, record };
+    return { exitCode, stdout, stderr, record, attackBlocked };
   } finally {
     clearTimeout(timer);
     if (child.exitCode === null && child.signalCode === null) { child.kill("SIGKILL"); await exited; }

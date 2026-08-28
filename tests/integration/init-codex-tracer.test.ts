@@ -120,13 +120,20 @@ describe("packed Codex initializer tracer", () => {
         expect(result.exitCode).not.toBe(0);
         expect(result.stderr).toContain("EXSPECSO_CONTAINMENT");
         expect(result.stdout).toBe("");
+      } else if (result.attackBlocked) {
+        // On Windows the held native directory prevents this controller-side
+        // relocation. This is recorded as an unscheduled limitation case, not
+        // as evidence that a moved object followed the held authority.
+        expect(result.attackBlocked.code).toBe("EPERM");
+        expect(result.exitCode).toBe(0);
+        expect(await readFile(externalTarget, "utf8")).toBe("external sentinel\n");
       } else {
         // Approved limitation: the held original object can be written after relocation.
         expect(result.exitCode).toBe(0);
         const heldTarget = site === "parent" ? join(moved, "SKILL.md") : join(moved, "exspecso-start", "SKILL.md");
         expect(await readFile(heldTarget, "utf8")).toContain("exspecso-start");
       }
-      console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", limitation: site !== "leaf", provider: installed.provider, providerSHA256: installed.sha256, providerManifest: installed.manifest, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, packageInventory: installed.packageInventory, reached: result.record, exitCode: result.exitCode }));
+      console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", limitation: site !== "leaf", attackScheduled: !result.attackBlocked, attackBlocked: result.attackBlocked, provider: installed.provider, providerSHA256: installed.sha256, providerManifest: installed.manifest, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, packageInventory: installed.packageInventory, reached: result.record, exitCode: result.exitCode }));
     }, 60_000);
   }
 
