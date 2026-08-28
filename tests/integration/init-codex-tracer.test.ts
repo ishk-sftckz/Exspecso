@@ -1,15 +1,14 @@
-import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { link, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
-import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { findGitRoot } from "../../src/filesystem/git-root.js";
 import { createGitFixture, createNoGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 import { runCli } from "../helpers/run-cli.js";
-import { installContainedPackage, runAtNativeReplacement } from "../helpers/containment-fixture.js";
+import { inspectInstalledPackage, installContainedPackage, installVulnerablePackage, runAtHistoricalReplacement, runAtNativeReplacement, runNpm } from "../helpers/containment-fixture.js";
 
-const execFileAsync = promisify(execFile);
 const temporaryPaths: string[] = [];
 const fixtures: GitFixture[] = [];
 const packageRoot = resolve(import.meta.dirname, "../..");
@@ -34,21 +33,21 @@ async function useFixture(factory: () => Promise<GitFixture>): Promise<GitFixtur
 async function packAndRun(
   cwd: string,
   args: string[] = ["init", "--agent", "codex"],
-): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+): Promise<{ exitCode: number; stdout: string; stderr: string; installed: Awaited<ReturnType<typeof inspectInstalledPackage>>; tarballSHA256: string }> {
   const packingDirectory = await createTemporaryDirectory("exspecso-pack-");
-  await execFileAsync("npm", ["run", "build"], { cwd: packageRoot });
-  const { stdout: packOutput } = await execFileAsync(
-    "npm",
+  await runNpm(["run", "build"], { cwd: packageRoot });
+  const { stdout: packOutput } = await runNpm(
     ["pack", "--json", "--pack-destination", packingDirectory],
     { cwd: packageRoot },
   );
   const [{ filename }] = JSON.parse(packOutput) as Array<{ filename: string }>;
   const runner = await createTemporaryDirectory("exspecso-runner-");
-  await execFileAsync(
-    "npm",
+  await runNpm(
     ["install", "--ignore-scripts", "--no-package-lock", "--prefix", runner, join(packingDirectory, filename)],
   );
-  return runCli(join(runner, "node_modules", ".bin", "exspecso"), args, { cwd });
+  const installed = await inspectInstalledPackage(join(runner, "node_modules/exspecso"));
+  const result = await runCli(process.execPath, [join(installed.installed, "dist/cli/main.js"), ...args], { cwd });
+  return { ...result, installed, tarballSHA256: createHash("sha256").update(await readFile(join(packingDirectory, filename))).digest("hex") };
 }
 
 describe("packed Codex initializer tracer", () => {
@@ -69,7 +68,18 @@ describe("packed Codex initializer tracer", () => {
   for (const site of ["leaf", "parent", "ancestor"] as const) {
     it(`contained promotion tracer reaches the native ${site} substitution boundary`, async () => {
       const fixture = await useFixture(createGitFixture);
-      expect((await packAndRun(fixture.root)).exitCode).toBe(0);
+      const historical = process.env.EXSPECSO_RUN_VULNERABLE_TRACER === "1" ? await installVulnerablePackage() : undefined;
+      if (historical) temporaryPaths.push(historical.directory);
+      let release: Awaited<ReturnType<typeof packAndRun>> | undefined;
+      const initial = historical
+        ? await runCli(process.execPath, [historical.cli, "init", "--agent", "codex"], { cwd: fixture.root })
+        : (release = await packAndRun(fixture.root));
+      expect(initial.exitCode, `initial ${historical ? "historical" : "release"} CLI stderr:\n${initial.stderr}`).toBe(0);
+      if (release) {
+        expect(release.installed.manifest.variant).toBe("release");
+        expect(release.installed.sha256).toBe(release.installed.manifest.targets[0].sha256);
+        console.log(JSON.stringify({ family: "TR-02", mode: "uninstrumented release CLI", provider: release.installed.provider, providerSHA256: release.installed.sha256, tarballSHA256: release.tarballSHA256, manifest: release.installed.manifest, provenance: release.installed.provenance, packageInventory: release.installed.packageInventory, exitCode: release.exitCode }));
+      }
       const relativeAdapter = ".agents/skills/exspecso-start/SKILL.md";
       const adapter = join(fixture.root, relativeAdapter);
       await writeFile(adapter, "user-modified adapter\n");
@@ -77,10 +87,10 @@ describe("packed Codex initializer tracer", () => {
       const externalTarget = site === "ancestor" ? join(outside, "exspecso-start", "SKILL.md") : join(outside, "SKILL.md");
       if (site === "ancestor") await mkdir(join(outside, "exspecso-start"));
       await writeFile(externalTarget, "external sentinel\n");
-      const installed = await installContainedPackage("test");
-      temporaryPaths.push(installed.directory);
+      const installed = historical ? undefined : await installContainedPackage("test");
+      if (installed) temporaryPaths.push(installed.directory);
       const moved = join(fixture.root, "held-original");
-      const result = await runAtNativeReplacement(installed.cli, fixture.root, async () => {
+      const attack = async () => {
         if (site === "leaf") {
           await rename(adapter, moved);
           await symlink(externalTarget, adapter);
@@ -89,10 +99,21 @@ describe("packed Codex initializer tracer", () => {
           await rename(directory, moved);
           await symlink(outside, directory, "dir");
         }
-      });
+      };
+      if (historical) {
+        const result = await runAtHistoricalReplacement(historical.cli, fixture.root, attack);
+        expect(await realpath(fileURLToPath(result.record.module))).toBe(await realpath(historical.module));
+        const externalBytes = await readFile(externalTarget, "utf8");
+        console.log(JSON.stringify({ family: "TR-01-RED", site, mode: "instrumented historical CLI", ...historical.provenance, reached: result.record, exitCode: result.exitCode, externalChanged: externalBytes !== "external sentinel\n" }));
+        expect(externalBytes).toBe("external sentinel\n");
+        return;
+      }
+      if (!installed || !release) throw new Error("Missing installed package");
+      expect(installed.packageInventory).toEqual(release.installed.packageInventory);
+      const result = await runAtNativeReplacement(installed.cli, fixture.root, attack);
       expect(result.record.operation).toBe("replace:before");
       expect(await readFile(externalTarget, "utf8")).toBe("external sentinel\n");
-      expect(installed.provider).toContain("node_modules/exspecso/dist/native/");
+      expect(installed.provider).toContain(join("node_modules", "exspecso", "dist", "native"));
       expect(await realpath(result.record.providerPath)).toBe(installed.provider);
       if (site === "leaf") {
         expect(result.exitCode).not.toBe(0);
@@ -104,7 +125,7 @@ describe("packed Codex initializer tracer", () => {
         const heldTarget = site === "parent" ? join(moved, "SKILL.md") : join(moved, "exspecso-start", "SKILL.md");
         expect(await readFile(heldTarget, "utf8")).toContain("exspecso-start");
       }
-      console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", limitation: site !== "leaf", provider: installed.provider, providerSHA256: installed.sha256, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, reached: result.record, exitCode: result.exitCode }));
+      console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", limitation: site !== "leaf", provider: installed.provider, providerSHA256: installed.sha256, providerManifest: installed.manifest, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, packageInventory: installed.packageInventory, reached: result.record, exitCode: result.exitCode }));
     }, 60_000);
   }
 
