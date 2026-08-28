@@ -1,0 +1,39 @@
+{
+  "buildCommit": "0af7365726d0a43ba8fb4d9a2b27a8dda46e37a9",
+  "variant": "release",
+  "sources": {
+    "native/contained-fs.cc": "f4d3532be4e1df6a561f26c78f02b6b72ac911752952018925fb70f982e6d3bc",
+    "native/contained-fs-posix.cc": "c77f29de4e5814fab5d9340280b348947c68d412cd8b216c8c32c6bb820c78bb",
+    "native/contained-fs-win.cc": "7842b8a9c79e9e8225de7b601a41dcefabffdb91e5d386e31ef6e741e048b88f",
+    "native/build.mjs": "8930b9c291e3249a48a7015c8dd91e4791ba5dd5253806308a6827bc80b67665",
+    "native/windows-preflight.ps1": "03ca2bffed190f0b194d21064db49dda7f2a954abdae17348049e0beb4cca23c"
+  },
+  "headerHash": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+  "compiler": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+  "compilerVersion": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+  "sdkVersion": "15.5",
+  "xcode": "Xcode 16.4\nBuild version 16F6",
+  "osVersion": "15.7.7",
+  "osBuild": "24G720",
+  "args": [
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-fvisibility=hidden",
+    "-bundle",
+    "-undefined",
+    "dynamic_lookup",
+    "-isysroot",
+    "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+    "-mmacosx-version-min=15.7.7",
+    "-DNAPI_VERSION=8",
+    "-DNODE_GYP_MODULE_NAME=contained_fs",
+    "-I",
+    "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-native-build-UgJDc3/node-v20.19.0/include/node",
+    "/Users/runner/work/exspecso/exspecso/native/contained-fs.cc",
+    "-o",
+    "/Users/runner/work/exspecso/exspecso/dist/native/darwin-arm64/contained-fs.node"
+  ],
+  "binarySHA256": "0f96f9185b7caedb8f355c7a8440b074e8b0c6f51c6efc99e1c46b6e4ede990e"
+}
