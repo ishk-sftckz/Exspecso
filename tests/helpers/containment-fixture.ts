@@ -70,7 +70,10 @@ export async function installContainedPackage(variant: "release" | "test") {
   try {
     const staged = join(directory, "package");
     await cp(join(root, "dist"), join(staged, "dist"), { recursive: true });
-    await cp(join(root, "package.json"), join(staged, "package.json"));
+    const { scripts: _developmentScripts, ...publishedPackage } = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+    publishedPackage.files = ["dist", "npm-shrinkwrap.json"];
+    await writeFile(join(staged, "package.json"), `${JSON.stringify(publishedPackage, null, 2)}\n`);
+    await cp(join(root, "package-lock.json"), join(staged, "npm-shrinkwrap.json"));
     const args = [join(root, "native/build.mjs"), "--variant", variant, "--row", supportRowForHost(), "--out", staged, "--headers", process.env.EXSPECSO_NODE_HEADERS ?? "missing-approved-headers"];
     if (process.platform === "win32") args.push("--node-lib", process.env.EXSPECSO_NODE_LIB ?? "missing-approved-library");
     await exec(process.execPath, args, { maxBuffer: 2 * 1024 * 1024 });
