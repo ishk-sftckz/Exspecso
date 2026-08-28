@@ -1,4 +1,5 @@
-import { link, mkdir, readFile, rename, symlink, writeFile } from "node:fs/promises";
+import { link, mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
@@ -23,6 +24,83 @@ function keep<T extends { close(): void }>(capability: T): T {
 }
 
 describe("contained filesystem provider", () => {
+  it("PK-01 assembles one distinct provider manifest entry for each support row sharing a target", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "exspecso-package-assembly-"));
+    try {
+      const matrix = {
+        schemaVersion: 2,
+        revision: "test-matrix",
+        nodePolicy: { engine: "^20.19.0 || ^22.13.0 || ^24.0.0 || 25.2.1 || ^26.0.0", ranges: [], exactVersions: ["25.2.1"], testedVersions: ["20.19.0", "20.19.5", "20.20.2", "22.13.0", "22.23.2", "24.0.0", "24.20.0", "25.2.1", "26.0.0", "26.8.1"], napi: 8 },
+        rows: [
+          { id: "ENV-A", target: "darwin-arm64", os: { family: "macos", version: "15.0", build: "A" }, cpu: "arm64", libc: "system", filesystem: "apfs", toolchain: "test" },
+          { id: "ENV-B", target: "darwin-arm64", os: { family: "macos", version: "16.0", build: "B" }, cpu: "arm64", libc: "system", filesystem: "apfs", toolchain: "test" },
+        ],
+      };
+      const input = join(directory, "artifacts");
+      const output = join(directory, "package");
+      const matrixPath = join(directory, "support-matrix.json");
+      await writeFile(matrixPath, JSON.stringify(matrix));
+      for (const row of matrix.rows) {
+        const artifact = join(input, row.id, row.target);
+        await mkdir(artifact, { recursive: true });
+        await writeFile(join(artifact, "contained-fs.node"), `release-${row.id}`);
+        await writeFile(join(artifact, "build-provenance.json"), JSON.stringify({ supportRowId: row.id, target: row.target, variant: "release", buildCommit: "a".repeat(40), toolchain: row.toolchain }));
+      }
+
+      const result = spawnSync(process.execPath, [
+        join(import.meta.dirname, "../../scripts/assemble-containment-package.mjs"),
+        "--matrix", matrixPath,
+        "--input", input,
+        "--out", output,
+        "--build-commit", "a".repeat(40),
+      ], { encoding: "utf8" });
+
+      expect(result.status).toBe(0);
+      const manifest = JSON.parse(await readFile(join(output, "dist/native/manifest.json"), "utf8"));
+      expect(manifest.targets.map((target: { supportRowId: string; path: string }) => [target.supportRowId, target.path])).toEqual([
+        ["ENV-A", "ENV-A/darwin-arm64/contained-fs.node"],
+        ["ENV-B", "ENV-B/darwin-arm64/contained-fs.node"],
+      ]);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it("PK-02 rejects a missing or duplicate support-row release artifact before accepting a package", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "exspecso-package-rejection-"));
+    try {
+      const matrix = {
+        schemaVersion: 2,
+        revision: "test-matrix",
+        nodePolicy: { engine: "^20.19.0 || ^22.13.0 || ^24.0.0 || 25.2.1 || ^26.0.0", ranges: [], exactVersions: ["25.2.1"], testedVersions: ["20.19.0", "20.19.5", "20.20.2", "22.13.0", "22.23.2", "24.0.0", "24.20.0", "25.2.1", "26.0.0", "26.8.1"], napi: 8 },
+        rows: [
+          { id: "ENV-A", target: "darwin-arm64", os: { family: "macos", version: "15.0", build: "A" }, cpu: "arm64", libc: "system", filesystem: "apfs", toolchain: "test" },
+          { id: "ENV-B", target: "darwin-arm64", os: { family: "macos", version: "16.0", build: "B" }, cpu: "arm64", libc: "system", filesystem: "apfs", toolchain: "test" },
+        ],
+      };
+      const input = join(directory, "artifacts");
+      const matrixPath = join(directory, "support-matrix.json");
+      await writeFile(matrixPath, JSON.stringify(matrix));
+      const artifact = join(input, "ENV-A", "darwin-arm64");
+      await mkdir(artifact, { recursive: true });
+      await writeFile(join(artifact, "contained-fs.node"), "release-ENV-A");
+      await writeFile(join(artifact, "build-provenance.json"), JSON.stringify({ supportRowId: "ENV-A", target: "darwin-arm64", variant: "release", buildCommit: "a".repeat(40), toolchain: "test" }));
+
+      const result = spawnSync(process.execPath, [
+        join(import.meta.dirname, "../../scripts/assemble-containment-package.mjs"),
+        "--matrix", matrixPath,
+        "--input", input,
+        "--out", join(directory, "package"),
+        "--build-commit", "a".repeat(40),
+      ], { encoding: "utf8" });
+
+      expect(result.status).not.toBe(0);
+      expect(`${result.stdout}\n${result.stderr}`).toContain("missing release artifact for support row ENV-B");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it("accepts the declared address diagnostic before resolving a native support row", () => {
     const result = spawnSync(process.execPath, [
       join(import.meta.dirname, "../../native/build.mjs"),
