@@ -2,7 +2,6 @@
 #define NOMINMAX
 #include <windows.h>
 #include <winternl.h>
-#include <io.h>
 #include <array>
 #include <cerrno>
 #include <cstddef>
@@ -194,13 +193,28 @@ std::vector<std::string> list(Handle& h) {
 }
 void barrier() {
 #if defined(EXSPECSO_CONTAINMENT_TEST)
+  const auto inherited = [](unsigned int descriptor) {
+    STARTUPINFOW startup{};
+    GetStartupInfoW(&startup);
+    const auto* bytes = startup.lpReserved2;
+    require(bytes != nullptr && startup.cbReserved2 >= sizeof(unsigned int), "test channel table missing");
+    unsigned int count = 0;
+    std::memcpy(&count, bytes, sizeof(count));
+    require(count <= 255 && descriptor < count, "test channel descriptor missing");
+    const size_t offset = sizeof(unsigned int) + count + sizeof(uintptr_t) * descriptor;
+    require(offset + sizeof(uintptr_t) <= startup.cbReserved2, "test channel table truncated");
+    uintptr_t raw = 0;
+    std::memcpy(&raw, bytes + offset, sizeof(raw));
+    const auto handle = reinterpret_cast<HANDLE>(raw);
+    require(handle != nullptr && handle != INVALID_HANDLE_VALUE, "test channel handle invalid");
+    return handle;
+  };
   static bool reached = false;
   const char* point = std::getenv("EXSPECSO_TEST_NATIVE_OPERATION");
   if (reached || !point || std::strcmp(point, "replace:before") != 0) return;
   reached = true;
-  const intptr_t traceDescriptor = _get_osfhandle(3);
-  const intptr_t acknowledgementDescriptor = _get_osfhandle(4);
-  require(traceDescriptor != -1 && acknowledgementDescriptor != -1, "test channels were not inherited by the native provider");
+  const HANDLE traceDescriptor = inherited(3);
+  const HANDLE acknowledgementDescriptor = inherited(4);
   HMODULE image{};
   require(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
     reinterpret_cast<LPCWSTR>(&barrier), &image) != 0, "cannot identify loaded test provider");
@@ -218,21 +232,21 @@ void barrier() {
   size_t offset = 0;
   while (offset < message.size()) {
     DWORD written = 0;
-    require(WriteFile(reinterpret_cast<HANDLE>(traceDescriptor), message.data() + offset,
+    require(WriteFile(traceDescriptor, message.data() + offset,
       static_cast<DWORD>(message.size() - offset), &written, nullptr) != 0 && written > 0, "test channel write failed");
     offset += written;
   }
   DWORD available = 0;
   const ULONGLONG deadline = GetTickCount64() + 10'000;
   do {
-    if (!PeekNamedPipe(reinterpret_cast<HANDLE>(acknowledgementDescriptor), nullptr, 0, nullptr, &available, nullptr)) fail("test acknowledgement probe");
+    if (!PeekNamedPipe(acknowledgementDescriptor, nullptr, 0, nullptr, &available, nullptr)) fail("test acknowledgement probe");
     if (available > 0) break;
     Sleep(10);
   } while (GetTickCount64() < deadline);
   require(available > 0, "test barrier timeout");
   char acknowledgement{};
   DWORD read = 0;
-  require(ReadFile(reinterpret_cast<HANDLE>(acknowledgementDescriptor), &acknowledgement, 1, &read, nullptr) != 0 && read == 1 && acknowledgement == '1', "invalid test acknowledgement");
+  require(ReadFile(acknowledgementDescriptor, &acknowledgement, 1, &read, nullptr) != 0 && read == 1 && acknowledgement == '1', "invalid test acknowledgement");
 #endif
 }
 void replace(Handle& parent, Handle& source, const std::string& target) {
