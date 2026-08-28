@@ -65,6 +65,17 @@ jobs:
           if ($LASTEXITCODE) { throw 'TypeScript build failed' }
       - name: Prove native Windows provider parity
         run: npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 30000 --reporter=default --reporter=json --outputFile=windows-provider-results.json
+      - name: Record the historical installed CLI race RED
+        env:
+          EXSPECSO_RUN_VULNERABLE_TRACER: '1'
+        run: |
+          npm test -- --run tests/integration/init-codex-tracer.test.ts -t 'native (leaf|parent|ancestor) substitution' --reporter=default --reporter=json --outputFile=historical-red-results.json
+          if ($LASTEXITCODE -ne 1) { throw 'Expected historical regression exit 1' }
+          node -e "const r=require('./historical-red-results.json');const a=r.testResults.flatMap(t=>t.assertionResults).filter(t=>t.status==='failed');if(a.length!==3||a.some(t=>!t.failureMessages.join('').includes('external sentinel')))process.exit(1)"
+          if ($LASTEXITCODE) { throw 'Historical failures did not reproduce the external-write regression' }
+          exit 0
+      - name: Exercise the actual installed Windows CLI
+        run: npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=default --reporter=json --outputFile=windows-tracer-results.json
       - name: Preserve actual Windows observations
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -73,6 +84,8 @@ jobs:
           path: |
             windows-preflight/
             windows-provider-results.json
+            historical-red-results.json
+            windows-tracer-results.json
             dist/native/
           if-no-files-found: error
           retention-days: 7
@@ -125,6 +138,14 @@ jobs:
           npm run build
       - name: Run the provider and installed tracer tests
         run: npm test -- --run tests/unit/contained-fs.test.ts tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=default --reporter=json --outputFile=tracer-results.json
+      - name: Record the historical installed CLI race RED
+        env:
+          EXSPECSO_RUN_VULNERABLE_TRACER: '1'
+        run: |
+          status=0
+          npm test -- --run tests/integration/init-codex-tracer.test.ts -t 'native (leaf|parent|ancestor) substitution' --reporter=default --reporter=json --outputFile=historical-red-results.json || status=$?
+          test "$status" = 1
+          node -e "const r=require('./historical-red-results.json');const a=r.testResults.flatMap(t=>t.assertionResults).filter(t=>t.status==='failed');if(a.length!==3||a.some(t=>!t.failureMessages.join('').includes('external sentinel')))process.exit(1)"
       - name: Run the existing regression suite with the host provider
         run: npm test -- --run --testTimeout 60000 --reporter=default --reporter=json --outputFile=regression-results.json
       - name: Preserve the actual host binaries and test report
@@ -136,5 +157,6 @@ jobs:
             dist/native/
             tracer-results.json
             regression-results.json
+            historical-red-results.json
           if-no-files-found: warn
           retention-days: 7

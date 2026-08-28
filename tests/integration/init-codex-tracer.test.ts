@@ -1,15 +1,13 @@
-import { execFile } from "node:child_process";
 import { link, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
-import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { findGitRoot } from "../../src/filesystem/git-root.js";
 import { createGitFixture, createNoGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 import { runCli } from "../helpers/run-cli.js";
-import { installContainedPackage, runAtNativeReplacement } from "../helpers/containment-fixture.js";
+import { installContainedPackage, installVulnerablePackage, runAtHistoricalReplacement, runAtNativeReplacement, runNpm } from "../helpers/containment-fixture.js";
 
-const execFileAsync = promisify(execFile);
 const temporaryPaths: string[] = [];
 const fixtures: GitFixture[] = [];
 const packageRoot = resolve(import.meta.dirname, "../..");
@@ -36,19 +34,17 @@ async function packAndRun(
   args: string[] = ["init", "--agent", "codex"],
 ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   const packingDirectory = await createTemporaryDirectory("exspecso-pack-");
-  await execFileAsync("npm", ["run", "build"], { cwd: packageRoot });
-  const { stdout: packOutput } = await execFileAsync(
-    "npm",
+  await runNpm(["run", "build"], { cwd: packageRoot });
+  const { stdout: packOutput } = await runNpm(
     ["pack", "--json", "--pack-destination", packingDirectory],
     { cwd: packageRoot },
   );
   const [{ filename }] = JSON.parse(packOutput) as Array<{ filename: string }>;
   const runner = await createTemporaryDirectory("exspecso-runner-");
-  await execFileAsync(
-    "npm",
+  await runNpm(
     ["install", "--ignore-scripts", "--no-package-lock", "--prefix", runner, join(packingDirectory, filename)],
   );
-  return runCli(join(runner, "node_modules", ".bin", "exspecso"), args, { cwd });
+  return runCli(process.execPath, [join(runner, "node_modules/exspecso/dist/cli/main.js"), ...args], { cwd });
 }
 
 describe("packed Codex initializer tracer", () => {
@@ -69,7 +65,9 @@ describe("packed Codex initializer tracer", () => {
   for (const site of ["leaf", "parent", "ancestor"] as const) {
     it(`contained promotion tracer reaches the native ${site} substitution boundary`, async () => {
       const fixture = await useFixture(createGitFixture);
-      expect((await packAndRun(fixture.root)).exitCode).toBe(0);
+      const historical = process.env.EXSPECSO_RUN_VULNERABLE_TRACER === "1" ? await installVulnerablePackage() : undefined;
+      if (historical) temporaryPaths.push(historical.directory);
+      expect((historical ? await runCli(process.execPath, [historical.cli, "init", "--agent", "codex"], { cwd: fixture.root }) : await packAndRun(fixture.root)).exitCode).toBe(0);
       const relativeAdapter = ".agents/skills/exspecso-start/SKILL.md";
       const adapter = join(fixture.root, relativeAdapter);
       await writeFile(adapter, "user-modified adapter\n");
@@ -77,10 +75,10 @@ describe("packed Codex initializer tracer", () => {
       const externalTarget = site === "ancestor" ? join(outside, "exspecso-start", "SKILL.md") : join(outside, "SKILL.md");
       if (site === "ancestor") await mkdir(join(outside, "exspecso-start"));
       await writeFile(externalTarget, "external sentinel\n");
-      const installed = await installContainedPackage("test");
-      temporaryPaths.push(installed.directory);
+      const installed = historical ? undefined : await installContainedPackage("test");
+      if (installed) temporaryPaths.push(installed.directory);
       const moved = join(fixture.root, "held-original");
-      const result = await runAtNativeReplacement(installed.cli, fixture.root, async () => {
+      const attack = async () => {
         if (site === "leaf") {
           await rename(adapter, moved);
           await symlink(externalTarget, adapter);
@@ -89,10 +87,20 @@ describe("packed Codex initializer tracer", () => {
           await rename(directory, moved);
           await symlink(outside, directory, "dir");
         }
-      });
+      };
+      if (historical) {
+        const result = await runAtHistoricalReplacement(historical.cli, fixture.root, attack);
+        expect(await realpath(fileURLToPath(result.record.module))).toBe(await realpath(historical.module));
+        const externalBytes = await readFile(externalTarget, "utf8");
+        console.log(JSON.stringify({ family: "TR-01-RED", site, mode: "instrumented historical CLI", ...historical.provenance, reached: result.record, exitCode: result.exitCode, externalChanged: externalBytes !== "external sentinel\n" }));
+        expect(externalBytes).toBe("external sentinel\n");
+        return;
+      }
+      if (!installed) throw new Error("Missing installed package");
+      const result = await runAtNativeReplacement(installed.cli, fixture.root, attack);
       expect(result.record.operation).toBe("replace:before");
       expect(await readFile(externalTarget, "utf8")).toBe("external sentinel\n");
-      expect(installed.provider).toContain("node_modules/exspecso/dist/native/");
+      expect(installed.provider).toContain(join("node_modules", "exspecso", "dist", "native"));
       expect(await realpath(result.record.providerPath)).toBe(installed.provider);
       if (site === "leaf") {
         expect(result.exitCode).not.toBe(0);
