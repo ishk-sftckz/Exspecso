@@ -27,7 +27,7 @@ function validatePackageMetadata(metadata) {
   if (metadata.private !== true) fail('package must remain private');
   if (metadata.engines?.node !== expectedEngine) fail('package engine is not the approved ten-lane policy');
   for (const lifecycle of ['preinstall', 'install', 'postinstall']) if (metadata.scripts?.[lifecycle]) fail(`package must not define ${lifecycle}`);
-  if (!Array.isArray(metadata.files) || metadata.files.length !== 1 || metadata.files[0] !== 'dist') fail('package must expose only dist');
+  if (!Array.isArray(metadata.files) || metadata.files.length !== 1 || metadata.files[0] !== 'dist') fail('development package must expose only dist before release assembly');
 }
 
 function validateMatrix(matrix) {
@@ -66,7 +66,9 @@ function cleanPackageTree(metadata) {
   if (existsSync(output)) fail('output package directory already exists');
   mkdirSync(output, { recursive: false });
   const { scripts: _developmentScripts, ...publishedMetadata } = metadata;
+  publishedMetadata.files = ['dist', 'npm-shrinkwrap.json'];
   writeFileSync(join(output, 'package.json'), JSON.stringify(publishedMetadata, null, 2) + '\n');
+  cpSync(join(root, 'package-lock.json'), join(output, 'npm-shrinkwrap.json'));
   cpSync(join(root, 'dist'), join(output, 'dist'), { recursive: true });
   const native = join(output, 'dist', 'native');
   if (existsSync(native)) {

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
-import { link, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, link, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, isAbsolute, join, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { findGitRoot } from "../../src/filesystem/git-root.js";
@@ -34,28 +34,86 @@ async function useFixture(factory: () => Promise<GitFixture>): Promise<GitFixtur
   return fixture;
 }
 
-async function packAndRun(
-  cwd: string,
-  args: string[] = ["init", "--agent", "codex"],
-): Promise<{ exitCode: number; stdout: string; stderr: string; installed: Awaited<ReturnType<typeof inspectInstalledPackage>>; tarballSHA256: string }> {
+async function repositorySnapshot(root: string): Promise<Record<string, string>> {
+  const entries: Record<string, string> = {};
+  for (const relativePath of await readdir(root, { recursive: true })) {
+    const path = join(root, relativePath);
+    const entry = await lstat(path);
+    entries[relativePath] = entry.isFile()
+      ? `file:${createHash("sha256").update(await readFile(path)).digest("hex")}`
+      : entry.isDirectory() ? "directory" : `other:${entry.mode}`;
+  }
+  return Object.fromEntries(Object.entries(entries).sort(([left], [right]) => left.localeCompare(right)));
+}
+
+async function installPackedRelease(): Promise<{ installed: Awaited<ReturnType<typeof inspectInstalledPackage>>; tarballSHA256: string; installation: { offline: boolean; ignoreScripts: boolean; sanitizedLoaderPaths: boolean; compilerAndHeadersUnavailable: boolean } }> {
   const packingDirectory = await createTemporaryDirectory("exspecso-pack-");
   await runNpm(["run", "build"], { cwd: packageRoot });
+  const staged = join(packingDirectory, "package");
+  const cache = join(packingDirectory, "npm-cache");
+  const prefetch = join(packingDirectory, "prefetch");
+  const userconfig = join(packingDirectory, "npmrc");
+  await mkdir(staged, { recursive: true });
+  await cp(join(packageRoot, "dist"), join(staged, "dist"), { recursive: true });
+  const { scripts: _developmentScripts, ...publishedPackage } = JSON.parse(await readFile(join(packageRoot, "package.json"), "utf8"));
+  publishedPackage.files = ["dist", "npm-shrinkwrap.json"];
+  await writeFile(join(staged, "package.json"), `${JSON.stringify(publishedPackage, null, 2)}\n`);
+  await cp(join(packageRoot, "package-lock.json"), join(staged, "npm-shrinkwrap.json"));
+  await writeFile(userconfig, "");
+  await mkdir(prefetch, { recursive: true });
+  await cp(join(packageRoot, "package.json"), join(prefetch, "package.json"));
+  await cp(join(packageRoot, "package-lock.json"), join(prefetch, "package-lock.json"));
+  await runNpm(["ci", "--ignore-scripts", "--cache", cache, "--prefer-offline", "--userconfig", userconfig], { cwd: prefetch });
+  const locked = JSON.parse(await readFile(join(packageRoot, "package-lock.json"), "utf8")) as { packages: Record<string, { version?: string; dependencies?: Record<string, string> }> };
+  const packages: string[] = [];
+  const visit = (name: string) => {
+    const entry = locked.packages[`node_modules/${name}`];
+    if (!entry?.version || packages.some((specification) => specification.startsWith(`${name}@`))) return;
+    packages.push(`${name}@${entry.version}`);
+    for (const dependency of Object.keys(entry.dependencies ?? {})) visit(dependency);
+  };
+  for (const dependency of Object.keys(locked.packages[""]?.dependencies ?? {})) visit(dependency);
+  await runNpm(["cache", "add", "--cache", cache, "--prefer-offline", "--userconfig", userconfig, ...packages], { cwd: prefetch });
   const { stdout: packOutput } = await runNpm(
     ["pack", "--json", "--pack-destination", packingDirectory],
-    { cwd: packageRoot },
+    { cwd: staged },
   );
   const [{ filename }] = JSON.parse(packOutput) as Array<{ filename: string }>;
   const runner = await createTemporaryDirectory("exspecso-runner-");
+  const isolatedEnvironment = {
+    ...process.env,
+    NODE_OPTIONS: "",
+    NODE_PATH: "",
+    PATH: dirname(process.execPath),
+    EXSPECSO_NODE_HEADERS: join(packingDirectory, "compiler-and-headers-unavailable"),
+    npm_config_userconfig: userconfig,
+  };
   await runNpm(
-    ["install", "--ignore-scripts", "--no-package-lock", "--prefix", runner, join(packingDirectory, filename)],
+    ["install", "--offline", "--ignore-scripts", "--no-package-lock", "--cache", cache, "--userconfig", userconfig, "--prefix", runner, join(packingDirectory, filename)],
+    { env: isolatedEnvironment },
   );
   const installed = await inspectInstalledPackage(join(runner, "node_modules/exspecso"));
-  const result = await runCli(process.execPath, [join(installed.installed, "dist/cli/main.js"), ...args], { cwd });
-  return { ...result, installed, tarballSHA256: createHash("sha256").update(await readFile(join(packingDirectory, filename))).digest("hex") };
+  return { installed, tarballSHA256: createHash("sha256").update(await readFile(join(packingDirectory, filename))).digest("hex"), installation: { offline: true, ignoreScripts: true, sanitizedLoaderPaths: true, compilerAndHeadersUnavailable: true } };
+}
+
+async function packAndRun(
+  cwd: string,
+  args: string[] = ["init", "--agent", "codex"],
+): Promise<{ exitCode: number; stdout: string; stderr: string; installed: Awaited<ReturnType<typeof inspectInstalledPackage>>; tarballSHA256: string; installation: { offline: boolean; ignoreScripts: boolean; sanitizedLoaderPaths: boolean; compilerAndHeadersUnavailable: boolean } }> {
+  const packed = await installPackedRelease();
+  const isolatedEnvironment = {
+    ...process.env,
+    NODE_OPTIONS: "",
+    NODE_PATH: "",
+    PATH: dirname(process.execPath),
+    EXSPECSO_NODE_HEADERS: join(tmpdir(), "compiler-and-headers-unavailable"),
+  };
+  const result = await runCli(process.execPath, [join(packed.installed.installed, "dist/cli/main.js"), ...args], { cwd, env: isolatedEnvironment });
+  return { ...result, ...packed };
 }
 
 describe("packed Codex initializer tracer", () => {
-  it("PK-03 installs a scripts-disabled prebuilt tarball offline outside the checkout for root and nested CLI runs", async () => {
+  it("PK-03 prebuilt install runs a scripts-disabled tarball offline outside the checkout for root and nested CLI runs", async () => {
     const fixture = await useFixture(createGitFixture);
     const nested = await fixture.createNestedDirectory("packages", "cli", "deep");
     const rootRun = await packAndRun(fixture.root);
@@ -74,21 +132,35 @@ describe("packed Codex initializer tracer", () => {
     expect(await realpath(rootRun.installed.installed)).not.toBe(await realpath(packageRoot));
     expect(rootRun.installed.sha256).toBe(rootRun.installed.manifest.targets[0].sha256);
     expect(rootRun.installed.provenance.binarySHA256).toBe(rootRun.installed.sha256);
+    const publishedPackage = JSON.parse(await readFile(join(rootRun.installed.installed, "package.json"), "utf8"));
+    expect(publishedPackage.private).toBe(true);
+    expect(publishedPackage.engines.node).toBe("^20.19.0 || ^22.13.0 || ^24.0.0 || 25.2.1 || ^26.0.0");
+    expect(publishedPackage.scripts).toBeUndefined();
+    await expect(readFile(join(rootRun.installed.installed, "npm-shrinkwrap.json"), "utf8")).resolves.toContain("lockfileVersion");
   }, 60_000);
 
-  it("contained promotion tracer rejects a missing installed provider before any project mutation", async () => {
-    const fixture = await useFixture(createGitFixture);
-    const before = await readdir(fixture.root);
-    const installed = await installContainedPackage("release");
-    temporaryPaths.push(installed.directory);
-    const releaseBytes = await readFile(installed.provider);
-    for (const marker of ["EXSPECSO_CONTAINMENT_TEST_OPERATION", "EXSPECSO_CONTAINMENT_TEST_CHANNEL_ID", "EXSPECSO_CONTAINMENT_TEST_CONTROLLER_PID", "exspecso-containment-", "BCryptGenRandom"]) expect(releaseBytes.includes(Buffer.from(marker))).toBe(false);
-    await rename(installed.provider, `${installed.provider}.removed`);
-    const result = await runCli(process.execPath, [installed.cli, "init", "--agent", "codex"], { cwd: fixture.root });
-    expect(result.exitCode).not.toBe(0);
-    expect(result.stdout).toBe("");
-    expect(result.stderr).toContain("EXSPECSO_CONTAINMENT_UNAVAILABLE");
-    expect(await readdir(fixture.root)).toEqual(before);
+  it("PK-04 provider unavailable rejects missing, corrupt, or manifest-swapped providers before exact repository mutation", async () => {
+    for (const kind of ["missing", "corrupt", "manifest-swap"] as const) {
+      const fixture = await useFixture(createGitFixture);
+      const packed = await installPackedRelease();
+      const installed = packed.installed;
+      const before = await repositorySnapshot(fixture.root);
+      const releaseBytes = await readFile(installed.provider);
+      for (const marker of ["EXSPECSO_CONTAINMENT_TEST_OPERATION", "EXSPECSO_CONTAINMENT_TEST_CHANNEL_ID", "EXSPECSO_CONTAINMENT_TEST_CONTROLLER_PID", "exspecso-containment-", "BCryptGenRandom"]) expect(releaseBytes.includes(Buffer.from(marker))).toBe(false);
+      if (kind === "missing") await rename(installed.provider, `${installed.provider}.removed`);
+      if (kind === "corrupt") await writeFile(installed.provider, "corrupt provider bytes");
+      if (kind === "manifest-swap") {
+        const manifestPath = join(installed.installed, "dist/native/manifest.json");
+        const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+        manifest.targets[0].sha256 = "0".repeat(64);
+        await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+      }
+      const result = await runCli(process.execPath, [join(installed.installed, "dist/cli/main.js"), "init", "--agent", "codex"], { cwd: fixture.root });
+      expect(result.exitCode).not.toBe(0);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toContain("EXSPECSO_CONTAINMENT_UNAVAILABLE");
+      expect(await repositorySnapshot(fixture.root)).toEqual(before);
+    }
   }, 60_000);
 
   for (const site of ["leaf", "parent", "ancestor"] as const) {

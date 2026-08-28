@@ -35,7 +35,7 @@ function canonicalJson(value: unknown): string {
   }
   return JSON.stringify(value);
 }
-export function runNpm(args: string[], options: { cwd?: string } = {}) {
+export function runNpm(args: string[], options: { cwd?: string; env?: NodeJS.ProcessEnv } = {}) {
   const npm = process.env.npm_execpath;
   if (!npm || !npm.endsWith("npm-cli.js")) throw new Error("Run package tests through npm test so the actual npm CLI is available");
   return exec(process.execPath, [npm, ...args], { ...options, maxBuffer: 2 * 1024 * 1024 });
