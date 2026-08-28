@@ -420,6 +420,20 @@ describe("journaled init transaction", () => {
     }
   });
 
+  it("restores an in-flight schema-2 replacement and makes the next recovery a no-op", async () => {
+    const fixture = await useFixture();
+    const plan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });
+    const point = `before-promotion:${plan.writes[0]!.relativePath}` as PromotionFaultPoint;
+
+    await expect(commitTransaction(plan, { faultAt: point, faultMode: "interrupt" })).resolves.toMatchObject({ kind: "failed" });
+    // The process may die after a completed native replacement but before the
+    // following journal write; schema 2 must accept either recorded byte set.
+    await writeFile(plan.writes[0]!.target, plan.writes[0]!.content, "utf8");
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "recovered", disposition: "restored-prior" });
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toEqual({ kind: "none" });
+    await expect(readdir(fixture.root)).resolves.toEqual([".git"]);
+  });
+
   it("recovers every promotion step after an externally killed CLI child", async () => {
     const probe = await useFixture();
     const points = (await buildInitPlan({ repositoryRoot: probe.root, selectedAgents: ["codex"] })).writes
