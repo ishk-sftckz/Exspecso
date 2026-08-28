@@ -1,0 +1,78 @@
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const root = resolve(import.meta.dirname, "../..");
+const matrix = JSON.parse(readFileSync(join(root, "native/support-matrix.json"), "utf8"));
+
+function aggregate(records: unknown[]) {
+  const evidenceDir = mkdtempSync(join(tmpdir(), "exspecso-containment-evidence-"));
+  try {
+    for (const [index, record] of records.entries()) {
+      writeFileSync(join(evidenceDir, `record-${index}.json`), JSON.stringify(record));
+    }
+    return execFileSync(process.execPath, ["scripts/containment-evidence.mjs", "--stage", "tracer", "--evidence-dir", evidenceDir, "--matrix", "native/support-matrix.json"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  } finally {
+    rmSync(evidenceDir, { recursive: true, force: true });
+  }
+}
+
+function completeRecord(row: (typeof matrix.rows)[number]) {
+  return {
+    schemaVersion: 1,
+    matrixRevision: matrix.revision,
+    rowId: row.id,
+    stage: "tracer",
+    status: "passed",
+    evidenceMode: "release",
+    sourceCommit: "a".repeat(40),
+    provider: { sha256: "a".repeat(64), buildSHA256: "a".repeat(64) },
+    tracer: { requiredTestIds: ["installed-native-promotion"], reachedTestIds: ["installed-native-promotion"], exitCode: 0 },
+    environment: {
+      native: true,
+      cpu: row.cpu,
+      os: row.os,
+      kernel: row.os.kernel ?? "observed-kernel",
+      filesystem: row.filesystem,
+      libc: row.libc,
+      node: { version: row.node.baseline, napi: 8 },
+      compiler: "approved compiler",
+      toolchain: "approved toolchain",
+    },
+  };
+}
+
+describe("containment evidence aggregate", () => {
+  it("materializes all eight approved rows with exact tested-version policy", () => {
+    expect(matrix.revision).toMatch(/^01-09-/);
+    expect(matrix.rows.map((row: { id: string }) => row.id)).toEqual(["ENV-MA", "ENV-MX", "ENV-WX", "ENV-WA", "ENV-LGX", "ENV-LGA", "ENV-LMX", "ENV-LMA"]);
+    for (const row of matrix.rows) {
+      expect(row.node.baseline).toBe("20.19.0");
+      expect(row.node.testedVersion).toBeTruthy();
+      expect(row.filesystem).toMatch(/^(apfs|ntfs|ext4)$/);
+      expect(row.runner).toBeTruthy();
+      if (row.libc === "musl") expect(row.image).toMatch(/^node:24\.20\.0-alpine3\.24@sha256:/);
+    }
+  });
+
+  it.each([
+    ["missing", (records: unknown[]) => records.slice(1)],
+    ["failed", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, status: "failed" } : record)],
+    ["skipped", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, status: "skipped" } : record)],
+    ["cancelled", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, status: "cancelled" } : record)],
+    ["stale commit", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, sourceCommit: "b".repeat(40) } : record)],
+    ["wrong hash", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, provider: { ...record.provider, buildSHA256: "f".repeat(64) } } : record)],
+    ["emulated", (records: any[]) => records.map((record, index) => index === 0 ? { ...record, environment: { ...record.environment, native: false } } : record)],
+  ])("rejects %s tracer evidence", (_name, mutate) => {
+    const records = matrix.rows.map(completeRecord);
+    expect(() => aggregate(mutate(records))).toThrow();
+  });
+
+  it("rejects duplicate/conflicting rows and accepts a complete exact native matrix", () => {
+    const records = matrix.rows.map(completeRecord);
+    expect(() => aggregate([...records, { ...records[0], environment: { ...records[0].environment, kernel: "different" } }])).toThrow();
+    expect(aggregate(records)).toContain('"plan_complete":true');
+  });
+});

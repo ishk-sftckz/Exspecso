@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import { renderConstitution, renderProjectConfig } from "../../src/artifacts/templates.js";
-import { resolveArtifact, scanArtifactDefinitions } from "../../src/artifacts/resolve.js";
+import { resolveArtifact, scanArtifactDefinitions, scanArtifacts } from "../../src/artifacts/resolve.js";
 import { ARTIFACT_ID_PATTERNS, projectConfigSchema } from "../../src/artifacts/schema.js";
 import { runInit } from "../../src/init/run-init.js";
 
@@ -128,6 +128,67 @@ describe("canonical artifact contracts", () => {
       definitions: [{ path: "duplicate.md" }, { path: "specs.md" }],
       diagnostics: [{ code: "EXSPECSO_ARTIFACT_DUPLICATE_ID" }],
     });
+  });
+
+  it("retains every explicitly declared invalid JSON id and parent shape as a diagnostic", async () => {
+    const root = await fixture();
+    const cases: readonly [string, unknown, string][] = [
+      ["invalid-string", "REQUIREMENT-001", "REQUIREMENT-001"],
+      ["blank", "", "blank"],
+      ["null", null, "null"],
+      ["number", 1, "1"],
+      ["boolean", true, "true"],
+      ["array", [], "[]"],
+      ["object", {}, "{}"],
+    ];
+
+    for (const [index, [name, value]] of cases.entries()) {
+      await write(root, `.exspecso/${name}-id.json`, JSON.stringify({ id: value, parent: "PHASE-001" }));
+      await write(root, `.exspecso/${name}-parent.json`, JSON.stringify({ id: `SPEC-${String(index + 1).padStart(3, "0")}`, parent: value }));
+    }
+
+    const scan = await scanArtifacts(root);
+
+    for (const [name, _value, actual] of cases) {
+      expect(scan.diagnostics).toContainEqual(expect.objectContaining({
+        code: "EXSPECSO_ARTIFACT_INVALID_ID",
+        path: `.exspecso/${name}-id.json`,
+        section: "id",
+        actual,
+      }));
+      expect(scan.diagnostics).toContainEqual(expect.objectContaining({
+        code: "EXSPECSO_ARTIFACT_INVALID_ID",
+        path: `.exspecso/${name}-parent.json`,
+        section: "parent",
+        actual,
+      }));
+    }
+  });
+
+  it("keeps valid JSON definitions separate from explicit frontmatter diagnostics", async () => {
+    const root = await fixture();
+    await write(root, ".exspecso/definition.json", JSON.stringify({ id: "SPEC-001", parent: "PHASE-001" }));
+    await write(root, ".exspecso/invalid-frontmatter.md", "---\nid: REQUIREMENT-001\nparent:\n---\n# Notes\n");
+    await write(root, ".exspecso/exspecso.config.json", renderProjectConfig({
+      schemaVersion: 1,
+      project: { id: "df1c86ff-73de-4ec6-849e-6de229cb3b02", title: "Fixture" },
+      mode: "unclassified",
+      selectedAgents: ["codex"],
+      onboardingStatus: "not-started",
+    }));
+
+    const scan = await scanArtifacts(root);
+
+    expect(scan.definitions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "SPEC-001", parentId: "PHASE-001" }),
+    ]));
+    expect(scan.diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: ".exspecso/invalid-frontmatter.md", section: "id", actual: "REQUIREMENT-001" }),
+      expect.objectContaining({ path: ".exspecso/invalid-frontmatter.md", section: "parent", actual: "blank" }),
+    ]));
+    expect(scan.diagnostics).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: ".exspecso/exspecso.config.json", code: "EXSPECSO_ARTIFACT_INVALID_ID" }),
+    ]));
   });
 
   it("returns byte-equivalent locations from concurrent read-only resolution", async () => {

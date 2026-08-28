@@ -22,6 +22,11 @@ export interface ArtifactDefinition {
   readonly parentId?: ArtifactId;
 }
 
+export interface ArtifactScanResult {
+  readonly definitions: readonly ArtifactDefinition[];
+  readonly diagnostics: readonly Diagnostic[];
+}
+
 export type ResolveArtifactResult =
   | { readonly kind: "resolved"; readonly id: ArtifactId; readonly location: ArtifactLocation }
   | { readonly kind: "not-found"; readonly diagnostics: readonly Diagnostic[] }
@@ -29,42 +34,53 @@ export type ResolveArtifactResult =
 
 const ignoredDirectoryNames = new Set([".git", "node_modules", "dist"]);
 const reservedRoadmapPath = ".exspecso/roadmap.md";
+const configPath = ".exspecso/exspecso.config.json";
 
 function toRelativePath(root: string, path: string): string {
   return relative(root, path).split(sep).join("/");
 }
 
-function parentIdFromFrontmatter(text: string): ArtifactId | undefined {
+function frontmatterDeclarations(text: string): Readonly<Partial<Record<"id" | "parent", string>>> {
   const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);
   if (match === null) {
-    return undefined;
+    return {};
   }
-  const parent = /^parent:\s*(\S+)\s*$/m.exec(match[1]);
-  return parent === null ? undefined : (parseArtifactId(parent[1]) ?? undefined);
+  const declarations: Partial<Record<"id" | "parent", string>> = {};
+  for (const line of match[1].split(/\r?\n/)) {
+    const declaration = /^(id|parent):(?:\s*(.*))?$/.exec(line);
+    if (declaration !== null) {
+      declarations[declaration[1] as "id" | "parent"] = declaration[2]?.trim() ?? "";
+    }
+  }
+  return declarations;
 }
 
-function definitionFromFrontmatter(path: string, text: string): ArtifactDefinition | undefined {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);
-  if (match === null) {
-    return undefined;
+function frontmatterDefinition(path: string, text: string): ArtifactScanResult {
+  const declarations = frontmatterDeclarations(text);
+  const diagnostics: Diagnostic[] = [];
+  const hasId = Object.hasOwn(declarations, "id");
+  const hasParent = Object.hasOwn(declarations, "parent");
+  const id = hasId ? parseArtifactId(declarations.id ?? "") : null;
+  const parentId = hasParent ? parseArtifactId(declarations.parent ?? "") : null;
+  if (hasId && id === null) {
+    diagnostics.push(invalidDeclarationDiagnostic(path, "id", declarations.id ?? ""));
   }
-  const id = /^id:\s*(\S+)\s*$/m.exec(match[1]);
-  const artifactId = id === null ? null : parseArtifactId(id[1]);
-  if (artifactId === null) {
-    return undefined;
+  if (hasParent && parentId === null) {
+    diagnostics.push(invalidDeclarationDiagnostic(path, "parent", declarations.parent ?? ""));
+  }
+  if (id === null) {
+    return { definitions: [], diagnostics };
   }
   return {
-    id: artifactId,
-    artifactKind: artifactKindForId(artifactId),
-    path,
-    parentId: parentIdFromFrontmatter(text),
-    location: { kind: "file", path },
+    definitions: [{ id, artifactKind: artifactKindForId(id), path, parentId: parentId ?? undefined, location: { kind: "file", path } }],
+    diagnostics,
   };
 }
 
 function markdownDefinitions(path: string, text: string): ArtifactDefinition[] {
   const lines = text.split(/\r?\n/);
-  const parentId = parentIdFromFrontmatter(text);
+  const parent = frontmatterDeclarations(text).parent;
+  const parentId = parent === undefined ? undefined : (parseArtifactId(parent) ?? undefined);
   const headings = lines.flatMap((line, index) => {
     const match = /^(#{1,6})\s+(.+?)\s*$/.exec(line);
     if (match === null) {
@@ -96,21 +112,63 @@ function markdownDefinitions(path: string, text: string): ArtifactDefinition[] {
   });
 }
 
-function jsonDefinition(path: string, text: string): ArtifactDefinition | undefined {
+function rawDeclarationValue(value: unknown): string {
+  if (typeof value === "string") {
+    return value || "blank";
+  }
+  return JSON.stringify(value);
+}
+
+function invalidDeclarationDiagnostic(path: string, section: "id" | "parent", value: unknown): Diagnostic {
+  return {
+    code: "EXSPECSO_ARTIFACT_INVALID_ID",
+    path,
+    section,
+    expected: "ROADMAP or one exact D-20 ID family",
+    actual: rawDeclarationValue(value),
+    hint: "Use ROADMAP, PHASE-NNN, SPEC-NNN, REQ-NNN, AC-NNN, PLAN-NNN, TASK-NNN, DEC-NNN, or FINDING-NNN exactly.",
+  };
+}
+
+function jsonDefinition(path: string, text: string): ArtifactScanResult {
   try {
     const parsed: unknown = JSON.parse(text);
     if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-      return undefined;
+      return { definitions: [], diagnostics: [] };
     }
     const record = parsed as Record<string, unknown>;
-    const id = typeof record.id === "string" ? parseArtifactId(record.id) : null;
-    if (id === null) {
-      return undefined;
+    const diagnostics: Diagnostic[] = [];
+    const hasId = Object.hasOwn(record, "id");
+    const hasParent = Object.hasOwn(record, "parent");
+    const id = hasId && typeof record.id === "string" ? parseArtifactId(record.id) : null;
+    const parentId = hasParent && typeof record.parent === "string" ? parseArtifactId(record.parent) : null;
+    if (hasId && id === null) {
+      diagnostics.push(invalidDeclarationDiagnostic(path, "id", record.id));
     }
-    const parentId = typeof record.parent === "string" ? parseArtifactId(record.parent) ?? undefined : undefined;
-    return { id, artifactKind: artifactKindForId(id), path, parentId, location: { kind: "file", path } };
+    if (hasParent && parentId === null) {
+      diagnostics.push(invalidDeclarationDiagnostic(path, "parent", record.parent));
+    }
+    if (id === null) {
+      return { definitions: [], diagnostics };
+    }
+    return {
+      definitions: [{ id, artifactKind: artifactKindForId(id), path, parentId: parentId ?? undefined, location: { kind: "file", path } }],
+      diagnostics,
+    };
   } catch {
-    return undefined;
+    if (path === configPath || !path.startsWith(".exspecso/")) {
+      return { definitions: [], diagnostics: [] };
+    }
+    return {
+      definitions: [],
+      diagnostics: [{
+        code: "EXSPECSO_ARTIFACT_PARSE",
+        path,
+        expected: "valid JSON",
+        actual: "malformed JSON",
+        hint: "Repair the JSON syntax before declaring canonical artifact identity.",
+      }],
+    };
   }
 }
 
@@ -135,26 +193,32 @@ async function artifactFiles(root: string, directory = root): Promise<string[]> 
   return files;
 }
 
-export async function scanArtifactDefinitions(root: string): Promise<readonly ArtifactDefinition[]> {
+export async function scanArtifacts(root: string): Promise<ArtifactScanResult> {
   const canonicalRoot = resolve(root);
   const definitions: ArtifactDefinition[] = [];
+  const diagnostics: Diagnostic[] = [];
   for (const file of await artifactFiles(canonicalRoot)) {
     const path = toRelativePath(canonicalRoot, file);
     const text = await readFile(file, "utf8");
     if (path.endsWith(".md")) {
-      const frontmatterDefinition = definitionFromFrontmatter(path, text);
-      if (frontmatterDefinition !== undefined) {
-        definitions.push(frontmatterDefinition);
-      }
+      const result = frontmatterDefinition(path, text);
+      definitions.push(...result.definitions);
+      diagnostics.push(...result.diagnostics);
       definitions.push(...markdownDefinitions(path, text));
     } else {
-      const definition = jsonDefinition(path, text);
-      if (definition !== undefined) {
-        definitions.push(definition);
-      }
+      const result = jsonDefinition(path, text);
+      definitions.push(...result.definitions);
+      diagnostics.push(...result.diagnostics);
     }
   }
-  return definitions.sort((left, right) => left.path.localeCompare(right.path) || left.location.kind.localeCompare(right.location.kind) || (left.location.kind === "section" && right.location.kind === "section" ? left.location.startLine - right.location.startLine : 0));
+  return {
+    definitions: definitions.sort((left, right) => left.path.localeCompare(right.path) || left.location.kind.localeCompare(right.location.kind) || (left.location.kind === "section" && right.location.kind === "section" ? left.location.startLine - right.location.startLine : 0)),
+    diagnostics,
+  };
+}
+
+export async function scanArtifactDefinitions(root: string): Promise<readonly ArtifactDefinition[]> {
+  return (await scanArtifacts(root)).definitions;
 }
 
 function invalidIdDiagnostic(id: string): Diagnostic {
