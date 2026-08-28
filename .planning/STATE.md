@@ -12,7 +12,7 @@ last_activity_desc: Plan 01-20 retained ENV-MA25's local Node-API 8 provider and
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 22
+  total_plans: 20
   completed_plans: 14
 ---
 
