@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: Initialize Canonical Projects
-status: POSIX tracer approved; executing installed tracer expansion
-stopped_at: 01-10 Task 3 installed tracer; Tasks 1–2 verified
-last_updated: "2026-08-28T05:33:50Z"
+status: Plan 01-10 complete; executing native target matrix
+stopped_at: Completed 01-10-PLAN.md; ready for 01-11
+last_updated: "2026-08-28T07:01:59.888Z"
 last_activity: 2026-08-28
-last_activity_desc: Completed quick task 260828-haj frontmatter fix; 25 focused checks and both native skill discovery probes pass; full native init verification remains unavailable locally. Phase 1 gates unchanged.
+last_activity_desc: Completed Plan 01-10 installed native promotion tracer on approved macOS and Windows hosts; Plan 01-11 target-matrix evidence is next.
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 18
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -28,20 +28,25 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 10 of 18; Tasks 1–2 verified; 2/3 tasks complete; Task 3 active
-Status: POSIX tracer approved; executing installed tracer expansion
-Last activity: 2026-08-28 — Completed quick task 260828-haj: generated skill frontmatter fix (91eddbb), with 25 focused checks and native Claude/Codex discovery verified. Full local suite: 60 passed, 34 native-dependent failures; Plan 01-10 remains incomplete.
+Plan: 11 of 18; Plan 01-10 complete
+Status: Executing native target matrix
+Last activity: 2026-08-28 — Completed Plan 01-10. Final hosted run 33149316926 passed macOS tracer 22/22 and regression 95/95, Windows provider 11/11 and active tracer 12/12.
 
-Plan execution: 9 completed plans; 9 pending plans (18 total). Contract approval is complete; native repair and phase verification remain incomplete.
+Plan execution: 10 completed plans; 8 pending plans (18 total). Contract approval and the two-host installed tracer are complete; all-target evidence and wider containment migration remain.
 
-### Active Execution — Installed tracer expansion
+### Active Execution — Native target matrix
+
+- Plan 01-10 is complete (`c9e6a38`). Task 3 uses separate release and instrumented packages and records exact installed provider provenance. The final Windows leaf swap is rejected after handle-relative revalidation.
+- Windows parent/ancestor relocation was blocked at the controller directory rename with `EPERM`; evidence labels this `blocked-before-relocation` and `movedObjectOracle: not exercised`. NP-02 remains the separate moved-object proof and Plan 17 retains the full relocation matrix.
+- Final Task 3 evidence: hosted run 33149316926, snapshot `0af7365726d0a43ba8fb4d9a2b27a8dda46e37a9`; see `01-10-SUMMARY.md` and `01-10-TASK-3-WINDOWS-REVIEW.md`.
+- Next: execute Plan 01-11 on all eight approved native target rows. Missing/skipped/emulated evidence must block later migrations.
 
 - On 2026-08-28 the user asked to continue after completing Trusted Access verification and explicitly requested subagents to reduce repeated context compaction. Resume Plan 01-10 Task 3 with one implementation executor and an independent read-only evidence reviewer; dependent implementation remains serial. The earlier platform-message explanation is not a new project approval gate. No account access state is inferred, and any actual platform denial must be reported without bypass.
 - On 2026-08-28 the user replied `approve` to the resolved proposal in `59d99e9`. Approval record: `8f160dc`; completed decision summary: `4072370` / `01-09-SUMMARY.md`.
 - All eight exact modern OS/CPU/libc rows, three adapters, nine Node lanes and the explicit engine correction, C Node-API 8 and pinned tools/headers, same-package prebuilts, Mode B evidence, journal schema-2 compatibility and bounded free CI work are approved. Scope exclusions and safety assumptions remain in SUPPORT.
 - The earlier `i approve` / `done` applied only to metadata inspection and workflow authorization. That history is preserved; the new response is the native approval.
 - Plan 01-10 Task 1 is verified: RED `bbe2e5d`, GREEN `f2280b0`; checkpoint/evidence `6e43a5a`. CI run 33143078424 / snapshot e06f4dd504ac7f892b745bacd592e26003687f07 passed 18 focused and 74 full regression tests on the approved macOS arm64 / Node 20.19.0 row. Local TS/syntax and loader-negative checks are separate evidence, not native acceptance.
-- Review: `01-10-TRACER-REVIEW.md`; raw logs, reports, native events, input hashes, provenance and binary are in `01-10-EVIDENCE/`. The 01-10 SUMMARY has `status: halted` and explicitly means 2/3 tasks, not plan completion. Downstream plans remain blocked. Do not infer completion from the presence of this checkpoint summary.
+- Task 1 review: `01-10-TRACER-REVIEW.md`; raw logs, reports, native events, input hashes, provenance and binaries are retained in `01-10-EVIDENCE/`.
 - On 2026-08-28 the user replied exactly `approve` to the verified POSIX tracer. Task 2 is now verified (RED `240e636`, GREEN `0093733`). Run 33144287790 passed Windows provider 11/11 and macOS focused 21/21 plus full regression 77/77; all 43 input hashes match. Resume **01-10 Task 3** (installed tracer expansion). Both design and tracer approvals are recorded; do not repeat them or redo Task 1.
 - The temporary remote branch `codex/containment-posix-tracer-20260828` retains the reviewed task-only snapshot; default remote branch was not updated. No paid resources, global installs, new credentials or publication.
 - Native macOS arm64 and Windows x64 providers have evidence. Windows installed CLI, Linux, other CPU/Node rows, complete TR/NP expansions, native diagnostics, all wider path migrations and human/security closure gates remain pending. Instrumented evidence is Mode B; moved-object schedules are limitations, not strict lexical containment successes.
@@ -143,8 +148,8 @@ None yet.
 - CR-01 invalid canonical JSON declarations are repaired by Plan 01-07; independent phase re-verification remains required before closing the recorded verifier gap.
 - The live-writer recovery and stale-owner races are repaired and tested in 01-08; CR-02 still requires independent phase re-verification before it is closed.
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
-- Plan 01-09 is complete. Plan 01-10 Task 1 is verified and approved; Task 2 is verified; Task 3 is active. Plan 01-10 and Phase 1 are incomplete.
-- Next: execute 01-10 Task 3 within the approved contract. After the remaining serial plans, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
+- Plans 01-09 and 01-10 are complete. Phase 1 remains incomplete.
+- Next: execute 01-11 within the approved target contract. After the remaining serial plans, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
 ### Quick Tasks Completed
@@ -164,6 +169,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-28T05:04:06.543570+00:00
-Stopped at: 01-10 Task 3 installed tracer; Tasks 1–2 verified
-Resume file: .planning/phases/01-initialize-canonical-projects/.continue-here.md
+Last session: 2026-08-28T07:01:59.876Z
+Stopped at: Completed 01-10-PLAN.md; ready for 01-11
+Resume file: None

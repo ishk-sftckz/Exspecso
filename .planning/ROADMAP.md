@@ -34,7 +34,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 9/18 executed. Completed plans 01-01–08 are preserved and 01-09 contract approval is recorded; nine serial containment implementation plans 01-10–18 remain. Replan passed independent checking after one revision; the user approved its resolved contract on 2026-08-28. Phase remains incomplete: CR-01/02 repairs await re-verification; CR-03 and human/security gates remain open.
+**Plans**: 10/18 plans executed
 
 Plans:
 **Wave 1**
@@ -75,7 +75,7 @@ Plans:
 
 **Wave 10** *(gap closure; depends on 01-09)*
 
-- [ ] 01-10-PLAN.md — Prove installed POSIX and Windows native promotion tracers (Tasks 1–2 verified; installed tracer expansion active)
+- [x] 01-10-PLAN.md — Prove installed POSIX and Windows native promotion tracers (completed 2026-08-28; hosted proof in run 33149316926)
 
 **Wave 11** *(gap closure; depends on 01-10)*
 
@@ -197,7 +197,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Initialize Canonical Projects | 9/18 | POSIX tracer and Windows provider verified; installed expansion pending | - |
+| 1. Initialize Canonical Projects | 10/18 | In Progress|  |
 | 2. Build the Project Truth Engine | 0/TBD | Not started | - |
 | 3. Orient and Plan One Approved Phase | 0/TBD | Not started | - |
 | 4. Deliver One Approved Phase | 0/TBD | Not started | - |
