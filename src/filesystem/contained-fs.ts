@@ -25,6 +25,14 @@ interface Target {
 }
 interface Manifest { schemaVersion: number; packageVersion: string; buildCommit: string; variant: "release" | "test"; targets: Target[] }
 export interface ProviderProvenance { readonly path: string; readonly sha256: string; readonly buildCommit: string; readonly variant: "release" | "test" }
+export type BoundEntryKind = "directory" | "file";
+
+/** Read-only traversal rooted at an already-open native directory capability. */
+export interface BoundReader {
+  list(components: readonly string[]): readonly string[];
+  metadata(components: readonly string[]): BoundEntryKind;
+  read(components: readonly string[]): Buffer;
+}
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);
 const APPROVED_LINUX_FILESYSTEM_MAGIC = 0xef53n;
@@ -113,8 +121,77 @@ export class DirectoryCapability extends Capability {
   unlink(name: string): void { this.native.unlink(this.handle, name, false); }
   removeDirectory(name: string): void { this.native.unlink(this.handle, name, true); }
 }
+
+function requireRelativeComponents(components: readonly string[]): void {
+  for (const component of components) {
+    if (!component || component === "." || component === ".." || component.includes("/") || component.includes("\\")) {
+      throw new Error("EXSPECSO_CONTAINMENT_INVALID: reader components must be one relative name each");
+    }
+  }
+}
+
+class NativeBoundReader implements BoundReader {
+  constructor(private readonly root: DirectoryCapability) {}
+
+  private directory(components: readonly string[]): DirectoryCapability {
+    requireRelativeComponents(components);
+    let directory = this.root;
+    for (const component of components) directory = directory.openDirectory(component);
+    return directory;
+  }
+
+  list(components: readonly string[]): readonly string[] {
+    const directory = this.directory(components);
+    try {
+      return directory.list();
+    } finally {
+      if (directory !== this.root) directory.close();
+    }
+  }
+
+  metadata(components: readonly string[]): BoundEntryKind {
+    requireRelativeComponents(components);
+    if (components.length === 0) return "directory";
+    const parent = this.directory(components.slice(0, -1));
+    const name = components.at(-1)!;
+    try {
+      try {
+        const directory = parent.openDirectory(name);
+        directory.close();
+        return "directory";
+      } catch (directoryError) {
+        try {
+          const file = parent.openFile(name);
+          file.close();
+          return "file";
+        } catch {
+          throw directoryError;
+        }
+      }
+    } finally {
+      if (parent !== this.root) parent.close();
+    }
+  }
+
+  read(components: readonly string[]): Buffer {
+    requireRelativeComponents(components);
+    if (components.length === 0) throw new Error("EXSPECSO_CONTAINMENT_INVALID: cannot read a directory");
+    const parent = this.directory(components.slice(0, -1));
+    try {
+      const file = parent.openFile(components.at(-1)!);
+      try {
+        return file.read();
+      } finally {
+        file.close();
+      }
+    } finally {
+      if (parent !== this.root) parent.close();
+    }
+  }
+}
 export interface RootCapability {
   readonly root: DirectoryCapability;
+  readonly reader: BoundReader;
   readonly provenance: ProviderProvenance;
   close(): void;
 }
@@ -124,7 +201,7 @@ export function openContainedFilesystem(path: string): RootCapability {
   const { native, provenance } = loadProvider(operationRoot);
   const capabilities: Capability[] = [];
   const root = new DirectoryCapability(native, native.openRoot(operationRoot), (capability) => capabilities.push(capability));
-  return { root, provenance, close() {
+  return { root, reader: new NativeBoundReader(root), provenance, close() {
     let failure: unknown;
     for (const capability of capabilities.splice(0).reverse().concat(root)) {
       try { capability.close(); } catch (error) { failure ??= error; }

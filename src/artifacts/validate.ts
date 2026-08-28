@@ -1,9 +1,8 @@
-import { access, readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { type ZodIssue } from "zod";
 import { type ArtifactDefinition, scanArtifacts } from "./resolve.js";
 import { projectConfigSchema } from "./schema.js";
 import type { Diagnostic } from "../errors/diagnostic.js";
+import { openContainedFilesystem, type BoundReader } from "../filesystem/contained-fs.js";
 
 const canonicalDirectory = ".exspecso";
 const configPath = ".exspecso/exspecso.config.json";
@@ -96,13 +95,12 @@ function validateDefinitions(definitions: readonly ArtifactDefinition[]): Diagno
   return diagnostics;
 }
 
-export async function validateProject(root: string): Promise<readonly Diagnostic[]> {
+async function validateWithReader(root: string, reader: BoundReader): Promise<readonly Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
-  const absoluteConfigPath = join(root, configPath);
   try {
-    diagnostics.push(...validateProjectConfig(configPath, await readFile(absoluteConfigPath, "utf8")));
+    diagnostics.push(...validateProjectConfig(configPath, reader.read(configPath.split("/")).toString("utf8")));
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+    if (!(error instanceof Error && error.message.includes("EXSPECSO_CONTAINMENT_ENOENT"))) {
       diagnostics.push({
         code: "EXSPECSO_CONFIG_PARSE",
         path: configPath,
@@ -112,12 +110,13 @@ export async function validateProject(root: string): Promise<readonly Diagnostic
       });
     }
   }
-  const scanResult = await scanArtifacts(root);
+  const scanResult = await scanArtifacts(root, reader);
   const definitions = scanResult.definitions.filter((definition) => definition.path === canonicalDirectory || definition.path.startsWith(`${canonicalDirectory}/`));
   diagnostics.push(...scanResult.diagnostics.filter((diagnostic) => diagnostic.path === canonicalDirectory || diagnostic.path.startsWith(`${canonicalDirectory}/`)));
   diagnostics.push(...validateDefinitions(definitions));
   try {
-    await access(join(root, roadmapPath));
+    const roadmap = reader.metadata(roadmapPath.split("/"));
+    if (roadmap !== "file") throw new Error("EXSPECSO_CONTAINMENT_INVALID: roadmap is not a regular file");
     if (!definitions.some((definition) => definition.id === "ROADMAP" && definition.path === roadmapPath)) {
       diagnostics.push({
         code: "EXSPECSO_ROADMAP_RESERVED_PATH",
@@ -127,8 +126,26 @@ export async function validateProject(root: string): Promise<readonly Diagnostic
         hint: "Add the exact ROADMAP identity to .exspecso/roadmap.md.",
       });
     }
-  } catch {
-    // ROADMAP is intentionally lazy and is absent until the start workflow creates it.
+  } catch (error) {
+    if (!(error instanceof Error && error.message.includes("EXSPECSO_CONTAINMENT_ENOENT"))) {
+      diagnostics.push({
+        code: "EXSPECSO_ARTIFACT_UNSAFE_READ",
+        path: roadmapPath,
+        expected: "a contained regular roadmap file",
+        actual: error instanceof Error ? error.message : "unreadable file",
+        hint: "Replace the roadmap with a contained regular file or remove it until the start workflow creates it.",
+      });
+    }
   }
   return diagnostics;
+}
+
+export async function validateProject(root: string, reader?: BoundReader): Promise<readonly Diagnostic[]> {
+  if (reader !== undefined) return validateWithReader(root, reader);
+  const capability = openContainedFilesystem(root);
+  try {
+    return await validateWithReader(root, capability.reader);
+  } finally {
+    capability.close();
+  }
 }

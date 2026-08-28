@@ -1,8 +1,6 @@
-import { readdir, readFile } from "node:fs/promises";
-import type { Dirent } from "node:fs";
-import { relative, resolve, sep } from "node:path";
 import { artifactKindForId, parseArtifactId, type ArtifactId, type ArtifactKind } from "./schema.js";
 import type { Diagnostic } from "../errors/diagnostic.js";
+import { openContainedFilesystem, type BoundReader } from "../filesystem/contained-fs.js";
 
 export type ArtifactLocation =
   | { readonly kind: "file"; readonly path: string }
@@ -35,10 +33,6 @@ export type ResolveArtifactResult =
 const ignoredDirectoryNames = new Set([".git", "node_modules", "dist"]);
 const reservedRoadmapPath = ".exspecso/roadmap.md";
 const configPath = ".exspecso/exspecso.config.json";
-
-function toRelativePath(root: string, path: string): string {
-  return relative(root, path).split(sep).join("/");
-}
 
 function frontmatterDeclarations(text: string): Readonly<Partial<Record<"id" | "parent", string>>> {
   const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);
@@ -172,34 +166,58 @@ function jsonDefinition(path: string, text: string): ArtifactScanResult {
   }
 }
 
-async function artifactFiles(root: string, directory = root): Promise<string[]> {
-  let entries: Dirent<string>[];
-  try {
-    entries = await readdir(directory, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const files: string[] = [];
-  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
-    const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) {
-      if (!ignoredDirectoryNames.has(entry.name)) {
-        files.push(...(await artifactFiles(root, path)));
-      }
-    } else if (entry.isFile() && (entry.name.endsWith(".md") || entry.name.endsWith(".json"))) {
-      files.push(path);
-    }
-  }
-  return files;
+function unsafeReadDiagnostic(path: string, error: unknown): Diagnostic {
+  return {
+    code: "EXSPECSO_ARTIFACT_UNSAFE_READ",
+    path,
+    expected: "a contained regular file or directory",
+    actual: error instanceof Error ? error.message : "unreadable entry",
+    hint: "Replace substituted, unreadable, or unsupported artifact paths with contained regular files or directories.",
+  };
 }
 
-export async function scanArtifacts(root: string): Promise<ArtifactScanResult> {
-  const canonicalRoot = resolve(root);
-  const definitions: ArtifactDefinition[] = [];
+function artifactFiles(reader: BoundReader, components: readonly string[] = []): { readonly files: readonly string[][]; readonly diagnostics: readonly Diagnostic[] } {
+  let entries: readonly string[];
+  try {
+    entries = reader.list(components);
+  } catch (error) {
+    return { files: [], diagnostics: [unsafeReadDiagnostic(components.join("/") || ".", error)] };
+  }
+  const files: string[][] = [];
   const diagnostics: Diagnostic[] = [];
-  for (const file of await artifactFiles(canonicalRoot)) {
-    const path = toRelativePath(canonicalRoot, file);
-    const text = await readFile(file, "utf8");
+  for (const name of [...entries].sort((left, right) => left.localeCompare(right))) {
+    const path = [...components, name];
+    try {
+      const kind = reader.metadata(path);
+      if (kind === "directory") {
+        if (!ignoredDirectoryNames.has(name)) {
+          const nested = artifactFiles(reader, path);
+          files.push(...nested.files);
+          diagnostics.push(...nested.diagnostics);
+        }
+      } else if (name.endsWith(".md") || name.endsWith(".json")) {
+        files.push(path);
+      }
+    } catch (error) {
+      diagnostics.push(unsafeReadDiagnostic(path.join("/"), error));
+    }
+  }
+  return { files, diagnostics };
+}
+
+async function scanWithReader(reader: BoundReader): Promise<ArtifactScanResult> {
+  const definitions: ArtifactDefinition[] = [];
+  const discovered = artifactFiles(reader);
+  const diagnostics: Diagnostic[] = [...discovered.diagnostics];
+  for (const components of discovered.files) {
+    const path = components.join("/");
+    let text: string;
+    try {
+      text = reader.read(components).toString("utf8");
+    } catch (error) {
+      diagnostics.push(unsafeReadDiagnostic(path, error));
+      continue;
+    }
     if (path.endsWith(".md")) {
       const result = frontmatterDefinition(path, text);
       definitions.push(...result.definitions);
@@ -217,8 +235,18 @@ export async function scanArtifacts(root: string): Promise<ArtifactScanResult> {
   };
 }
 
-export async function scanArtifactDefinitions(root: string): Promise<readonly ArtifactDefinition[]> {
-  return (await scanArtifacts(root)).definitions;
+export async function scanArtifacts(root: string, reader?: BoundReader): Promise<ArtifactScanResult> {
+  if (reader !== undefined) return scanWithReader(reader);
+  const capability = openContainedFilesystem(root);
+  try {
+    return await scanWithReader(capability.reader);
+  } finally {
+    capability.close();
+  }
+}
+
+export async function scanArtifactDefinitions(root: string, reader?: BoundReader): Promise<readonly ArtifactDefinition[]> {
+  return (await scanArtifacts(root, reader)).definitions;
 }
 
 function invalidIdDiagnostic(id: string): Diagnostic {
@@ -231,12 +259,12 @@ function invalidIdDiagnostic(id: string): Diagnostic {
   };
 }
 
-export async function resolveArtifact(root: string, id: string): Promise<ResolveArtifactResult> {
+export async function resolveArtifact(root: string, id: string, reader?: BoundReader): Promise<ResolveArtifactResult> {
   const artifactId = parseArtifactId(id);
   if (artifactId === null) {
     return { kind: "not-found", diagnostics: [invalidIdDiagnostic(id)] };
   }
-  const definitions = (await scanArtifactDefinitions(root)).filter((definition) => definition.id === artifactId);
+  const definitions = (await scanArtifactDefinitions(root, reader)).filter((definition) => definition.id === artifactId);
   const candidates = artifactId === "ROADMAP" ? definitions.filter((definition) => definition.path === reservedRoadmapPath) : definitions;
   if (candidates.length === 0) {
     const roadmapAtWrongPath = artifactId === "ROADMAP" && definitions.length > 0;
