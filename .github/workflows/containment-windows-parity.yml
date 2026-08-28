@@ -60,7 +60,7 @@ jobs:
           if ($LASTEXITCODE) { throw 'npm ci failed' }
       - name: Build the native Windows release provider and TypeScript
         run: |
-          node native/build.mjs --variant release --target win32-x64 --out . --headers "$env:EXSPECSO_NODE_HEADERS" --node-lib "$env:EXSPECSO_NODE_LIB"
+          node native/build.mjs --variant release --row ENV-WX --out . --headers "$env:EXSPECSO_NODE_HEADERS" --node-lib "$env:EXSPECSO_NODE_LIB"
           if ($LASTEXITCODE) { throw 'Native build failed' }
           npm run build
           if ($LASTEXITCODE) { throw 'TypeScript build failed' }
@@ -135,7 +135,7 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Build the release provider and TypeScript
         run: |
-          node native/build.mjs --variant release --target darwin-arm64 --out . --headers "$EXSPECSO_NODE_HEADERS"
+          node native/build.mjs --variant release --row ENV-MA --out . --headers "$EXSPECSO_NODE_HEADERS"
           npm run build
       - name: Run the provider and installed tracer tests
         run: npm test -- --run tests/unit/contained-fs.test.ts tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=default --reporter=json --outputFile=tracer-results.json

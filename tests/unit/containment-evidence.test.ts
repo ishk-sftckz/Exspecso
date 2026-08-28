@@ -56,10 +56,11 @@ function completeRecord(row: (typeof matrix.rows)[number]) {
 
 describe("containment evidence aggregate", () => {
   it("materializes all eight approved rows with exact tested-version policy", () => {
-    expect(matrix.revision).toMatch(/^01-09-/);
-    expect(matrix.rows.map((row: { id: string }) => row.id)).toEqual(["ENV-MA", "ENV-MX", "ENV-WX", "ENV-WA", "ENV-LGX", "ENV-LGA", "ENV-LMX", "ENV-LMA"]);
+    expect(matrix.revision).toMatch(/^01-19-/);
+    expect(matrix.rows.map((row: { id: string }) => row.id)).toEqual(["ENV-MA", "ENV-MX", "ENV-WX", "ENV-WA", "ENV-LGX", "ENV-LGA", "ENV-LMX", "ENV-LMA", "ENV-MA25"]);
+    expect(matrix.rows.filter((row: { runnerKind: string }) => row.runnerKind === "ci")).toHaveLength(8);
     for (const row of matrix.rows) {
-      expect(row.node.baseline).toBe("20.19.0");
+      expect(row.node.baseline).toBe(row.id === "ENV-MA25" ? "25.2.1" : "20.19.0");
       expect(row.node.testedVersion).toBeTruthy();
       expect(row.filesystem).toMatch(/^(apfs|ntfs|ext4)$/);
       expect(row.runner).toBeTruthy();

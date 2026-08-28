@@ -12,9 +12,10 @@ if (stage !== "tracer") fail(`unsupported stage ${stage}`);
 const evidenceDir = resolve(option("--evidence-dir"));
 const matrixPath = resolve(process.argv.includes("--matrix") ? option("--matrix") : "native/support-matrix.json");
 const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
-if (matrix.schemaVersion !== 1 || !Array.isArray(matrix.rows) || matrix.rows.length !== 8) fail("approved matrix must contain exactly eight rows");
+if (matrix.schemaVersion !== 2 || !Array.isArray(matrix.rows) || matrix.rows.length < 9) fail("support matrix must contain the eight approved rows plus declared local support rows");
 const rows = new Map(matrix.rows.map((row) => [row.id, row]));
-if (rows.size !== 8) fail("matrix contains duplicate row IDs");
+const requiredRows = matrix.rows.filter((row) => row.runnerKind === "ci");
+if (rows.size !== matrix.rows.length || requiredRows.length !== 8) fail("matrix contains duplicate rows or does not retain the eight approved CI rows");
 const files = readdirSync(evidenceDir).filter((file) => file.endsWith(".json")).sort();
 if (!files.length) fail("no evidence records found");
 const records = files.map((file) => JSON.parse(readFileSync(join(evidenceDir, file), "utf8")));
@@ -57,5 +58,5 @@ for (const record of records) {
   sourceCommit = record.sourceCommit;
   if (!/^[a-f0-9]{64}$/.test(record.provider?.sha256 ?? "") || record.provider.sha256 !== record.provider.buildSHA256) fail(`${record.rowId} binary hash does not match build record`);
 }
-for (const id of rows.keys()) if (!seen.has(id)) fail(`missing required row ${id}`);
+for (const row of requiredRows) if (!seen.has(row.id)) fail(`missing required row ${row.id}`);
 console.log(JSON.stringify({ plan_complete: true, stage, matrixRevision: matrix.revision, sourceCommit, rows: [...seen.keys()].sort() }));

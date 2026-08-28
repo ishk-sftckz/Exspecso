@@ -4,6 +4,7 @@ import { lstatSync, readFileSync, realpathSync, statfsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadSupportMatrix, resolveSupportRow, type RuntimeObservation } from "./support-matrix.js";
 
 interface NativeProvider {
   readonly variant: "release" | "test";
@@ -20,11 +21,11 @@ interface NativeProvider {
   stat(handle: object): { device: bigint; inode: bigint; size: bigint };
 }
 interface Target {
-  target: string; platform: string; arch: string; osVersion: string; osBuild: string;
+  supportRowId: string; target: string; platform: string; arch: string; osVersion: string; osBuild: string;
   filesystem: string; libc?: string; napiVersion: number; byteLength: number; sha256: string; path: string;
 }
-interface Manifest { schemaVersion: number; packageVersion: string; buildCommit: string; variant: "release" | "test"; targets: Target[] }
-export interface ProviderProvenance { readonly path: string; readonly sha256: string; readonly buildCommit: string; readonly variant: "release" | "test" }
+interface Manifest { schemaVersion: 2; packageVersion: string; buildCommit: string; variant: "release" | "test"; targets: Target[] }
+export interface ProviderProvenance { readonly path: string; readonly sha256: string; readonly buildCommit: string; readonly variant: "release" | "test"; readonly supportRowId: string }
 export type BoundEntryKind = "directory" | "file";
 
 /** Read-only traversal rooted at an already-open native directory capability. */
@@ -44,48 +45,62 @@ function observeLinuxOperationRootFilesystem(root: string): { raw: bigint; norma
   const normalized = normalizeLinuxFilesystemType(raw);
   return Object.freeze({ raw, normalized, hex: `0x${normalized.toString(16).padStart(8, "0")}`, mapping: isApprovedLinuxFilesystemType(raw) ? "ext2/ext3" : "unapproved" });
 }
+
+function command(program: string, args: readonly string[]): string {
+  return execFileSync(program, [...args], { encoding: "utf8" }).trim();
+}
+
+function observeRuntime(operationRoot: string): RuntimeObservation {
+  const nodeVersion = process.versions.node;
+  const napiVersion = Number(process.versions.napi);
+  if (process.platform === "darwin") {
+    const disk = command("/usr/sbin/diskutil", ["info", operationRoot]);
+    return {
+      platform: process.platform,
+      arch: process.arch,
+      osVersion: command("/usr/bin/sw_vers", ["-productVersion"]),
+      osBuild: command("/usr/bin/sw_vers", ["-buildVersion"]),
+      filesystem: /File System Personality:\s+APFS/m.test(disk) ? "apfs" : "unapproved",
+      libc: "system",
+      nodeVersion,
+      napiVersion,
+    };
+  }
+  if (process.platform === "win32") {
+    const powershell = join(process.env.SystemRoot ?? "C:\\Windows", "System32/WindowsPowerShell/v1.0/powershell.exe");
+    const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== "psmodulepath"));
+    const observed = JSON.parse(execFileSync(powershell, ["-NoProfile", "-NonInteractive", "-Command", "$o=Get-CimInstance Win32_OperatingSystem;$r=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion';$d=(Get-Volume -DriveLetter $env:SystemDrive.TrimEnd(':')).FileSystem;@{version=$o.Version;build=$o.BuildNumber;ubr=$r.UBR;filesystem=$d}|ConvertTo-Json -Compress"], { encoding: "utf8", windowsHide: true, env: environment })) as { version: string; build: string; ubr: number; filesystem: string };
+    return { platform: process.platform, arch: process.arch, osVersion: observed.version, osBuild: `${observed.build}.${observed.ubr}`, filesystem: observed.filesystem.toLowerCase(), libc: "system", nodeVersion, napiVersion };
+  }
+  const filesystem = observeLinuxOperationRootFilesystem(operationRoot).mapping === "ext2/ext3" ? "ext4" : "unapproved";
+  const osBuild = command("uname", ["-r"]);
+  try {
+    const libc = command("getconf", ["GNU_LIBC_VERSION"]);
+    return { platform: process.platform, arch: process.arch, osVersion: command("lsb_release", ["-ds"]), osBuild, filesystem, libc: libc.replace("glibc ", "glibc-"), nodeVersion, napiVersion };
+  } catch {
+    let libc: string;
+    try { libc = command("ldd", ["--version"]); }
+    catch (error: any) {
+      if (typeof error?.stderr !== "string" || !error.stderr.includes("musl libc")) throw error;
+      libc = error.stderr;
+    }
+    const alpine = command("cut", ["-d", ".", "-f", "1,2", "/etc/alpine-release"]);
+    const match = /Version\s+(\d+\.\d+\.\d+(?:-r\d+)?)/.exec(libc);
+    return { platform: process.platform, arch: process.arch, osVersion: `Alpine ${alpine}`, osBuild, filesystem, libc: match ? `musl-${match[1]}` : "unapproved", nodeVersion, napiVersion };
+  }
+}
+
 function loadProvider(operationRoot: string): { native: NativeProvider; provenance: ProviderProvenance } {
   try {
-    const [major, minor, patch] = process.versions.node.split(".").map(Number);
-    if (!(major === 20 && (minor > 19 || minor === 19 && patch >= 0) || major === 22 && minor >= 13 || major === 24 || major === 26)) unavailable("unsupported Node version");
+    const matrix = loadSupportMatrix();
+    const supportRow = resolveSupportRow(matrix, observeRuntime(operationRoot));
     const manifest = JSON.parse(readFileSync(join(packageRoot, "dist/native/manifest.json"), "utf8")) as Manifest;
     const metadata = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as { version: string };
-    if (manifest.schemaVersion !== 1 || manifest.packageVersion !== metadata.version || !/^[a-f0-9]{40}$/.test(manifest.buildCommit) || !["release", "test"].includes(manifest.variant) || !Array.isArray(manifest.targets)) unavailable("invalid provider manifest");
-    const target = `${process.platform}-${process.arch}`;
-    const entries = manifest.targets.filter((entry) => entry.target === target);
-    if (entries.length !== 1) unavailable("missing or duplicate native target");
+    if (manifest.schemaVersion !== 2 || manifest.packageVersion !== metadata.version || !/^[a-f0-9]{40}$/.test(manifest.buildCommit) || !["release", "test"].includes(manifest.variant) || !Array.isArray(manifest.targets)) unavailable("invalid provider manifest");
+    const entries = manifest.targets.filter((entry) => entry.target === supportRow.target && entry.supportRowId === supportRow.id);
+    if (entries.length !== 1) unavailable("missing or duplicate native support row");
     const entry = entries[0];
-    if (entry.platform !== process.platform || entry.arch !== process.arch || entry.napiVersion !== 8 || Number(process.versions.napi) < 8 || entry.path !== `${target}/contained-fs.node` || !Number.isSafeInteger(entry.byteLength) || entry.byteLength <= 0 || !/^[a-f0-9]{64}$/.test(entry.sha256)) unavailable("incompatible native target");
-    if (process.platform === "darwin" && ["arm64", "x64"].includes(process.arch) && entry.filesystem === "apfs") {
-      const osVersion = execFileSync("/usr/bin/sw_vers", ["-productVersion"], { encoding: "utf8" }).trim();
-      const osBuild = execFileSync("/usr/bin/sw_vers", ["-buildVersion"], { encoding: "utf8" }).trim();
-      const approved = process.arch === "arm64" ? ["15.7.7", "24G720"] : ["15.7.9", "24G830"];
-      if (entry.osVersion !== approved[0] || entry.osBuild !== approved[1] || osVersion !== entry.osVersion || osBuild !== entry.osBuild) unavailable("unverified OS version; no project changes made");
-    } else if (process.platform === "win32" && ["x64", "arm64"].includes(process.arch) && entry.filesystem === "ntfs") {
-      const powershell = join(process.env.SystemRoot ?? "C:\\Windows", "System32/WindowsPowerShell/v1.0/powershell.exe");
-      const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== "psmodulepath"));
-      const observed = JSON.parse(execFileSync(powershell, ["-NoProfile", "-NonInteractive", "-Command", "$o=Get-CimInstance Win32_OperatingSystem;$r=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion';@{caption=$o.Caption;version=$o.Version;build=$o.BuildNumber;ubr=$r.UBR}|ConvertTo-Json -Compress"], { encoding: "utf8", windowsHide: true, env: environment })) as { caption: string; version: string; build: string; ubr: number };
-      const approved = process.arch === "x64"
-        ? entry.osVersion === "10.0.26100" && entry.osBuild === "26100.33296" && observed.caption === "Microsoft Windows Server 2025 Datacenter"
-        : entry.osVersion === "10.0.26200" && observed.caption === "Microsoft Windows 11 Enterprise";
-      if (!approved || observed.version !== entry.osVersion || !`${observed.build}.${observed.ubr}`.startsWith(`${entry.osBuild?.split(".")[0]}.`)) unavailable("unverified Windows version; no project changes made");
-    } else if (process.platform === "linux" && ["x64", "arm64"].includes(process.arch) && entry.filesystem === "ext4" && entry.osVersion === "Ubuntu 24.04.4 LTS") {
-      const kernel = execFileSync("uname", ["-r"], { encoding: "utf8" }).trim();
-      const filesystem = observeLinuxOperationRootFilesystem(operationRoot);
-      const libc = execFileSync("getconf", ["GNU_LIBC_VERSION"], { encoding: "utf8" }).trim();
-      if (kernel !== entry.osBuild || filesystem.mapping !== "ext2/ext3" || (entry.libc === "glibc-2.39" && libc !== "glibc 2.39")) unavailable(`unverified Linux version/filesystem/libc (${kernel}/raw=${filesystem.raw.toString()} normalized=${filesystem.normalized.toString()} hex=${filesystem.hex} mapping=${filesystem.mapping}/${libc}); no project changes made`);
-    } else if (process.platform === "linux" && ["x64", "arm64"].includes(process.arch) && entry.filesystem === "ext4" && entry.osVersion === "Alpine 3.24" && entry.libc === "musl-1.2.6-r2") {
-      const kernel = execFileSync("uname", ["-r"], { encoding: "utf8" }).trim();
-      const filesystem = observeLinuxOperationRootFilesystem(operationRoot);
-      let libc: string;
-      try {
-        libc = execFileSync("ldd", ["--version"], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).toString();
-      } catch (error: any) {
-        if (typeof error?.stderr !== "string" || !error.stderr.includes("musl libc")) throw error;
-        libc = error.stderr;
-      }
-      if (!kernel || filesystem.mapping !== "ext2/ext3" || !libc.includes("Version 1.2.6")) unavailable(`unverified Alpine Linux/filesystem/libc (${kernel}/raw=${filesystem.raw.toString()} normalized=${filesystem.normalized.toString()} hex=${filesystem.hex} mapping=${filesystem.mapping}/${libc.replace(/\s+/g, " ").trim()}); no project changes made`);
-    } else unavailable("this tracer has no verified provider for the host");
+    if (entry.platform !== process.platform || entry.arch !== process.arch || entry.osVersion !== supportRow.os.version || entry.osBuild !== (supportRow.os.build ?? supportRow.os.kernel) || entry.filesystem !== supportRow.filesystem || entry.libc !== supportRow.libc || entry.napiVersion !== matrix.nodePolicy.napi || Number(process.versions.napi) < entry.napiVersion || entry.path !== `${supportRow.id}/${supportRow.target}/contained-fs.node` || !Number.isSafeInteger(entry.byteLength) || entry.byteLength <= 0 || !/^[a-f0-9]{64}$/.test(entry.sha256)) unavailable("incompatible native support row");
     const binary = join(packageRoot, "dist/native", entry.path);
     if (!lstatSync(binary).isFile()) unavailable("provider must be an in-package regular file");
     const actual = realpathSync(binary);
@@ -95,7 +110,7 @@ function loadProvider(operationRoot: string): { native: NativeProvider; provenan
     if (bytes.length !== entry.byteLength || sha256 !== entry.sha256) unavailable("provider checksum mismatch");
     const native = require(binary) as NativeProvider;
     if (native.variant !== manifest.variant) unavailable("provider variant mismatch");
-    return { native, provenance: Object.freeze({ path: actual, sha256, buildCommit: manifest.buildCommit, variant: manifest.variant }) };
+    return { native, provenance: Object.freeze({ path: actual, sha256, buildCommit: manifest.buildCommit, variant: manifest.variant, supportRowId: supportRow.id }) };
   } catch (error) { unavailable(error instanceof Error ? error.message : "cannot load the bundled provider"); }
 }
 

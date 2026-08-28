@@ -65,7 +65,7 @@ jobs:
           export EXSPECSO_TEST_TMPDIR="$PWD/.ci-fixtures"
           mkdir -p "$EXSPECSO_TEST_TMPDIR"
           npm ci --ignore-scripts
-          node native/build.mjs --variant release --target "$TARGET" --out . --headers "$EXSPECSO_NODE_HEADERS"
+          node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
           npm run build
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
           if [ "$FAMILY" = glibc ]; then node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json; fi
@@ -99,7 +99,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           npm ci --ignore-scripts
-          node native/build.mjs --variant release --target $env:TARGET --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
+          node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
           npm run build
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
           node scripts/write-containment-evidence.mjs
@@ -125,7 +125,7 @@ jobs:
             export PATH=/tmp:$PATH EXSPECSO_NODE_HEADERS=/work/node-v20.19.0-headers.tar.gz EXSPECSO_CONTAINMENT_LIBC=musl EXSPECSO_TEST_TMPDIR=/work/.ci-fixtures
             mkdir -p "$EXSPECSO_TEST_TMPDIR"
             npm ci --ignore-scripts
-            node native/build.mjs --variant release --target "$TARGET" --out . --headers "$EXSPECSO_NODE_HEADERS" --libc musl
+            node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
             npm run build
             set +e
             npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json

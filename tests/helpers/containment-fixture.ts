@@ -1,4 +1,4 @@
-import { execFile, spawn } from "node:child_process";
+import { execFile, execFileSync, spawn } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { createConnection, type Socket } from "node:net";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from "node:fs/promises";
@@ -18,6 +18,14 @@ async function createTestTemporaryDirectory(prefix: string): Promise<string> {
   const parent = testTemporaryRoot();
   await mkdir(parent, { recursive: true });
   return mkdtemp(join(parent, prefix));
+}
+
+function supportRowForHost(): string {
+  if (process.env.EXSPECSO_CONTAINMENT_ROW) return process.env.EXSPECSO_CONTAINMENT_ROW;
+  if (process.platform === "darwin" && process.arch === "arm64"
+    && execFileSync("/usr/bin/sw_vers", ["-productVersion"], { encoding: "utf8" }).trim() === "26.5.1"
+    && execFileSync("/usr/bin/sw_vers", ["-buildVersion"], { encoding: "utf8" }).trim() === "25F80") return "ENV-MA25";
+  throw new Error("EXSPECSO_CONTAINMENT_ROW must select the declared native support row for this test host");
 }
 function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
@@ -63,9 +71,8 @@ export async function installContainedPackage(variant: "release" | "test") {
     const staged = join(directory, "package");
     await cp(join(root, "dist"), join(staged, "dist"), { recursive: true });
     await cp(join(root, "package.json"), join(staged, "package.json"));
-    const args = [join(root, "native/build.mjs"), "--variant", variant, "--target", `${process.platform}-${process.arch}`, "--out", staged, "--headers", process.env.EXSPECSO_NODE_HEADERS ?? "missing-approved-headers"];
+    const args = [join(root, "native/build.mjs"), "--variant", variant, "--row", supportRowForHost(), "--out", staged, "--headers", process.env.EXSPECSO_NODE_HEADERS ?? "missing-approved-headers"];
     if (process.platform === "win32") args.push("--node-lib", process.env.EXSPECSO_NODE_LIB ?? "missing-approved-library");
-    if (process.platform === "linux" && process.env.EXSPECSO_CONTAINMENT_LIBC === "musl") args.push("--libc", "musl");
     await exec(process.execPath, args, { maxBuffer: 2 * 1024 * 1024 });
     const { stdout } = await runNpm(["pack", "--json", "--pack-destination", directory], { cwd: staged });
     const [{ filename }] = JSON.parse(stdout) as Array<{ filename: string }>;
