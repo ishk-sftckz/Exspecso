@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
+#include <cwchar>
 #include <memory>
 #include <stdexcept>
 #include <system_error>
