@@ -12,7 +12,6 @@ jobs:
     timeout-minutes: 20
     env:
       DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
-      EXSPECSO_NODE_HEADERS: ${{ runner.temp }}/node-v20.19.0-headers.tar.gz
     steps:
       - name: Fetch this exact public task snapshot
         shell: bash
@@ -46,6 +45,7 @@ jobs:
           }
           execFileSync('tar', ['-xzf', join(process.env.RUNNER_TEMP, 'node-v20.19.0-darwin-arm64.tar.gz'), '-C', process.env.RUNNER_TEMP]);
           appendFileSync(process.env.GITHUB_PATH, join(process.env.RUNNER_TEMP, 'node-v20.19.0-darwin-arm64', 'bin') + '\n');
+          appendFileSync(process.env.GITHUB_ENV, 'EXSPECSO_NODE_HEADERS=' + join(process.env.RUNNER_TEMP, 'node-v20.19.0-headers.tar.gz') + '\n');
           console.log(JSON.stringify({image: process.env.ImageVersion, arch: process.arch}));
           NODE
       - name: Install locked development dependencies without lifecycle scripts

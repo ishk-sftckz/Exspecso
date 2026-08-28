@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { copyFile, lstat, mkdir, open, readFile, rm, rmdir, writeFile } from "node:fs/promises";
+import { lstat, mkdir, open, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import type { PlannedWrite } from "../init/plan.js";
@@ -86,18 +86,6 @@ async function syncDirectory(path: string): Promise<void> {
     // Directory syncing is unavailable on some supported filesystems. The
     // journal/recovery contract remains explicitly process-level (D-19).
   }
-}
-
-async function copySynced(source: string, destination: string): Promise<void> {
-  await mkdir(dirname(destination), { recursive: true });
-  await copyFile(source, destination);
-  const handle = await open(destination, "r");
-  try {
-    await handle.sync();
-  } finally {
-    await handle.close();
-  }
-  await syncDirectory(dirname(destination));
 }
 
 async function readOptional(path: string): Promise<string | undefined> {

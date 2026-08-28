@@ -1,6 +1,6 @@
 import { execFile, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cp, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, readFile, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -24,7 +24,13 @@ export async function installContainedPackage(variant: "release" | "test") {
     const provider = await realpath(join(installed, "dist/native", manifest.targets[0].path));
     const sha256 = createHash("sha256").update(await readFile(provider)).digest("hex");
     if (sha256 !== manifest.targets[0].sha256 || manifest.variant !== variant) throw new Error("installed provider provenance mismatch");
-    return { directory, installed, provider, sha256, manifest, cli: join(installed, "dist/cli/main.js"), async dispose() { await rm(directory, { recursive: true, force: true }); } };
+    const provenance = JSON.parse(await readFile(join(installed, "dist/native/build-provenance.json"), "utf8"));
+    const release = JSON.parse(await readFile(join(root, "dist/native/build-provenance.json"), "utf8"));
+    for (const key of ["buildCommit", "sources", "headerHash", "compilerVersion", "sdkVersion", "xcode", "osVersion", "osBuild"]) {
+      if (JSON.stringify(release[key]) !== JSON.stringify(provenance[key])) throw new Error(`release/test build mismatch: ${key}`);
+    }
+    const tarballSHA256 = createHash("sha256").update(await readFile(join(directory, filename))).digest("hex");
+    return { directory, installed, provider, sha256, manifest, provenance, tarballSHA256, cli: join(installed, "dist/cli/main.js"), async dispose() { await rm(directory, { recursive: true, force: true }); } };
   } catch (error) { await rm(directory, { recursive: true, force: true }); throw error; }
 }
 
@@ -39,7 +45,7 @@ export async function runAtNativeReplacement(cli: string, cwd: string, attack: (
   const exited = new Promise<number | null>((resolveExit, reject) => { child.once("error", reject); child.once("close", resolveExit); });
   const timer = setTimeout(() => child.kill("SIGKILL"), 15_000);
   try {
-    const reached = new Promise<{ operation: string; pid: number }>((resolveReach, reject) => {
+    const reached = new Promise<{ operation: string; pid: number; providerPath: string }>((resolveReach, reject) => {
       child.stdio[3]!.on("data", (bytes: Buffer) => {
         trace += bytes.toString();
         if (trace.includes("\n")) { try { resolveReach(JSON.parse(trace.trim())); } catch (error) { reject(error); } }

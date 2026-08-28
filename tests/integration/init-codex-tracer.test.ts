@@ -79,6 +79,7 @@ describe("packed Codex initializer tracer", () => {
       expect(result.record.operation).toBe("replace:before");
       expect(await readFile(externalTarget, "utf8")).toBe("external sentinel\n");
       expect(installed.provider).toContain("node_modules/exspecso/dist/native/");
+      expect(await realpath(result.record.providerPath)).toBe(installed.provider);
       if (site === "leaf") {
         expect(result.exitCode).not.toBe(0);
         expect(result.stderr).toContain("EXSPECSO_CONTAINMENT");
@@ -89,7 +90,7 @@ describe("packed Codex initializer tracer", () => {
         const heldTarget = site === "parent" ? join(moved, "SKILL.md") : join(moved, "exspecso-start", "SKILL.md");
         expect(await readFile(heldTarget, "utf8")).toContain("exspecso-start");
       }
-      console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", limitation: site !== "leaf", provider: installed.provider, providerSHA256: installed.sha256, reached: result.record, exitCode: result.exitCode }));
+      console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", limitation: site !== "leaf", provider: installed.provider, providerSHA256: installed.sha256, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, reached: result.record, exitCode: result.exitCode }));
     }, 60_000);
   }
 

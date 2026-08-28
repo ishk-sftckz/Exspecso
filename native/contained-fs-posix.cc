@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <dirent.h>
+#include <dlfcn.h>
 #include <fcntl.h>
 #include <memory>
 #include <poll.h>
@@ -159,7 +160,15 @@ void barrier() {
   const char* point = std::getenv("EXSPECSO_TEST_NATIVE_OPERATION");
   if (reached || !point || std::strcmp(point, "replace:before") != 0) return;
   reached = true;
-  const std::string message = "{\"operation\":\"replace:before\",\"pid\":" + std::to_string(getpid()) + "}\n";
+  Dl_info image{};
+  require(dladdr(reinterpret_cast<const void*>(&barrier), &image) != 0 && image.dli_fname, "cannot identify loaded test provider");
+  std::string path;
+  for (const unsigned char c : std::string(image.dli_fname)) {
+    require(c >= 32, "unsupported control character in test provider path");
+    if (c == '\\' || c == '"') path += '\\';
+    path += static_cast<char>(c);
+  }
+  const std::string message = "{\"operation\":\"replace:before\",\"pid\":" + std::to_string(getpid()) + ",\"providerPath\":\"" + path + "\"}\n";
   size_t offset = 0;
   while (offset < message.size()) {
     auto count = ::write(3, message.data() + offset, message.size() - offset);
