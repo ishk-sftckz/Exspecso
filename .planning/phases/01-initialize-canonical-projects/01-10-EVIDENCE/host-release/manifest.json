@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "packageVersion": "0.1.0",
+  "buildCommit": "e06f4dd504ac7f892b745bacd592e26003687f07",
+  "variant": "release",
+  "targets": [
+    {
+      "target": "darwin-arm64",
+      "platform": "darwin",
+      "arch": "arm64",
+      "osVersion": "15.7.7",
+      "osBuild": "24G720",
+      "filesystem": "apfs",
+      "napiVersion": 8,
+      "byteLength": 98480,
+      "sha256": "6ab01a887d3cc2247eafd7141efaf4999717c7a865ded42fdc01bc9cf0d11de9",
+      "path": "darwin-arm64/contained-fs.node"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "run_id": 33143078424,
+  "run_url": "https://github.com/ishk-sftckz/exspecso/actions/runs/33143078424",
+  "snapshot_commit": "e06f4dd504ac7f892b745bacd592e26003687f07",
+  "job_id": 98758036832,
+  "runner_name": "GitHub Actions 1000000446",
+  "runner_labels": [
+    "macos-15"
+  ],
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2026-08-28T04:52:38Z",
+  "updated_at": "2026-08-28T04:53:42Z",
+  "job_steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-08-28T04:52:41Z",
+      "completed_at": "2026-08-28T04:52:42Z"
+    },
+    {
+      "name": "Fetch this exact public task snapshot",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-08-28T04:52:42Z",
+      "completed_at": "2026-08-28T04:52:43Z"
+    },
+    {
+      "name": "Verify the approved runner and fetch checksum-verified Node inputs",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-08-28T04:52:43Z",
+      "completed_at": "2026-08-28T04:52:45Z"
+    },
+    {
+      "name": "Install locked development dependencies without lifecycle scripts",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-08-28T04:52:45Z",
+      "completed_at": "2026-08-28T04:52:46Z"
+    },
+    {
+      "name": "Build the release provider and TypeScript",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5,
+      "started_at": "2026-08-28T04:52:46Z",
+      "completed_at": "2026-08-28T04:52:51Z"
+    },
+    {
+      "name": "Run the provider and installed tracer tests",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-08-28T04:52:51Z",
+      "completed_at": "2026-08-28T04:53:15Z"
+    },
+    {
+      "name": "Run the existing regression suite with the host provider",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 7,
+      "started_at": "2026-08-28T04:53:15Z",
+      "completed_at": "2026-08-28T04:53:39Z"
+    },
+    {
+      "name": "Preserve the actual host binaries and test report",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 8,
+      "started_at": "2026-08-28T04:53:39Z",
+      "completed_at": "2026-08-28T04:53:40Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 9,
+      "started_at": "2026-08-28T04:53:40Z",
+      "completed_at": "2026-08-28T04:53:40Z"
+    }
+  ],
+  "log_sha256": "0ab52eaeb6ce5df828a8b15fa15e491e0e730053e46d8823be4e4af90bea7196",
+  "prior_runs": [
+    {
+      "id": 33142874132,
+      "status": "failure before jobs",
+      "reason": "Runner context incorrectly used at job env level; corrected without changing approval."
+    },
+    {
+      "id": 33142979621,
+      "status": "success",
+      "focused_tests": 16
+    }
+  ],
+  "evidence_limit": "One macOS arm64 POSIX tracer only; no Windows/Linux or full matrix claim."
+}

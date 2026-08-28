@@ -1,0 +1,320 @@
+[
+  {
+    "family": "TR-01",
+    "site": "leaf",
+    "mode": "instrumented",
+    "limitation": false,
+    "provider": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-NxX6CG/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node",
+    "providerSHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59",
+    "tarballSHA256": "a14ea934301f68654810dcf8ae20feb51a1491ba244a82df81977a8be706a7f2",
+    "provenance": {
+      "buildCommit": "e06f4dd504ac7f892b745bacd592e26003687f07",
+      "variant": "test",
+      "sources": {
+        "native/contained-fs.cc": "18cc27642ff2228bfe174f3724ffc946c237f078c654c1992e524e65fe9ca021",
+        "native/contained-fs-posix.cc": "e1f4a20784d71345143e763da09652cebcfca1ea8f912aa425a45f731b422fdf",
+        "native/build.mjs": "181917bd5508577d790fcd0ee7f972952fc30b48427231b92b6971e8097e5262"
+      },
+      "headerHash": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+      "compiler": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+      "compilerVersion": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+      "sdkVersion": "15.5",
+      "xcode": "Xcode 16.4\nBuild version 16F6",
+      "osVersion": "15.7.7",
+      "osBuild": "24G720",
+      "args": [
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fvisibility=hidden",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-isysroot",
+        "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-mmacosx-version-min=15.7.7",
+        "-DNAPI_VERSION=8",
+        "-DNODE_GYP_MODULE_NAME=contained_fs",
+        "-I",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-native-build-IvM67i/node-v20.19.0/include/node",
+        "-DEXSPECSO_CONTAINMENT_TEST=1",
+        "/Users/runner/work/exspecso/exspecso/native/contained-fs.cc",
+        "-o",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-NxX6CG/package/dist/native/darwin-arm64/contained-fs.node"
+      ],
+      "binarySHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59"
+    },
+    "reached": {
+      "operation": "replace:before",
+      "pid": 20070,
+      "providerPath": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-NxX6CG/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node"
+    },
+    "exitCode": 1
+  },
+  {
+    "family": "TR-01",
+    "site": "parent",
+    "mode": "instrumented",
+    "limitation": true,
+    "provider": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-bF2Rii/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node",
+    "providerSHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59",
+    "tarballSHA256": "2a8c6277deb8d69b03444a314e3634d1f531ea091da10e31754fed73730d31d7",
+    "provenance": {
+      "buildCommit": "e06f4dd504ac7f892b745bacd592e26003687f07",
+      "variant": "test",
+      "sources": {
+        "native/contained-fs.cc": "18cc27642ff2228bfe174f3724ffc946c237f078c654c1992e524e65fe9ca021",
+        "native/contained-fs-posix.cc": "e1f4a20784d71345143e763da09652cebcfca1ea8f912aa425a45f731b422fdf",
+        "native/build.mjs": "181917bd5508577d790fcd0ee7f972952fc30b48427231b92b6971e8097e5262"
+      },
+      "headerHash": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+      "compiler": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+      "compilerVersion": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+      "sdkVersion": "15.5",
+      "xcode": "Xcode 16.4\nBuild version 16F6",
+      "osVersion": "15.7.7",
+      "osBuild": "24G720",
+      "args": [
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fvisibility=hidden",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-isysroot",
+        "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-mmacosx-version-min=15.7.7",
+        "-DNAPI_VERSION=8",
+        "-DNODE_GYP_MODULE_NAME=contained_fs",
+        "-I",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-native-build-viSmaJ/node-v20.19.0/include/node",
+        "-DEXSPECSO_CONTAINMENT_TEST=1",
+        "/Users/runner/work/exspecso/exspecso/native/contained-fs.cc",
+        "-o",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-bF2Rii/package/dist/native/darwin-arm64/contained-fs.node"
+      ],
+      "binarySHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59"
+    },
+    "reached": {
+      "operation": "replace:before",
+      "pid": 20205,
+      "providerPath": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-bF2Rii/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node"
+    },
+    "exitCode": 0
+  },
+  {
+    "family": "TR-01",
+    "site": "ancestor",
+    "mode": "instrumented",
+    "limitation": true,
+    "provider": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-u7CjSl/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node",
+    "providerSHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59",
+    "tarballSHA256": "8b1c1a55009d838c0dc0d8ad59178cb0d0a8f8a2abeaec6cbe01c18b9cb8586d",
+    "provenance": {
+      "buildCommit": "e06f4dd504ac7f892b745bacd592e26003687f07",
+      "variant": "test",
+      "sources": {
+        "native/contained-fs.cc": "18cc27642ff2228bfe174f3724ffc946c237f078c654c1992e524e65fe9ca021",
+        "native/contained-fs-posix.cc": "e1f4a20784d71345143e763da09652cebcfca1ea8f912aa425a45f731b422fdf",
+        "native/build.mjs": "181917bd5508577d790fcd0ee7f972952fc30b48427231b92b6971e8097e5262"
+      },
+      "headerHash": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+      "compiler": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+      "compilerVersion": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+      "sdkVersion": "15.5",
+      "xcode": "Xcode 16.4\nBuild version 16F6",
+      "osVersion": "15.7.7",
+      "osBuild": "24G720",
+      "args": [
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fvisibility=hidden",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-isysroot",
+        "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-mmacosx-version-min=15.7.7",
+        "-DNAPI_VERSION=8",
+        "-DNODE_GYP_MODULE_NAME=contained_fs",
+        "-I",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-native-build-qSf1ZU/node-v20.19.0/include/node",
+        "-DEXSPECSO_CONTAINMENT_TEST=1",
+        "/Users/runner/work/exspecso/exspecso/native/contained-fs.cc",
+        "-o",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-u7CjSl/package/dist/native/darwin-arm64/contained-fs.node"
+      ],
+      "binarySHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59"
+    },
+    "reached": {
+      "operation": "replace:before",
+      "pid": 20339,
+      "providerPath": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-u7CjSl/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node"
+    },
+    "exitCode": 0
+  },
+  {
+    "family": "TR-01",
+    "site": "leaf",
+    "mode": "instrumented",
+    "limitation": false,
+    "provider": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-aU5FO5/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node",
+    "providerSHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59",
+    "tarballSHA256": "9ccf7d01f03150a0a04b47fa5bd655334de92769410ef1fcb7d13620a7ab3228",
+    "provenance": {
+      "buildCommit": "e06f4dd504ac7f892b745bacd592e26003687f07",
+      "variant": "test",
+      "sources": {
+        "native/contained-fs.cc": "18cc27642ff2228bfe174f3724ffc946c237f078c654c1992e524e65fe9ca021",
+        "native/contained-fs-posix.cc": "e1f4a20784d71345143e763da09652cebcfca1ea8f912aa425a45f731b422fdf",
+        "native/build.mjs": "181917bd5508577d790fcd0ee7f972952fc30b48427231b92b6971e8097e5262"
+      },
+      "headerHash": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+      "compiler": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+      "compilerVersion": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+      "sdkVersion": "15.5",
+      "xcode": "Xcode 16.4\nBuild version 16F6",
+      "osVersion": "15.7.7",
+      "osBuild": "24G720",
+      "args": [
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fvisibility=hidden",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-isysroot",
+        "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-mmacosx-version-min=15.7.7",
+        "-DNAPI_VERSION=8",
+        "-DNODE_GYP_MODULE_NAME=contained_fs",
+        "-I",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-native-build-ctCcUc/node-v20.19.0/include/node",
+        "-DEXSPECSO_CONTAINMENT_TEST=1",
+        "/Users/runner/work/exspecso/exspecso/native/contained-fs.cc",
+        "-o",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-aU5FO5/package/dist/native/darwin-arm64/contained-fs.node"
+      ],
+      "binarySHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59"
+    },
+    "reached": {
+      "operation": "replace:before",
+      "pid": 21864,
+      "providerPath": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-aU5FO5/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node"
+    },
+    "exitCode": 1
+  },
+  {
+    "family": "TR-01",
+    "site": "parent",
+    "mode": "instrumented",
+    "limitation": true,
+    "provider": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-wU3uY4/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node",
+    "providerSHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59",
+    "tarballSHA256": "075e170528cd56995cb57f81b63484677cf8189d36771922da68b366f44173a0",
+    "provenance": {
+      "buildCommit": "e06f4dd504ac7f892b745bacd592e26003687f07",
+      "variant": "test",
+      "sources": {
+        "native/contained-fs.cc": "18cc27642ff2228bfe174f3724ffc946c237f078c654c1992e524e65fe9ca021",
+        "native/contained-fs-posix.cc": "e1f4a20784d71345143e763da09652cebcfca1ea8f912aa425a45f731b422fdf",
+        "native/build.mjs": "181917bd5508577d790fcd0ee7f972952fc30b48427231b92b6971e8097e5262"
+      },
+      "headerHash": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+      "compiler": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+      "compilerVersion": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+      "sdkVersion": "15.5",
+      "xcode": "Xcode 16.4\nBuild version 16F6",
+      "osVersion": "15.7.7",
+      "osBuild": "24G720",
+      "args": [
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fvisibility=hidden",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-isysroot",
+        "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-mmacosx-version-min=15.7.7",
+        "-DNAPI_VERSION=8",
+        "-DNODE_GYP_MODULE_NAME=contained_fs",
+        "-I",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-native-build-zfoYyY/node-v20.19.0/include/node",
+        "-DEXSPECSO_CONTAINMENT_TEST=1",
+        "/Users/runner/work/exspecso/exspecso/native/contained-fs.cc",
+        "-o",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-wU3uY4/package/dist/native/darwin-arm64/contained-fs.node"
+      ],
+      "binarySHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59"
+    },
+    "reached": {
+      "operation": "replace:before",
+      "pid": 22013,
+      "providerPath": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-wU3uY4/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node"
+    },
+    "exitCode": 0
+  },
+  {
+    "family": "TR-01",
+    "site": "ancestor",
+    "mode": "instrumented",
+    "limitation": true,
+    "provider": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-B29PyU/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node",
+    "providerSHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59",
+    "tarballSHA256": "a0a7dc2e209ccb48602fffc5730280994422aa5f24dee14f30b2d7d1807bc043",
+    "provenance": {
+      "buildCommit": "e06f4dd504ac7f892b745bacd592e26003687f07",
+      "variant": "test",
+      "sources": {
+        "native/contained-fs.cc": "18cc27642ff2228bfe174f3724ffc946c237f078c654c1992e524e65fe9ca021",
+        "native/contained-fs-posix.cc": "e1f4a20784d71345143e763da09652cebcfca1ea8f912aa425a45f731b422fdf",
+        "native/build.mjs": "181917bd5508577d790fcd0ee7f972952fc30b48427231b92b6971e8097e5262"
+      },
+      "headerHash": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+      "compiler": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+      "compilerVersion": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+      "sdkVersion": "15.5",
+      "xcode": "Xcode 16.4\nBuild version 16F6",
+      "osVersion": "15.7.7",
+      "osBuild": "24G720",
+      "args": [
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-fvisibility=hidden",
+        "-bundle",
+        "-undefined",
+        "dynamic_lookup",
+        "-isysroot",
+        "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-mmacosx-version-min=15.7.7",
+        "-DNAPI_VERSION=8",
+        "-DNODE_GYP_MODULE_NAME=contained_fs",
+        "-I",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-native-build-Uu9dnN/node-v20.19.0/include/node",
+        "-DEXSPECSO_CONTAINMENT_TEST=1",
+        "/Users/runner/work/exspecso/exspecso/native/contained-fs.cc",
+        "-o",
+        "/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-B29PyU/package/dist/native/darwin-arm64/contained-fs.node"
+      ],
+      "binarySHA256": "7ae038119c5e64ce62f550e1ca7de5b6d496ffb395842376528b326e44558a59"
+    },
+    "reached": {
+      "operation": "replace:before",
+      "pid": 22409,
+      "providerPath": "/private/var/folders/_5/zjnzxgh147qcg3bb5cg2wvqw0000gn/T/exspecso-test-install-B29PyU/runner/node_modules/exspecso/dist/native/darwin-arm64/contained-fs.node"
+    },
+    "exitCode": 0
+  }
+]
