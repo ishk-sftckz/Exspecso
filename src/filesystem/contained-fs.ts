@@ -71,7 +71,7 @@ function loadProvider(operationRoot: string): { native: NativeProvider; provenan
       const filesystem = observeLinuxOperationRootFilesystem(operationRoot);
       let libc: string;
       try {
-        libc = execFileSync("ldd", ["--version"], { encoding: "utf8" }).toString();
+        libc = execFileSync("ldd", ["--version"], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).toString();
       } catch (error: any) {
         if (typeof error?.stderr !== "string" || !error.stderr.includes("musl libc")) throw error;
         libc = error.stderr;

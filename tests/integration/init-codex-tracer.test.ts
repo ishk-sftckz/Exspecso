@@ -83,7 +83,7 @@ describe("packed Codex initializer tracer", () => {
       if (release) {
         expect(release.installed.manifest.variant).toBe("release");
         expect(release.installed.sha256).toBe(release.installed.manifest.targets[0].sha256);
-        expect(await realpath(fixture.root)).not.toBe(await realpath(release.installed));
+        expect(await realpath(fixture.root)).not.toBe(await realpath(release.installed.installed));
         console.log(JSON.stringify({ family: "TR-02", mode: "uninstrumented release CLI", provider: release.installed.provider, providerSHA256: release.installed.sha256, tarballSHA256: release.tarballSHA256, manifest: release.installed.manifest, provenance: release.installed.provenance, packageInventory: release.installed.packageInventory, exitCode: release.exitCode }));
       }
       const relativeAdapter = ".agents/skills/exspecso-start/SKILL.md";
