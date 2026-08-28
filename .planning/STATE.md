@@ -6,9 +6,9 @@ current_phase: 01
 current_phase_name: Initialize Canonical Projects
 status: Portable replan awaiting independent check
 stopped_at: Portable containment replan requested; implementation paused
-last_updated: "2026-08-27T18:26:26.335377+00:00"
+last_updated: "2026-08-28T04:12:51.155Z"
 last_activity: 2026-08-28
-last_activity_desc: Portable containment replan passed independent checking after revision; 10 serial plans and 42 test families pending explicit contract approval and execution.
+last_activity_desc: Completed quick research 260828-ffa comparing GSD/BMAD initialization and runtime support; Phase 1 containment approval and execution remain pending.
 progress:
   total_phases: 1
   completed_phases: 0
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
 Plan: 9 of 18; revised 01-09 Task 1 blocking-human decision; 0/1 task complete
 Status: Awaiting portable contract approval
-Last activity: 2026-08-28 — portable replan passed independent checking after one revision; old macOS-first source-install proposal superseded, not approved.
+Last activity: 2026-08-28 — completed quick task 260828-ffa researching GSD/BMAD initialization and runtime support; the portable containment contract remains awaiting explicit approval.
 
 Plan execution: 8 completed plans preserved; 10 revised/new plans pending (18 total). The larger denominator reflects the portable replan, not lost completed work. Phase completion remains blocked by verification gaps and human/security gates.
 
@@ -141,6 +141,14 @@ None yet.
 - Plan 01-08 is complete. User requested replanning of the remaining serial containment work; revised approval and evidence gates must pass before implementation.
 - Next: `$gsd-execute-phase 1 --gaps-only` resolves the read-only exact support/provider/Node/evidence proposal in revised 01-09 Task 1 and asks for its explicit approval. No implementation before that approval. After execution, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260828-ffa | Research GSD/BMAD initialization and runtime support versus Exspecso Phase 1 | 2026-08-28 | 2c7f31f | [260828-ffa-research-gsd-and-bmad-initialization-and](./quick/260828-ffa-research-gsd-and-bmad-initialization-and/) |
+
+Research note: `docs/research/initialization-runtime-comparison.md` records a generated Codex skill frontmatter incompatibility with the inspected official parser. This remains unfixed and requires scoped adapter verification; the research does not change Phase 1 completion or containment approval.
 
 ## Deferred Items
 
