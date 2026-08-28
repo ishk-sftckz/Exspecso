@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
-status: Plan 01-12 implementation committed but verification halted; execute 01-19 and 01-20 to close it before 01-13
-stopped_at: Halted 01-12-PLAN.md pending local provider/full-suite evidence
-last_updated: "2026-08-28T16:31:10+07:00"
+status: Plan 01-12 implementation committed but verification halted; Plan 01-19 complete; execute 01-20 before 01-13
+stopped_at: Completed 01-19-PLAN.md
+last_updated: "2026-08-28T10:34:01.609Z"
 last_activity: 2026-08-28
 last_activity_desc: Bound artifact reads and root-bound init preflight are complete with exact-source hosted proof; corrected support Plans 01-19 and 01-20 are next.
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 20
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -28,15 +28,15 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 19 of 20; Plans 01-10 and 01-11 complete; Plan 01-12 implementation is committed but its verification status is halted
-Status: Execute the corrected local support and full-regression prerequisites, formally close 01-12 in 01-20, then begin bound ownership/staging
-Last activity: 2026-08-28 — Plan 01-12 bound artifact and initializer reads to the approved native capability.
+Plan: 19 of 20; Plan 01-19 is complete; Plan 01-12 implementation remains verification-halted
+Status: Execute Plan 01-20 to close the historical evidence gate, then begin bound ownership/staging
+Last activity: 2026-08-28 — Plan 01-19 built and loaded the exact local ENV-MA25 native support row.
 
-Plan execution: 12 plans are implementation-complete; Plan 01-12 remains verification-halted after its implementation commits, and 8 plans remain pending (20 total). The all-target tracer is complete and the artifact-read migration exists as halted work-in-place. Plan 01-19 is runnable from completed 01-11 and consumes that committed work; Plan 01-20 may formally close 01-12 and resolve its continuation checkpoint only after exact ENV-MA25 proof and the full unfiltered local regression pass, and only then may ownership/staging containment begin in 01-13.
+Plan execution: 13 plans are implementation-complete; Plan 01-12 remains verification-halted after its implementation commits, and 7 plans remain pending (20 total). The all-target tracer is complete and the artifact-read migration exists as halted work-in-place. Plan 01-19 is complete and consumed that committed work; Plan 01-20 may formally close 01-12 and resolve its continuation checkpoint only after exact ENV-MA25 proof and the full unfiltered local regression pass, and only then may ownership/staging containment begin in 01-13.
 
 ### Active Execution — Native target matrix
 
-- Post-Wave-12 support correction: the current macOS 26.5.1 build 25F80 / arm64 / local APFS / Node 25.2.1 machine is required as a supported target, not development-only. Plan 01-19 depends on the last genuinely completed prerequisite, 01-11, while preserving and consuming Plan 01-12's committed halted work-in-place. Execute 01-19 then 01-20; after the local provider/full-suite evidence passes, 01-20 must set 01-12 complete and mark its continuation checkpoint resolved. Plan 01-13 remains dependent on 01-20. All prior rows and lanes remain obligations.
+- Post-Wave-12 support correction: the current macOS 26.5.1 build 25F80 / arm64 / local APFS / Node 25.2.1 machine is a declared support row, not development-only. Plan 01-19 built and loaded its real Node-API 8 provider through the data-driven matrix while preserving Plan 01-12's halted work-in-place. Execute 01-20 next; after exact local provider/full-suite evidence passes, it must set 01-12 complete and mark its continuation checkpoint resolved. Plan 01-13 remains dependent on 01-20. All prior rows and lanes remain obligations.
 
 - Plan 01-10 is complete (`c9e6a38`). Task 3 uses separate release and instrumented packages and records exact installed provider provenance. The final Windows leaf swap is rejected after handle-relative revalidation.
 - Windows parent/ancestor relocation was blocked at the controller directory rename with `EPERM`; evidence labels this `blocked-before-relocation` and `movedObjectOracle: not exercised`. NP-02 remains the separate moved-object proof and Plan 17 retains the full relocation matrix.
@@ -112,6 +112,7 @@ Plan execution: 12 plans are implementation-complete; Plan 01-12 remains verific
 | Phase 01 P07 | 10min | 2 tasks | 5 files |
 | Phase 01 P08 | 20min | 2 tasks | 5 files |
 | Phase 01 P12 | 15min | 2 tasks | 8 files |
+| Phase 01 P19 | 14min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -145,6 +146,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Only a sole complete UUID-matched dead ownership record is reclaimable; legacy, partial, unreadable, changed, or unexpected evidence remains diagnostic.
 - [Phase ?]: Artifact scans and init preimage checks share a validated relative-component BoundReader; unsafe reads are diagnostics, never absence.
 - [Phase ?]: The root capability stays open for the full init preflight and is closed on every exit before transaction completion.
+- [Phase ?]: Use unique support rows and supportRowId-bound manifests; native target alone is insufficient when environments share an architecture.
+- [Phase ?]: Permit only Node 25.2.1 as an exact exception beside the declared even-major Node ranges.
 
 ### Pending Todos
 
@@ -156,7 +159,7 @@ None yet.
 - The live-writer recovery and stale-owner races are repaired and tested in 01-08; CR-02 still requires independent phase re-verification before it is closed.
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
 - Plans 01-09 and 01-10 are complete. Phase 1 remains incomplete.
-- Next: execute 01-19 and 01-20 within the amended target contract, then resume 01-13. After the remaining serial plans, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
+- Next: execute 01-20 within the amended target contract, then resume 01-13. After the remaining serial plans, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
 ### Quick Tasks Completed
@@ -176,6 +179,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-28T08:50:05.458Z
-Stopped at: Completed 01-12-PLAN.md
+Last session: 2026-08-28T10:34:01.602Z
+Stopped at: Completed 01-19-PLAN.md
 Resume file: None
