@@ -1,13 +1,15 @@
 import { randomUUID } from "node:crypto";
-import { copyFile, lstat, mkdir, open, readFile, rm, rmdir, unlink, writeFile } from "node:fs/promises";
+import { copyFile, lstat, mkdir, open, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import type { PlannedWrite } from "../init/plan.js";
 import { assertSafeTarget, assertSafeTransactionPaths } from "./safe-path.js";
+import { acquireInitOwnership, inspectInitOwnership, releaseInitOwnership, type InitOwnership } from "./ownership.js";
+import { openContainedFilesystem, type RootCapability } from "./contained-fs.js";
 
 export const transactionSchemaVersion = 1;
 export const stagingRelativePath = ".exspecso/.staging";
-export const lockRelativePath = ".exspecso/.init.lock";
+export { lockRelativePath } from "./ownership.js";
 
 export interface TransactionJournalEntry {
   readonly relativePath: string;
@@ -41,11 +43,8 @@ export interface CommitTransactionOptions {
   readonly onPromotion?: (point: PromotionFaultPoint) => void | Promise<void>;
   readonly onReadyToPromote?: () => void | Promise<void>;
   readonly validateStaged?: (stageRoot: string) => void | Promise<void>;
-}
-
-interface LockHandle {
-  readonly path: string;
-  readonly handle: Awaited<ReturnType<typeof open>>;
+  /** Internal caller-owned lease; nested transaction work never releases it. */
+  readonly ownership?: InitOwnership;
 }
 
 function faultPoint(relativePath: string): PromotionFaultPoint {
@@ -110,33 +109,20 @@ async function readOptional(path: string): Promise<string | undefined> {
   }
 }
 
-async function acquireLock(root: string, transactionId: string): Promise<LockHandle | null> {
-  const lockPath = join(root, lockRelativePath);
-  await mkdir(dirname(lockPath), { recursive: true });
-  try {
-    const handle = await open(lockPath, "wx");
-    await handle.writeFile(JSON.stringify({ transactionId, pid: process.pid }), "utf8");
-    await handle.sync();
-    return { path: lockPath, handle };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "EEXIST") return null;
-    throw error;
-  }
-}
-
-async function releaseLock(lock: LockHandle | undefined): Promise<void> {
-  if (lock === undefined) return;
-  await lock.handle.close();
-  await unlink(lock.path).catch(() => undefined);
-}
-
 async function removeKnownTransaction(stageRoot: string, journal: TransactionJournal): Promise<void> {
+  const directories = new Set<string>([join(stageRoot, "files"), join(stageRoot, "backups"), stageRoot]);
   for (const entry of journal.entries) {
-    await rm(stageFile(stageRoot, entry.relativePath), { force: true });
-    if (entry.backupPath !== null) await rm(join(stageRoot, entry.backupPath), { force: true });
+    const staged = stageFile(stageRoot, entry.relativePath);
+    await rm(staged, { force: true });
+    for (let current = dirname(staged); current.startsWith(stageRoot); current = dirname(current)) directories.add(current);
+    if (entry.backupPath !== null) {
+      const backup = join(stageRoot, entry.backupPath);
+      await rm(backup, { force: true });
+      for (let current = dirname(backup); current.startsWith(stageRoot); current = dirname(current)) directories.add(current);
+    }
   }
   await rm(journalPath(stageRoot), { force: true });
-  for (const directory of [join(stageRoot, "files"), join(stageRoot, "backups"), stageRoot]) {
+  for (const directory of [...directories].sort((left, right) => right.length - left.length)) {
     await rmdir(directory).catch(() => undefined);
   }
   await rmdir(dirname(stageRoot)).catch(() => undefined);
@@ -150,10 +136,10 @@ async function updateJournal(stageRoot: string, journal: TransactionJournal): Pr
 
 async function signalExternalFault(point: PromotionFaultPoint): Promise<void> {
   const signalPath = process.env.EXSPECSO_TEST_SYNC_FILE;
-  if (signalPath === undefined) return;
+  if (signalPath === undefined || process.env.EXSPECSO_TEST_FAULT_POINT !== point) return;
   await writeFile(signalPath, `${JSON.stringify({ point, pid: process.pid })}\n`, "utf8");
   if (process.env.EXSPECSO_TEST_WAIT_FOR_KILL === "1") {
-    await new Promise<void>(() => undefined);
+    await new Promise<void>(() => { setInterval(() => undefined, 1_000); });
   }
 }
 
@@ -174,13 +160,22 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
   const root = resolve(plan.repositoryRoot);
   if (plan.writes.length === 0) return { kind: "no-op" };
   const transactionId = randomUUID();
+  let filesystem: RootCapability | undefined;
   try {
+    filesystem = openContainedFilesystem(root);
     await assertSafeTransactionPaths(root, plan.writes);
   } catch (error) {
+    filesystem?.close();
     return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
   }
-  const lock = await acquireLock(root, transactionId);
-  if (lock === null) return { kind: "busy" };
+  let ownership = options.ownership;
+  let ownsLease = false;
+  if (ownership === undefined) {
+    const acquisition = await acquireInitOwnership(root);
+    if (acquisition.kind !== "acquired") { filesystem.close(); return { kind: "busy" }; }
+    ownership = acquisition.ownership;
+    ownsLease = true;
+  }
   const stageRoot = join(root, stagingRelativePath, transactionId);
   let journal: TransactionJournal | undefined;
   let committed = false;
@@ -225,8 +220,30 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       const write = plan.writes.find((candidate) => candidate.relativePath === relativePath);
       if (write === undefined) throw new Error(`EXSPECSO_TRANSACTION_JOURNAL_TARGET: ${relativePath}`);
       await assertSafeTarget(root, write);
-      await copySynced(stageFile(stageRoot, relativePath), write.target);
-      if (sha256(await readFile(write.target, "utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_HASH: ${relativePath}`);
+      const components = relativePath.split("/");
+      const name = components.pop()!;
+      let parent = filesystem.root;
+      for (const component of components) parent = parent.openDirectory(component, true);
+      let existing: string | undefined;
+      try {
+        const file = parent.openFile(name);
+        try { existing = file.read().toString("utf8"); } finally { file.close(); }
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "EXSPECSO_CONTAINMENT_ENOENT") throw error;
+      }
+      if (existing === undefined ? write.expectedExists : !write.expectedExists || sha256(existing) !== write.expectedPreimageHash) {
+        throw new Error(`EXSPECSO_TRANSACTION_STALE_PREIMAGE: ${relativePath}`);
+      }
+      const staged = await readFile(stageFile(stageRoot, relativePath));
+      if (sha256(staged.toString("utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_STAGED_HASH: ${relativePath}`);
+      const temporary = parent.createFile(`.exspecso-tmp-${randomUUID()}`);
+      try {
+        temporary.write(staged);
+        temporary.sync();
+        parent.replace(temporary, name);
+        if (sha256(temporary.read().toString("utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_HASH: ${relativePath}`);
+        parent.sync();
+      } finally { temporary.close(); }
       journal = await updateJournal(stageRoot, { ...journal, completedStep: index });
       const point = faultPoint(relativePath);
       await options.onPromotion?.(point);
@@ -242,8 +259,9 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
   } catch (error) {
     return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
   } finally {
-    await releaseLock(lock);
+    filesystem.close();
     if (committed && journal !== undefined) await rmdir(join(root, ".exspecso", ".staging")).catch(() => undefined);
+    if (ownsLease && ownership !== undefined) await releaseInitOwnership(ownership);
   }
 }
 
@@ -252,19 +270,8 @@ export async function readTransactionJournal(stageRoot: string): Promise<Transac
 }
 
 export async function transactionIsActive(root: string): Promise<boolean> {
-  const lockPath = join(root, lockRelativePath);
-  try {
-    const lock = JSON.parse(await readFile(lockPath, "utf8")) as { pid?: unknown };
-    if (typeof lock.pid !== "number" || !Number.isInteger(lock.pid) || lock.pid <= 0) return false;
-    try {
-      process.kill(lock.pid, 0);
-      return true;
-    } catch (error) {
-      return (error as NodeJS.ErrnoException).code === "EPERM";
-    }
-  } catch {
-    return false;
-  }
+  const inspection = await inspectInitOwnership(root);
+  return inspection.kind !== "none" && inspection.kind !== "stale";
 }
 
 export function transactionStageRoot(root: string, transactionId: string): string {
@@ -273,7 +280,13 @@ export function transactionStageRoot(root: string, transactionId: string): strin
 
 export async function removeRecoveredTransaction(root: string, stageRoot: string, journal: TransactionJournal): Promise<void> {
   await removeKnownTransaction(stageRoot, journal);
-  await unlink(join(root, lockRelativePath)).catch(() => undefined);
+  for (const entry of journal.entries.filter((candidate) => candidate.preimageHash === null)) {
+    let current = dirname(join(root, entry.relativePath));
+    while (current !== root) {
+      await rmdir(current).catch(() => undefined);
+      current = dirname(current);
+    }
+  }
 }
 
 export async function isRegularFile(path: string): Promise<boolean> {

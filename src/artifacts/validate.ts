@@ -1,9 +1,8 @@
-import { access, readdir, readFile } from "node:fs/promises";
-import type { Dirent } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { access, readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { type ZodIssue } from "zod";
-import { type ArtifactDefinition, scanArtifactDefinitions } from "./resolve.js";
-import { parseArtifactId, projectConfigSchema } from "./schema.js";
+import { type ArtifactDefinition, scanArtifacts } from "./resolve.js";
+import { projectConfigSchema } from "./schema.js";
 import type { Diagnostic } from "../errors/diagnostic.js";
 
 const canonicalDirectory = ".exspecso";
@@ -44,58 +43,6 @@ export function validateProjectConfig(path: string, text: string): readonly Diag
   }
   const result = projectConfigSchema.safeParse(parsed);
   return result.success ? [] : result.error.issues.map((issue) => schemaDiagnostic(path, issue));
-}
-
-async function canonicalFiles(root: string, directory = join(root, canonicalDirectory)): Promise<string[]> {
-  let entries: Dirent<string>[];
-  try {
-    entries = await readdir(directory, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const files: string[] = [];
-  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...(await canonicalFiles(root, path)));
-    } else if (entry.isFile() && (entry.name.endsWith(".md") || entry.name.endsWith(".json"))) {
-      files.push(path);
-    }
-  }
-  return files;
-}
-
-function relativePath(root: string, path: string): string {
-  return relative(root, path).split(sep).join("/");
-}
-
-async function validateRawArtifactIds(root: string): Promise<Diagnostic[]> {
-  const diagnostics: Diagnostic[] = [];
-  for (const file of await canonicalFiles(root)) {
-    if (!file.endsWith(".md")) {
-      continue;
-    }
-    const path = relativePath(root, file);
-    const text = await readFile(file, "utf8");
-    const lines = text.split(/\r?\n/);
-    for (const [index, line] of lines.entries()) {
-      const frontmatter = /^(id|parent):\s*(\S+)\s*$/.exec(line);
-      const heading = /^(#{1,6})\s+(\S+)/.exec(line);
-      const candidate = frontmatter?.[2] ?? heading?.[2];
-      if (candidate === undefined || !/^[A-Z]+(?:-[0-9]+)?$/.test(candidate) || parseArtifactId(candidate) !== null) {
-        continue;
-      }
-      diagnostics.push({
-        code: "EXSPECSO_ARTIFACT_INVALID_ID",
-        path,
-        section: `line ${index + 1}`,
-        expected: "ROADMAP or one exact D-20 ID family",
-        actual: candidate,
-        hint: "Use ROADMAP, PHASE-NNN, SPEC-NNN, REQ-NNN, AC-NNN, PLAN-NNN, TASK-NNN, DEC-NNN, or FINDING-NNN exactly.",
-      });
-    }
-  }
-  return diagnostics;
 }
 
 function definitionLabel(definition: ArtifactDefinition): string {
@@ -165,8 +112,9 @@ export async function validateProject(root: string): Promise<readonly Diagnostic
       });
     }
   }
-  const definitions = (await scanArtifactDefinitions(root)).filter((definition) => definition.path === canonicalDirectory || definition.path.startsWith(`${canonicalDirectory}/`));
-  diagnostics.push(...(await validateRawArtifactIds(root)));
+  const scanResult = await scanArtifacts(root);
+  const definitions = scanResult.definitions.filter((definition) => definition.path === canonicalDirectory || definition.path.startsWith(`${canonicalDirectory}/`));
+  diagnostics.push(...scanResult.diagnostics.filter((diagnostic) => diagnostic.path === canonicalDirectory || diagnostic.path.startsWith(`${canonicalDirectory}/`)));
   diagnostics.push(...validateDefinitions(definitions));
   try {
     await access(join(root, roadmapPath));
