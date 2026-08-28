@@ -21,7 +21,7 @@ interface NativeProvider {
 }
 interface Target {
   target: string; platform: string; arch: string; osVersion: string; osBuild: string;
-  filesystem: string; napiVersion: number; byteLength: number; sha256: string; path: string;
+  filesystem: string; libc?: string; napiVersion: number; byteLength: number; sha256: string; path: string;
 }
 interface Manifest { schemaVersion: number; packageVersion: string; buildCommit: string; variant: "release" | "test"; targets: Target[] }
 export interface ProviderProvenance { readonly path: string; readonly sha256: string; readonly buildCommit: string; readonly variant: "release" | "test" }
@@ -45,11 +45,24 @@ function loadProvider(): { native: NativeProvider; provenance: ProviderProvenanc
       const osBuild = execFileSync("/usr/bin/sw_vers", ["-buildVersion"], { encoding: "utf8" }).trim();
       const approved = process.arch === "arm64" ? ["15.7.7", "24G720"] : ["15.7.9", "24G830"];
       if (entry.osVersion !== approved[0] || entry.osBuild !== approved[1] || osVersion !== entry.osVersion || osBuild !== entry.osBuild) unavailable("unverified OS version; no project changes made");
-    } else if (process.platform === "win32" && process.arch === "x64" && entry.filesystem === "ntfs") {
+    } else if (process.platform === "win32" && ["x64", "arm64"].includes(process.arch) && entry.filesystem === "ntfs") {
       const powershell = join(process.env.SystemRoot ?? "C:\\Windows", "System32/WindowsPowerShell/v1.0/powershell.exe");
       const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== "psmodulepath"));
       const observed = JSON.parse(execFileSync(powershell, ["-NoProfile", "-NonInteractive", "-Command", "$o=Get-CimInstance Win32_OperatingSystem;$r=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion';@{caption=$o.Caption;version=$o.Version;build=$o.BuildNumber;ubr=$r.UBR}|ConvertTo-Json -Compress"], { encoding: "utf8", windowsHide: true, env: environment })) as { caption: string; version: string; build: string; ubr: number };
-      if (entry.osVersion !== "10.0.26100" || entry.osBuild !== "26100.33296" || observed.caption !== "Microsoft Windows Server 2025 Datacenter" || observed.version !== entry.osVersion || `${observed.build}.${observed.ubr}` !== entry.osBuild) unavailable("unverified Windows version; no project changes made");
+      const approved = process.arch === "x64"
+        ? entry.osVersion === "10.0.26100" && entry.osBuild === "26100.33296" && observed.caption === "Microsoft Windows Server 2025 Datacenter"
+        : entry.osVersion === "10.0.26200" && observed.caption === "Microsoft Windows 11 Enterprise";
+      if (!approved || observed.version !== entry.osVersion || !`${observed.build}.${observed.ubr}`.startsWith(`${entry.osBuild?.split(".")[0]}.`)) unavailable("unverified Windows version; no project changes made");
+    } else if (process.platform === "linux" && ["x64", "arm64"].includes(process.arch) && entry.filesystem === "ext4" && entry.osVersion === "Ubuntu 24.04.4 LTS") {
+      const kernel = execFileSync("uname", ["-r"], { encoding: "utf8" }).trim();
+      const filesystem = execFileSync("stat", ["-f", "-c", "%T", packageRoot], { encoding: "utf8" }).trim();
+      const libc = execFileSync("getconf", ["GNU_LIBC_VERSION"], { encoding: "utf8" }).trim();
+      if (kernel !== entry.osBuild || filesystem !== "ext2/ext3" || (entry.libc === "glibc-2.39" && libc !== "glibc 2.39")) unavailable("unverified Linux version/filesystem/libc; no project changes made");
+    } else if (process.platform === "linux" && ["x64", "arm64"].includes(process.arch) && entry.filesystem === "ext4" && entry.osVersion === "Alpine 3.24" && entry.libc === "musl-1.2.6-r2") {
+      const kernel = execFileSync("uname", ["-r"], { encoding: "utf8" }).trim();
+      const filesystem = execFileSync("stat", ["-f", "-c", "%T", packageRoot], { encoding: "utf8" }).trim();
+      const libc = execFileSync("ldd", ["--version"], { encoding: "utf8" }).toString();
+      if (!kernel || filesystem !== "ext2/ext3" || !libc.includes("Version 1.2.6")) unavailable("unverified Alpine Linux/filesystem/libc; no project changes made");
     } else unavailable("this tracer has no verified provider for the host");
     const binary = join(packageRoot, "dist/native", entry.path);
     if (!lstatSync(binary).isFile()) unavailable("provider must be an in-package regular file");

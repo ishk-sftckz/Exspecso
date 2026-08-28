@@ -1,0 +1,132 @@
+name: Containment native target matrix
+on:
+  push:
+    branches: [codex/containment-native-matrix-20260828]
+permissions: {}
+concurrency:
+  group: containment-native-matrix
+  cancel-in-progress: false
+jobs:
+  native:
+    name: ${{ matrix.id }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {id: ENV-MA, runner: macos-15, family: macos, target: darwin-arm64}
+          - {id: ENV-MX, runner: macos-15-intel, family: macos, target: darwin-x64}
+          - {id: ENV-WX, runner: windows-2025, family: windows, target: win32-x64}
+          - {id: ENV-WA, runner: windows-11-arm, family: windows, target: win32-arm64}
+          - {id: ENV-LGX, runner: ubuntu-24.04, family: glibc, target: linux-x64}
+          - {id: ENV-LGA, runner: ubuntu-24.04-arm, family: glibc, target: linux-arm64}
+          - {id: ENV-LMX, runner: ubuntu-24.04, family: musl, target: linux-x64}
+          - {id: ENV-LMA, runner: ubuntu-24.04-arm, family: musl, target: linux-arm64}
+    steps:
+      - name: Fetch only the reviewed temporary snapshot
+        shell: bash
+        run: |
+          git init .
+          git remote add origin https://github.com/ishk-sftckz/exspecso.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+      - name: Fetch checksum-verified Node 20.19.0 inputs
+        if: matrix.family == 'macos' || matrix.family == 'glibc'
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          archive="node-v20.19.0-$TARGET.tar.gz"
+          base=https://nodejs.org/dist/v20.19.0
+          curl --fail --silent --show-error -O "$base/SHASUMS256.txt"
+          curl --fail --silent --show-error -O "$base/$archive" -O "$base/node-v20.19.0-headers.tar.gz"
+          grep "  $archive$" SHASUMS256.txt | shasum -a 256 -c -
+          test "$(shasum -a 256 node-v20.19.0-headers.tar.gz | awk '{print $1}')" = 800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb
+          tar -xzf "$archive"
+          echo "$PWD/node-v20.19.0-$TARGET/bin" >> "$GITHUB_PATH"
+          echo "EXSPECSO_NODE_HEADERS=$PWD/node-v20.19.0-headers.tar.gz" >> "$GITHUB_ENV"
+      - name: Build and run the real installed tracer natively
+        if: matrix.family == 'macos' || matrix.family == 'glibc'
+        shell: bash
+        env:
+          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+          node native/build.mjs --variant release --target "$TARGET" --out . --headers "$EXSPECSO_NODE_HEADERS"
+          npm run build
+          npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+          node scripts/write-containment-evidence.mjs
+      - name: Fetch checksum-verified native Node inputs for Windows
+        if: matrix.family == 'windows'
+        shell: pwsh
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $nodeTarget = $env:TARGET.Replace('win32-', 'win-')
+          $base = 'https://nodejs.org/dist/v20.19.0/'
+          Invoke-WebRequest "$base/SHASUMS256.txt" -OutFile SHASUMS256.txt
+          foreach ($name in @("node-v20.19.0-$nodeTarget.zip", 'node-v20.19.0-headers.tar.gz', "$nodeTarget/node.lib")) {
+            $destination = Join-Path $env:RUNNER_TEMP ([IO.Path]::GetFileName($name))
+            Invoke-WebRequest "$base$name" -OutFile $destination
+            $expected = ((Get-Content SHASUMS256.txt | Where-Object { $_ -match "\s$name$" }) -split '\s+')[0]
+            if ((Get-FileHash $destination -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw "Node input checksum mismatch: $name" }
+          }
+          Expand-Archive (Join-Path $env:RUNNER_TEMP "node-v20.19.0-$nodeTarget.zip") $env:RUNNER_TEMP
+          "$env:RUNNER_TEMP/node-v20.19.0-$nodeTarget" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "EXSPECSO_NODE_HEADERS=$(Join-Path $env:RUNNER_TEMP 'node-v20.19.0-headers.tar.gz')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "EXSPECSO_NODE_LIB=$(Join-Path $env:RUNNER_TEMP 'node.lib')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Build and run the real installed Windows tracer
+        if: matrix.family == 'windows'
+        shell: pwsh
+        env:
+          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          npm ci --ignore-scripts
+          node native/build.mjs --variant release --target $env:TARGET --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
+          npm run build
+          npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+          node scripts/write-containment-evidence.mjs
+      - name: Build and run the real native musl tracer in the pinned Alpine userland
+        if: matrix.family == 'musl'
+        shell: bash
+        env:
+          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.id }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          base=$(node -e "const m=require('./native/support-matrix.json');console.log(m.rows.find(x=>x.id===process.env.EXSPECSO_CONTAINMENT_ROW).image)")
+          runtime=$(node -e "console.log(process.env.TARGET.endsWith('arm64') ? 'node:20.19.0-alpine3.21@sha256:646bc11400802534d70bc576fc9704bb6409e0ed802658a8e785472d160c38d3' : 'node:20.19.0-alpine3.21@sha256:37a5a350292926f98d48de9af160b0a3f7fcb141566117ee452742739500a5bd')")
+          docker pull "$base"
+          docker pull "$runtime"
+          docker run --rm --entrypoint sh "$runtime" -c 'cat /usr/local/bin/node' > node20-musl
+          chmod +x node20-musl
+          docker run --rm --user root -e EXSPECSO_CONTAINMENT_ROW -e TARGET -v "$PWD:/work" -w /work "$base" sh -euxc '
+            apk add --no-cache g++=15.2.0-r5 musl-dev=1.2.6-r2 linux-headers=7.0.0-r1
+            curl -fsSLO https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz
+            test "$(sha256sum node-v20.19.0-headers.tar.gz | awk "{print \$1}")" = 800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb
+            ln -sf /work/node20-musl /tmp/node
+            export PATH=/tmp:$PATH EXSPECSO_NODE_HEADERS=/work/node-v20.19.0-headers.tar.gz EXSPECSO_CONTAINMENT_LIBC=musl
+            npm ci --ignore-scripts
+            node native/build.mjs --variant release --target "$TARGET" --out . --headers "$EXSPECSO_NODE_HEADERS" --libc musl
+            npm run build
+            npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+            node scripts/write-containment-evidence.mjs'
+      - name: Upload actual target evidence and binaries
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: containment-${{ matrix.id }}
+          path: |
+            evidence.json
+            tracer-results.json
+            dist/native/
+            windows-preflight/
+          if-no-files-found: error
+          retention-days: 7

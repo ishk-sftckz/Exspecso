@@ -54,6 +54,7 @@ export async function installContainedPackage(variant: "release" | "test") {
     await cp(join(root, "package.json"), join(staged, "package.json"));
     const args = [join(root, "native/build.mjs"), "--variant", variant, "--target", `${process.platform}-${process.arch}`, "--out", staged, "--headers", process.env.EXSPECSO_NODE_HEADERS ?? "missing-approved-headers"];
     if (process.platform === "win32") args.push("--node-lib", process.env.EXSPECSO_NODE_LIB ?? "missing-approved-library");
+    if (process.platform === "linux" && process.env.EXSPECSO_CONTAINMENT_LIBC === "musl") args.push("--libc", "musl");
     await exec(process.execPath, args, { maxBuffer: 2 * 1024 * 1024 });
     const { stdout } = await runNpm(["pack", "--json", "--pack-destination", directory], { cwd: staged });
     const [{ filename }] = JSON.parse(stdout) as Array<{ filename: string }>;

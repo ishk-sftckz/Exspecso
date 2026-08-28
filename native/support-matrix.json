@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "revision": "01-09-approved-2026-08-28",
+  "nodePolicy": {
+    "baseline": "20.19.0",
+    "testedVersions": ["20.19.0", "20.19.5", "20.20.2", "22.13.0", "22.23.2", "24.0.0", "24.20.0", "26.0.0", "26.8.1"],
+    "napi": 8
+  },
+  "rows": [
+    {"id":"ENV-MA","runner":"macos-15","os":{"family":"macos","version":"15.7.7","build":"24G720","image":"20260727.0256.1"},"cpu":"arm64","libc":"system","filesystem":"apfs","node":{"baseline":"20.19.0","testedVersion":"20.19.0"},"toolchain":"Xcode 16.4 (16F6); Apple clang 17.0.0 clang-1700.0.13.5; SDK 15.5 (24F74)"},
+    {"id":"ENV-MX","runner":"macos-15-intel","os":{"family":"macos","version":"15.7.9","build":"24G830","image":"20260824.0482.1"},"cpu":"x64","libc":"system","filesystem":"apfs","node":{"baseline":"20.19.0","testedVersion":"20.19.0"},"toolchain":"Xcode 16.4 (16F6); Apple clang 17.0.0 clang-1700.0.13.5; SDK 15.5 (24F74)"},
+    {"id":"ENV-WX","runner":"windows-2025","os":{"family":"windows","version":"10.0.26100","edition":"Windows Server 2025 Datacenter","image":["20260818.207.1","20260824.214.3"],"imageOS":"win25-vs2026"},"cpu":"x64","libc":"system","filesystem":"ntfs","node":{"baseline":"20.19.0","testedVersion":"20.19.0"},"toolchain":"VS 2026 18.9.12112.369; MSVC 14.44.35207; Windows SDK 10.0.26100.0"},
+    {"id":"ENV-WA","runner":"windows-11-arm","os":{"family":"windows","version":"10.0.26200","edition":"Windows 11 Enterprise","image":"20260823.149.1"},"cpu":"arm64","libc":"system","filesystem":"ntfs","node":{"baseline":"20.19.0","testedVersion":"20.19.0"},"toolchain":"VS 2022 17.14.37614.0; MSVC 14.44.35207; Windows SDK 10.0.26100.0"},
+    {"id":"ENV-LGX","runner":"ubuntu-24.04","os":{"family":"linux","version":"Ubuntu 24.04.4","kernel":"6.17.0-1022-azure","image":"20260823.283.1"},"cpu":"x64","libc":"glibc-2.39","filesystem":"ext4","node":{"baseline":"20.19.0","testedVersion":"20.19.0"},"toolchain":"GCC/G++ 13.3.0; package 13.3.0-6ubuntu2~24.04.1"},
+    {"id":"ENV-LGA","runner":"ubuntu-24.04-arm","os":{"family":"linux","version":"Ubuntu 24.04.4","kernel":"6.17.0-1022-azure","image":"20260823.101.1"},"cpu":"arm64","libc":"glibc-2.39","filesystem":"ext4","node":{"baseline":"20.19.0","testedVersion":"20.19.0"},"toolchain":"GCC/G++ 13.3.0; package 13.3.0-6ubuntu2~24.04.1"},
+    {"id":"ENV-LMX","runner":"ubuntu-24.04","os":{"family":"linux","version":"Ubuntu 24.04.4","kernel":"6.17.0-1022-azure","image":"20260823.283.1"},"cpu":"x64","libc":"musl-1.2.6-r2","filesystem":"ext4","node":{"baseline":"20.19.0","testedVersion":"20.19.0"},"image":"node:24.20.0-alpine3.24@sha256:4caaaf42195bcd6f6f3559a413b20cb8f8ad089e231ee874cf7701643966689f","toolchain":"Alpine 3.24; gcc/g++/libgcc/libstdc++ 15.2.0-r5; musl/musl-dev 1.2.6-r2; linux-headers 7.0.0-r1"},
+    {"id":"ENV-LMA","runner":"ubuntu-24.04-arm","os":{"family":"linux","version":"Ubuntu 24.04.4","kernel":"6.17.0-1022-azure","image":"20260823.101.1"},"cpu":"arm64","libc":"musl-1.2.6-r2","filesystem":"ext4","node":{"baseline":"20.19.0","testedVersion":"20.19.0"},"image":"node:24.20.0-alpine3.24@sha256:d3724e44ee368606d753e0027eb8d2a94fc1f275e5d9e4620178a12edb655f5f","toolchain":"Alpine 3.24; gcc/g++/libgcc/libstdc++ 15.2.0-r5; musl/musl-dev 1.2.6-r2; linux-headers 7.0.0-r1"}
+  ]
+}
