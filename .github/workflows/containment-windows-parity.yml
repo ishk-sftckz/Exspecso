@@ -1,0 +1,34 @@
+name: Containment Windows parity
+on:
+  push:
+    branches: [codex/containment-windows-parity-20260828]
+permissions: {}
+concurrency:
+  group: containment-windows-parity
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - name: Fetch this exact public task snapshot
+        shell: pwsh
+        run: |
+          git init .
+          if ($LASTEXITCODE) { throw 'git init failed' }
+          git remote add origin https://github.com/ishk-sftckz/exspecso.git
+          git fetch --depth=1 origin $env:GITHUB_SHA
+          if ($LASTEXITCODE) { throw 'git fetch failed' }
+          git checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE) { throw 'git checkout failed' }
+      - name: Inspect the pinned native Windows SDK and toolchain
+        shell: pwsh
+        run: ./native/windows-preflight.ps1
+      - name: Preserve actual Windows observations
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: containment-windows-parity
+          path: windows-preflight/
+          if-no-files-found: error
+          retention-days: 7
