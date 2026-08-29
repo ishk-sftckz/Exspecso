@@ -273,6 +273,39 @@ describe("journaled init transaction", () => {
     await expect(readFile(sentinel, "utf8")).resolves.toBe("preserve");
   });
 
+  it("cleans a hash-validated partial preparing journal without rewriting prior targets", async () => {
+    const fixture = await useFixture();
+    const transactionId = randomUUID();
+    const stage = join(fixture.root, stagingRelativePath, transactionId);
+    const first = join(fixture.root, "first.txt");
+    const second = join(fixture.root, "second.txt");
+    await Promise.all([writeFile(first, "first prior", "utf8"), writeFile(second, "second prior", "utf8")]);
+    await mkdir(join(stage, "files"), { recursive: true });
+    await mkdir(join(stage, "backups"), { recursive: true });
+    await writeFile(join(stage, "files", "first.txt"), "first replacement", "utf8");
+    await writeFile(join(stage, "backups", "first.txt"), "first prior", "utf8");
+    const journal = {
+      schemaVersion: 2,
+      transactionId,
+      repositoryRootFingerprint: sha256(resolve(fixture.root)),
+      entries: [
+        { relativePath: "first.txt", preimageHash: sha256("first prior"), stagedHash: sha256("first replacement"), backupPath: "backups/first.txt", backupHash: sha256("first prior") },
+        { relativePath: "second.txt", preimageHash: sha256("second prior"), stagedHash: sha256("second replacement"), backupPath: "backups/second.txt", backupHash: sha256("second prior") },
+      ],
+      promotionOrder: ["first.txt", "second.txt"],
+      state: "preparing",
+      inFlight: null,
+      completedPromotions: [],
+      completedStep: -1,
+    };
+    await writeFile(join(stage, "journal.json"), `${JSON.stringify(journal)}\n`, "utf8");
+
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "recovered", disposition: "restored-prior" });
+    await expect(readFile(first, "utf8")).resolves.toBe("first prior");
+    await expect(readFile(second, "utf8")).resolves.toBe("second prior");
+    await expect(readdir(join(fixture.root, ".exspecso"))).rejects.toThrow();
+  });
+
   it("excludes a second writer while the first has a prepared journal", async () => {
     const fixture = await useFixture();
     const firstPlan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });

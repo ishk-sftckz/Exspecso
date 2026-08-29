@@ -214,20 +214,17 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
   let committed = false;
   try {
     staging = ownership.operationalDirectory.openDirectory(".staging", true);
-    await options.onBeforeStaging?.(staging);
     stage = staging.createDirectory(transactionId);
+    await options.onBeforeStaging?.(stage);
     const entries: TransactionJournalEntry[] = [];
+    const preimages = new Map<string, string | undefined>();
     for (const write of plan.writes) {
       const current = readOptionalBound(filesystem.root, components(write.relativePath));
       if ((current === undefined) !== !write.expectedExists || (current !== undefined && sha256(current) !== write.expectedPreimageHash)) {
         throw new Error(`EXSPECSO_TRANSACTION_STALE_PREIMAGE: ${write.relativePath}`);
       }
-      writeBound(stage, ["files", ...components(write.relativePath)], write.content);
-      if (sha256(readBound(stage, ["files", ...components(write.relativePath)]).toString("utf8")) !== sha256(write.content)) throw new Error(`EXSPECSO_TRANSACTION_STAGED_HASH: ${write.relativePath}`);
+      preimages.set(write.relativePath, current);
       const backupPath = current === undefined ? null : join("backups", write.relativePath);
-      if (current !== undefined && backupPath !== null) {
-        writeBound(stage, components(backupPath), current);
-      }
       entries.push({
         relativePath: write.relativePath,
         preimageHash: current === undefined ? null : sha256(current),
@@ -236,7 +233,34 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
         backupHash: current === undefined ? null : sha256(current),
       });
     }
-    stage.openDirectory("files").sync();
+    journal = await updateJournal(stage, {
+      schemaVersion: transactionSchemaVersion,
+      transactionId,
+      repositoryRootFingerprint: sha256(root),
+      entries,
+      promotionOrder: entries.map((entry) => entry.relativePath),
+      state: "preparing",
+      inFlight: null,
+      completedPromotions: [],
+      completedStep: -1,
+    });
+    for (const [index, write] of plan.writes.entries()) {
+      const entry = entries[index]!;
+      writeBound(stage, ["files", ...components(write.relativePath)], write.content);
+      if (sha256(readBound(stage, ["files", ...components(write.relativePath)]).toString("utf8")) !== entry.stagedHash) throw new Error(`EXSPECSO_TRANSACTION_STAGED_HASH: ${write.relativePath}`);
+      if (entry.backupPath !== null) {
+        const current = preimages.get(write.relativePath);
+        if (current === undefined) throw new Error(`EXSPECSO_TRANSACTION_PREIMAGE: ${write.relativePath}`);
+        writeBound(stage, components(entry.backupPath), current);
+        if (sha256(readBound(stage, components(entry.backupPath)).toString("utf8")) !== entry.backupHash) throw new Error(`EXSPECSO_TRANSACTION_BACKUP_HASH: ${write.relativePath}`);
+      }
+    }
+    const files = stage.openDirectory("files");
+    try { files.sync(); } finally { files.close(); }
+    journal = await updateJournal(stage, {
+      ...journal,
+      state: "prepared",
+    });
     // Capture every destination parent before the first native replacement
     // boundary. Promotion then uses only those held objects, even if a caller
     // relocates a directory while a test-only replacement barrier is active.
@@ -247,17 +271,6 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       for (const component of targetComponents) parent = parent.openDirectory(component, true);
       promotionParents.set(write.relativePath, parent);
     }
-    journal = await updateJournal(stage, {
-      schemaVersion: transactionSchemaVersion,
-      transactionId,
-      repositoryRootFingerprint: sha256(root),
-      entries,
-      promotionOrder: entries.map((entry) => entry.relativePath),
-      state: "prepared",
-      inFlight: null,
-      completedPromotions: [],
-      completedStep: -1,
-    });
     await options.validateStaged?.({ read(path) { return readBound(stage!, path); } });
     await options.onReadyToPromote?.();
 

@@ -1,6 +1,6 @@
 export const transactionSchemaVersion = 2;
 
-export type TransactionState = "prepared" | "promoting" | "restoring" | "cleaning";
+export type TransactionState = "preparing" | "prepared" | "promoting" | "restoring" | "cleaning";
 export type TransactionOperation = "replace" | "restore" | "remove";
 
 export interface TransactionJournalEntry {
@@ -39,7 +39,7 @@ export type ParsedTransactionJournal =
   | { readonly kind: "invalid"; readonly message: string };
 
 const hash = /^[a-f0-9]{64}$/;
-const states = new Set<TransactionState>(["prepared", "promoting", "restoring", "cleaning"]);
+const states = new Set<TransactionState>(["preparing", "prepared", "promoting", "restoring", "cleaning"]);
 const operations = new Set<TransactionOperation>(["replace", "restore", "remove"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -87,5 +87,6 @@ export function parseTransactionJournal(value: unknown, transactionId: string, r
   if (inFlight !== null && (!isRecord(inFlight) || !isContainedRelativePath(inFlight.relativePath) || !operations.has(inFlight.operation as TransactionOperation) || !promotionOrder.includes(inFlight.relativePath))) return { kind: "invalid", message: "journal in-flight operation is invalid" };
   if (!Array.isArray(value.completedPromotions) || value.completedPromotions.some((path) => !isContainedRelativePath(path) || !promotionOrder.includes(path)) || new Set(value.completedPromotions).size !== value.completedPromotions.length) return { kind: "invalid", message: "journal completed promotion evidence is invalid" };
   if (typeof value.completedStep !== "number" || !Number.isInteger(value.completedStep) || value.completedStep < -1 || value.completedStep >= promotionOrder.length) return { kind: "invalid", message: "journal compatibility state is invalid" };
+  if (value.state === "preparing" && (inFlight !== null || value.completedPromotions.length !== 0 || value.completedStep !== -1)) return { kind: "invalid", message: "preparing journal has promotion evidence" };
   return { kind: "current", journal: value as unknown as TransactionJournal };
 }

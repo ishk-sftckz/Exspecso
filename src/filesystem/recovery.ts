@@ -41,6 +41,69 @@ function readOptionalBound(root: DirectoryCapability, path: readonly string[]): 
 function hash(bytes: Buffer | undefined): string | null { return bytes === undefined ? null : sha256(bytes.toString("utf8")); }
 function priorHash(entry: TransactionJournalEntry): string | null { return entry.preimageHash; }
 function expectedBackup(entry: TransactionJournalEntry): string | null { return entry.preimageHash === null ? null : entry.preimageHash; }
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+function knownPreparationEntries(journal: TransactionJournal): Map<string, Set<string>> {
+  const known = new Map<string, Set<string>>();
+  const add = (path: readonly string[]) => {
+    for (let index = 0; index < path.length; index += 1) {
+      const parent = path.slice(0, index).join("/");
+      const entries = known.get(parent) ?? new Set<string>();
+      entries.add(path[index]!);
+      known.set(parent, entries);
+    }
+  };
+  add(["journal.json"]);
+  for (const entry of journal.entries) {
+    add(["files", ...components(entry.relativePath)]);
+    if (entry.backupPath !== null) add(components(entry.backupPath));
+  }
+  return known;
+}
+
+function hasOnlyKnownPreparationEntries(directory: DirectoryCapability, path: readonly string[], known: ReadonlyMap<string, ReadonlySet<string>>): boolean {
+  const expected = known.get(path.join("/")) ?? new Set<string>();
+  const actual = directory.list();
+  if (actual.some((name) => !expected.has(name))) return false;
+  for (const name of actual) {
+    const childPath = [...path, name];
+    if (known.has(childPath.join("/"))) {
+      let child: DirectoryCapability;
+      try { child = directory.openDirectory(name); } catch { return false; }
+      try { if (!hasOnlyKnownPreparationEntries(child, childPath, known)) return false; }
+      finally { child.close(); }
+    } else {
+      try { directory.openFile(name).close(); } catch { return false; }
+    }
+  }
+  return true;
+}
+
+function preparingEvidenceError(root: DirectoryCapability, stage: DirectoryCapability, journal: TransactionJournal): string | null {
+  if (!hasOnlyKnownPreparationEntries(stage, [], knownPreparationEntries(journal))) return "preparing journal has unknown staging evidence";
+  for (const entry of journal.entries) {
+    if (hash(readOptionalBound(root, components(entry.relativePath))) !== priorHash(entry)) return `canonical hash mismatch for ${entry.relativePath}`;
+    const staged = readOptionalBound(stage, ["files", ...components(entry.relativePath)]);
+    if (staged !== undefined && hash(staged) !== entry.stagedHash) return `staged hash mismatch for ${entry.relativePath}`;
+    const backup = entry.backupPath === null ? undefined : readOptionalBound(stage, components(entry.backupPath));
+    if (backup !== undefined && (hash(backup) !== expectedBackup(entry) || entry.backupHash !== expectedBackup(entry))) return `backup hash mismatch for ${entry.relativePath}`;
+  }
+  return null;
+}
+
+function removeEmptyPreJournalStage(stage: DirectoryCapability, staging: DirectoryCapability, transactionId: string): boolean {
+  if (!uuid.test(transactionId)) return false;
+  const entries = stage.list();
+  if (entries.length === 1 && /^\.exspecso-journal-[0-9a-f-]{36}$/.test(entries[0]!)) {
+    try { stage.openFile(entries[0]!).close(); stage.unlink(entries[0]!); } catch { return false; }
+  } else if (entries.length !== 0) return false;
+  try {
+    stage.close();
+    staging.removeDirectory(transactionId);
+    staging.close();
+    return true;
+  } catch { return false; }
+}
 
 function allowedHashes(journal: TransactionJournal, entry: TransactionJournalEntry): readonly (string | null)[] {
   if (journal.state === "restoring") return [priorHash(entry), entry.stagedHash];
@@ -147,6 +210,13 @@ export async function recoverInterruptedTransaction(rootInput: string, ownership
     const transactionId = directories[0]!;
     try { stage = staging.openDirectory(transactionId); }
     catch { return { kind: "ambiguous", message: "transaction staging entry is unreadable" }; }
+    if (!stage.list().includes("journal.json")) {
+      if (!removeEmptyPreJournalStage(stage, staging, transactionId)) return { kind: "ambiguous", message: "transaction staging evidence has no journal" };
+      stage = undefined;
+      staging = undefined;
+      try { heldOwnership.operationalDirectory.removeDirectory(".staging"); } catch { /* unknown staging evidence remains */ }
+      return { kind: "recovered", transactionId, disposition: "restored-prior" };
+    }
     let raw: unknown;
     try { raw = readBoundTransactionJournal(stage); }
     catch { return { kind: "ambiguous", message: "transaction journal is unreadable" }; }
@@ -173,6 +243,19 @@ export async function recoverInterruptedTransaction(rootInput: string, ownership
         try { heldOwnership.operationalDirectory.removeDirectory(".staging"); } catch { /* unknown staging evidence remains */ }
         return { kind: "recovered", transactionId, disposition: "restored-prior" };
       } catch { return { kind: "ambiguous", message: "legacy journal evidence could not be cleaned safely" }; }
+    }
+    if (parsed.journal.state === "preparing") {
+      let issue: string | null;
+      try { issue = preparingEvidenceError(heldOwnership.rootDirectory, stage, parsed.journal); }
+      catch { return { kind: "ambiguous", message: "preparing evidence cannot be read through containment" }; }
+      if (issue !== null) return { kind: "ambiguous", message: issue };
+      try {
+        removeRecoveredTransactionBound(heldOwnership.rootDirectory, stage, staging, parsed.journal);
+        stage = undefined;
+        staging = undefined;
+        try { heldOwnership.operationalDirectory.removeDirectory(".staging"); } catch { /* unknown staging evidence remains */ }
+        return { kind: "recovered", transactionId, disposition: "restored-prior" };
+      } catch { return { kind: "ambiguous", message: "preparing evidence could not be cleaned safely" }; }
     }
     let issue: string | null;
     try { issue = evidenceError(heldOwnership.rootDirectory, stage, parsed.journal); }
