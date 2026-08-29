@@ -138,12 +138,25 @@ export class FileCapability extends Capability {
   read(): Buffer {
     const descriptor = this.handle();
     try {
-      const size = Number(fstatSync(descriptor, { bigint: true }).size);
+      const initial = fstatSync(descriptor, { bigint: true });
+      if (!initial.isFile()) containment("CHANGED: file descriptor is no longer a regular file");
+      const size = Number(initial.size);
       const bytes = Buffer.alloc(size);
       let offset = 0;
-      while (offset < bytes.length) offset += readSync(descriptor, bytes, offset, bytes.length - offset, offset);
+      while (offset < bytes.length) {
+        const read = readSync(descriptor, bytes, offset, bytes.length - offset, offset);
+        if (read <= 0) containment("CHANGED: file descriptor changed during read");
+        offset += read;
+      }
+      const final = fstatSync(descriptor, { bigint: true });
+      if (!final.isFile() || final.dev !== initial.dev || final.ino !== initial.ino || final.size !== initial.size) {
+        containment("CHANGED: file descriptor changed during read");
+      }
       return bytes;
-    } catch (error) { return nodeFailure(error); }
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error;
+      return nodeFailure(error);
+    }
   }
 
   write(bytes: Buffer): void {
