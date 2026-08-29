@@ -1,10 +1,10 @@
 ---
 phase: 01-initialize-canonical-projects
-reviewed: 2026-08-28T11:35:01Z
+reviewed: 2026-08-29T09:12:46Z
 depth: standard
-files_reviewed: 44
+files_reviewed: 30
 files_reviewed_list:
-  - .github/workflows/containment.yml
+  - .github/workflows/ci.yml
   - README.md
   - native/build.mjs
   - native/contained-fs-posix.cc
@@ -12,119 +12,101 @@ files_reviewed_list:
   - native/contained-fs.cc
   - native/support-matrix.json
   - package.json
-  - scripts/capture-filesystem-observation.mjs
-  - scripts/containment-evidence.mjs
-  - scripts/run-local-containment-gate.mjs
-  - scripts/write-containment-evidence.mjs
-  - src/adapters/managed-file.ts
   - src/adapters/registry.ts
-  - src/artifacts/resolve.ts
-  - src/artifacts/schema.ts
-  - src/artifacts/templates.ts
-  - src/artifacts/validate.ts
   - src/cli/arguments.ts
   - src/cli/main.ts
-  - src/errors/diagnostic.ts
   - src/filesystem/contained-fs.ts
+  - src/filesystem/journal.ts
   - src/filesystem/ownership.ts
   - src/filesystem/recovery.ts
-  - src/filesystem/safe-path.ts
   - src/filesystem/support-matrix.ts
   - src/filesystem/transaction.ts
   - src/init/completion.ts
-  - src/init/plan.ts
   - src/init/run-init.ts
   - src/init/runtime-selection.ts
-  - tests/helpers/containment-fixture.ts
-  - tests/helpers/git-fixture.ts
+  - tests/helpers/package-fixture.ts
   - tests/integration/init-codex-tracer.test.ts
-  - tests/integration/init-rerun.test.ts
-  - tests/integration/minimal-artifacts.test.ts
+  - tests/integration/init-typescript-tracer.test.ts
+  - tests/integration/installed-cli.test.ts
   - tests/integration/transaction-recovery.test.ts
-  - tests/integration/validation-errors.test.ts
   - tests/unit/adapters.test.ts
-  - tests/unit/artifacts.test.ts
-  - tests/unit/contained-fs.test.ts
-  - tests/unit/containment-evidence.test.ts
   - tests/unit/containment-support.test.ts
+  - tests/unit/root-scoped-fs.test.ts
   - tests/unit/runtime-selection.test.ts
+  - vitest.config.ts
 findings:
-  critical: 4
-  warning: 1
+  critical: 2
+  warning: 2
   info: 0
-  total: 5
+  total: 4
 status: issues_found
 ---
 
 # Phase 01: Code Review Report
 
-**Reviewed:** 2026-08-28T11:35:01Z
+**Reviewed:** 2026-08-29T09:12:46Z
 **Depth:** standard
-**Files Reviewed:** 44
+**Files Reviewed:** 30
 **Status:** issues_found
 
 ## Summary
 
-The filesystem promotion path is substantially capability-based, but interrupted recovery falls back to unsafe pathname writes. The containment evidence controls are also self-attesting: a test provider or fabricated record can satisfy the aggregate gate, and local provenance can claim an uncommitted build is from `HEAD`.
-
-## Narrative Findings (AI reviewer)
+The TypeScript initializer, transaction/recovery paths, packaging surface, retained native material, and selected tests were reviewed. `npm run build` and the active Vitest suite pass (79 tests), but the transaction state machine has an unrecoverable crash window and the Node filesystem provider can spin forever if a file changes while it is read. The ownership and public-install documentation also have correctness gaps.
 
 ## Critical Issues
 
-### CR-01: Recovery reintroduces the pathname substitution vulnerability
+### CR-01: A failure before the first journal write permanently blocks recovery
 
 **Classification:** BLOCKER
 
-**File:** `src/filesystem/recovery.ts:81-95`
+**File:** `src/filesystem/transaction.ts:217-250`; `src/filesystem/recovery.ts:150-152`
 
-**Issue:** `restorePrior` performs `rm()` and `writeFile()` through reconstructed path strings after `validateEvidence` has finished. The existing safety check is therefore a time-of-check/time-of-use check: an attacker can replace a target or one of its ancestor directories with a symlink between validation and `writeFile`, causing recovery to write the journal backup outside the repository. New-file recovery at line 85 does not perform an in-function safe-target check at all. This defeats the containment guarantee precisely during the fault-recovery path.
+**Issue:** The transaction creates the staging directory and stages bytes, then creates destination parent directories at lines 243-248, but writes its first journal only at line 250. A crash or ordinary error in that interval leaves a nonempty `.exspecso/.staging/<id>` with no `journal.json`. Every subsequent init treats this as ambiguous evidence and refuses recovery. This is reachable today: if a target ancestor becomes a symlink after the initial safe-path check, the parent capture fails after staging and before `updateJournal`; recovery returns `transaction journal is unreadable` indefinitely. The existing test at `transaction-recovery.test.ts:145-162` reaches the same pre-journal failure state but does not attempt recovery.
 
-**Fix:** Restore through `openContainedFilesystem(root)` capabilities, just as `commitTransaction` promotes files. Reopen every parent by validated components, verify the currently opened destination is the expected regular file/hash, create a private sibling, write and sync the backup, then use handle-relative `replace`. For a null preimage, use the capability's handle-relative unlink after rechecking the entry type. Add a deterministic recovery-boundary substitution test for leaf and ancestor swaps.
+**Fix:** Persist a recoverable preparation record before any staged or destination-side mutation, and extend the journal state model to distinguish an incomplete preparation from a prepared transaction. Recovery must be able to validate and remove that record (and only its identified staging entries) when no promotion could have occurred. Add an interruption test for every pre-journal boundary, including target-parent acquisition.
 
-### CR-02: Evidence can label an instrumented test provider as a release provider
-
-**Classification:** BLOCKER
-
-**File:** `scripts/write-containment-evidence.mjs:13-18,40-51`
-
-**Issue:** The writer unconditionally emits `evidenceMode: "release"` (line 46), but never verifies `manifest.variant` or `build.variant` is `"release"`. Running `native/build.mjs --variant test` and then this writer produces release-labelled evidence for an instrumented provider. The aggregate only checks the self-reported evidence mode, so it will accept that record. This permits approval evidence for a package different from the claimed production release.
-
-**Fix:** Before emitting any record, require `manifest.variant === "release"`, `build.variant === "release"`, and that exactly one manifest target matches the requested support-row ID. Derive `evidenceMode` from the verified variant rather than a hard-coded string. Add a test that a test-variant manifest/provenance pair is rejected.
-
-### CR-03: The evidence aggregate trusts forged receipts instead of authenticating artifacts
+### CR-02: Concurrent truncation can make init spin indefinitely
 
 **Classification:** BLOCKER
 
-**File:** `scripts/containment-evidence.mjs:28-30,51-87`
+**File:** `src/filesystem/contained-fs.ts:141-145`
 
-**Issue:** The aggregate excludes the copied `provider-manifest.json`, `build-provenance.json`, and `full-suite.json`, then validates only values supplied in arbitrary evidence JSON records. It never reads a provider binary, verifies a manifest hash against its bytes, verifies build provenance against the manifest/provider, or validates the test report. The supplied unit test demonstrates the bypass: `completeRecord()` at `tests/unit/containment-evidence.test.ts:25-63` creates synthetic hashes and observations, and the aggregator accepts the complete fabricated matrix at lines 127-130. Consequently, `plan_complete: true` does not prove the claimed build or test happened.
+**Issue:** `read()` allocates from the initial `fstat` size and repeatedly adds `readSync`'s return value. If another process truncates the file after `fstatSync` and before all reads complete, `readSync` returns `0` at EOF. `offset` then never advances, so the synchronous loop never exits. Init reads repository-controlled files before it can report a stale preimage, so this can wedge the CLI rather than returning a containment or precondition error.
 
-**Fix:** Make each evidence bundle self-verifying: load the manifest, provenance, full-suite report, and selected binary from a row-specific artifact directory; hash their raw bytes; bind the provider target, provenance binary hash, manifest hash, source commit, and tarball to one another; and reject any extra/missing files. The aggregate should consume these artifacts directly rather than accepting self-reported hashes. Replace the synthetic success fixture with real, internally consistent fixture files and retain forged-record rejection cases.
+**Fix:** Reject a zero-byte read before the expected length has been consumed, and verify the descriptor's final size/identity before returning. For example:
 
-### CR-04: Local provenance binds dirty sources to a clean Git commit
+```ts
+const count = readSync(descriptor, bytes, offset, bytes.length - offset, offset);
+if (count === 0) containment("CHANGED: file changed while reading");
+offset += count;
+```
 
-**Classification:** BLOCKER
-
-**File:** `scripts/run-local-containment-gate.mjs:22,42,65-66`
-
-**Issue:** The local gate records `git rev-parse HEAD` as `sourceCommit`, then compiles the current working tree without requiring that tree to be clean. `native/build.mjs` accepts that commit via `EXSPECSO_SOURCE_COMMIT` at `native/build.mjs:123-129`; the gate subsequently verifies only that the self-reported commit strings match. An uncommitted native or TypeScript change can therefore be built, tested, and retained as evidence for the previous committed snapshot.
-
-**Fix:** Fail before downloading/building unless the relevant source tree is clean (`git diff --quiet` plus `git diff --cached --quiet`, and explicitly account for untracked reviewed inputs), or replace the commit-only claim with a verified source-tree digest and have the aggregate validate it. Add a test invoking the gate from a deliberately modified tracked source and asserting it fails before producing evidence.
+Add a test that truncates a file between the size observation and a subsequent read.
 
 ## Warnings
 
-### WR-01: The local gate overwrites the caller’s package build outputs
+### WR-01: PID reuse can turn a dead lock into an indefinite busy state
 
 **Classification:** WARNING
 
-**File:** `scripts/run-local-containment-gate.mjs:42-43`
+**File:** `src/filesystem/ownership.ts:64`
 
-**Issue:** The gate builds with `--out .` and runs `npm run build` in the repository root. It overwrites `dist/native/*` and TypeScript output in the caller’s checkout, including any provider for another support row, and does not restore those outputs. A failed or exploratory evidence run can therefore leave a misleading package tree for later packing or tests.
+**Issue:** Lock liveness is derived solely from `process.kill(record.pid, 0)`. Once the initializer dies, the OS may reuse its PID for an unrelated live process. The stale lock will then be classified as `busy` and cannot be reclaimed until that unrelated process exits, despite no initialization being active.
 
-**Fix:** Build in a temporary staged package directory, as the installation fixture does, and run the suite/pack verification against that directory. Copy only verified evidence artifacts to `--evidence-dir`; leave the repository checkout unchanged. Add an assertion that a gate run leaves a pre-existing `dist` inventory byte-identical.
+**Fix:** Record and validate process-start identity in addition to PID (using a platform-specific start time when available), or use an expiring lease with conservative renewal and an explicit stale-age policy. Exercise the stale-reclaim path with a deliberately mismatched process identity.
+
+### WR-02: The documented npx invocation cannot be delivered by this package
+
+**Classification:** WARNING
+
+**File:** `README.md:13-15`; `package.json:4`
+
+**Issue:** The README presents `npx exspecso init` as the normal initializer command, but `package.json` marks the package `private: true`, which prevents publishing it to npm. The same README later says Phase 1 does not publish or release a package. A reader following the documented command cannot obtain this package from npm.
+
+**Fix:** Until publication is authorized, document a local invocation such as `npm exec -- exspecso init ...` after installation from a checkout/tarball, or remove the `npx` example. When publishing is in scope, remove `private`, publish the package, and verify the exact README command against a registry install.
 
 ---
 
-_Reviewed: 2026-08-28T11:35:01Z_
+_Reviewed: 2026-08-29T09:12:46Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
