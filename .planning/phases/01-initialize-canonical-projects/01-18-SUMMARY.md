@@ -90,6 +90,16 @@ actuals:
 **Total deviations:** 1 auto-fixed (1 Rule 1 test-stability fix).
 **Impact:** Keeps the required full seven-subset proof deterministic without expanding scope.
 
+**2. [Rule 1 - Planning state] Correct stale execution-counter handoff metadata**
+- **Found during:** Plan close-out
+- **Issue:** The prescribed state helper advanced stale pre-existing `Plan: 2 of 20` metadata to `Plan: 3 of 20`, despite 20 completed plan summaries.
+- **Fix:** Kept the helper's metrics and progress updates, then corrected the human-readable position and roadmap handoff to 20/20 implementation-complete and awaiting independent verification.
+- **Files modified:** `.planning/STATE.md`, `.planning/ROADMAP.md`
+- **Verification:** The plan directory contains 20 summaries for 20 plans, and the roadmap's Phase 1 row reports 20/20 In Progress.
+
+**Total deviations:** 2 auto-fixed (1 Rule 1 test-stability fix, 1 Rule 1 planning-state correction).
+**Impact:** Preserves the explicit independent-verification gate and prevents a false next-plan pointer.
+
 ## TDD Gate Compliance
 
 The installed-package tracer was written first, failed because its required package helper did not exist, and was committed as RED (`9af4c19`). The helper, CI workflow, and passing tracer followed in GREEN (`0845b95`).

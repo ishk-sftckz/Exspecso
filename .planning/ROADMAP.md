@@ -34,7 +34,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 20/20 plans executed are implementation-complete; revised Plans 01-17 and 01-18 remain pending under the pure TypeScript/Node architecture correction
+**Plans**: 20/20 plans executed are implementation-complete; independent Phase 1 verification remains pending under the pure TypeScript/Node architecture correction
 
 Plans:
 **Wave 1**
