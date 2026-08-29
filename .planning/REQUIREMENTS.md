@@ -14,7 +14,7 @@
 - [ ] **SETUP-04**: User receives suggested runtime selections when supported coding agents are detected, while retaining final control over selections.
 - [ ] **SETUP-05**: User receives only the native integration files for the runtimes selected during initialization.
 - [ ] **SETUP-06**: User receives only the minimal canonical project files during initialization, without empty Roadmap, Phase, Spec, trace, research, or report artifacts.
-- [ ] **SETUP-07**: User can rerun initialization to add or refresh runtime integrations without replacing confirmed canonical artifacts.
+- [x] **SETUP-07**: User can rerun initialization to add or refresh runtime integrations without replacing confirmed canonical artifacts.
 - [ ] **SETUP-08**: User sees the next Exspecso operation after initialization completes, using the canonical `/exspecso-<operation>` notation and any unavoidable runtime-native invocation sigil.
 
 ### Artifact and State Model
@@ -25,7 +25,7 @@
 - [ ] **ART-04**: User can rename human-readable titles and slugs without changing stable artifact identity or explicit parent relationships.
 - [ ] **ART-05**: User receives deeper artifacts only when the corresponding workflow first makes them actionable.
 - [ ] **ART-06**: User can resolve an artifact ID to its canonical file or stable section, including a `TASK-NNN` section inside one Spec-level `tasks.md`.
-- [ ] **ART-07**: User retains the previous valid artifact set when an atomic multi-file workflow write fails or is interrupted.
+- [x] **ART-07**: User retains the previous valid artifact set when an atomic multi-file workflow write fails or is interrupted.
 - [ ] **ART-08**: User can edit canonical artifacts directly and receive explicit validation errors for invalid structure or relationships.
 - [ ] **ART-09**: User can rely on one stable `ROADMAP` artifact at `.exspecso/roadmap.md` without numbered Roadmap folders, an active-Roadmap selector, or a separate canonical Roadmap status file.
 
@@ -207,7 +207,7 @@ Deferred to future releases and not included in the current roadmap.
 | SETUP-04 | Phase 1 | Gaps Found |
 | SETUP-05 | Phase 1 | Gaps Found |
 | SETUP-06 | Phase 1 | Gaps Found |
-| SETUP-07 | Phase 1 | Gaps Found |
+| SETUP-07 | Phase 1 | Complete |
 | SETUP-08 | Phase 1 | Gaps Found |
 | ART-01 | Phase 1 | Gaps Found |
 | ART-02 | Phase 1 | Gaps Found |
@@ -215,7 +215,7 @@ Deferred to future releases and not included in the current roadmap.
 | ART-04 | Phase 1 | Gaps Found |
 | ART-05 | Phase 1 | Gaps Found |
 | ART-06 | Phase 1 | Gaps Found |
-| ART-07 | Phase 1 | Gaps Found |
+| ART-07 | Phase 1 | Complete |
 | ART-08 | Phase 1 | Gaps Found |
 | ART-09 | Phase 1 | Gaps Found |
 | DISC-01 | Phase 3 | Pending |

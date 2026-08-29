@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
 status: executing
-stopped_at: Completed 01-21-PLAN.md; independent Phase 1 verification next
-last_updated: "2026-08-29T13:43:29.957Z"
+stopped_at: Completed 01-22-PLAN.md; independent Phase 1 verification next
+last_updated: "2026-08-29T13:54:17.980Z"
 last_activity: 2026-08-29
-last_activity_desc: Plan 01-21 completed; independent Phase 1 verification next
+last_activity_desc: Plan 01-22 completed; independent Phase 1 verification next
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 24
-  completed_plans: 21
+  completed_plans: 22
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (initialize-canonical-projects) — EXECUTING
-Plan: 21 of 21
+Plan: 22 of 22
 Status: Awaiting independent phase verification
-Last activity: 2026-08-29 — Plan 01-21 completed; independent Phase 1 verification next
+Last activity: 2026-08-29 — Plan 01-22 completed; independent Phase 1 verification next
 
-Plan execution: 21 plans are implementation-complete (21 total). Plan 01-21 closes the two filesystem verifier blockers; independent Phase 1 verification remains the next gate before Phase completion.
+Plan execution: 22 plans are implementation-complete (22 total). Plan 01-22 closes the Windows journal, packaged control, and zero-progress-write verifier gaps; independent Phase 1 verification remains the next gate before Phase completion.
 
 ### Active Execution — Pure TypeScript/Node architecture correction
 
@@ -131,6 +131,7 @@ The records below preserve the investigation history. Their native-provider, exh
 | Phase 01 P17 | 8min | 2 tasks | 12 files |
 | Phase 01 P18 | 10min | 2 tasks | 4 files |
 | Phase 01-initialize-canonical-projects P21 | 17min | 2 tasks | 6 files |
+| Phase 01 P22 | 5min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -185,6 +186,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Document host permissions and sandboxes as the OS boundary; do not claim kernel-level, race-proof, or universal-filesystem containment.
 - [Phase ?]: Use a schema-2 preparing state as the exclusive proof that transaction recovery may remove declared pre-promotion debris.
 - [Phase ?]: Fail FileCapability reads closed on zero progress and any final descriptor type, identity, or size mismatch.
+- [Phase ?]: Killed-process coordination is test-only IPC; shipped modules ignore legacy EXSPECSO_TEST controls.
+- [Phase ?]: TransactionJournalEntry.backupPath is slash-form serialized data; host path joins remain filesystem-only.
+- [Phase ?]: Non-positive synchronous writes fail closed with EXSPECSO_CONTAINMENT_CHANGED before retrying.
 
 ### Pending Todos
 
@@ -216,6 +220,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-29T12:54:39.861Z
-Stopped at: Completed 01-21-PLAN.md; independent Phase 1 verification next
+Last session: 2026-08-29T13:54:17.962Z
+Stopped at: Completed 01-22-PLAN.md; independent Phase 1 verification next
 Resume file: None
