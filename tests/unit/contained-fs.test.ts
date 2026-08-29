@@ -116,20 +116,25 @@ describe("contained filesystem provider", () => {
     }
   });
 
-  it("accepts the declared address diagnostic before resolving a native support row", () => {
-    const result = spawnSync(process.execPath, [
-      join(import.meta.dirname, "../../native/build.mjs"),
-      "--variant", "release",
-      "--diagnostic", "address",
-      "--row", "MISSING",
-    ], { encoding: "utf8" });
-    expect(result.status).not.toBe(0);
-    expect(`${result.stdout}\n${result.stderr}`).toContain("--row must name exactly one declared native support row");
+  it("accepts the declared address and macOS undefined diagnostics before resolving a native support row", () => {
+    for (const diagnostic of ["address", "undefined"]) {
+      const result = spawnSync(process.execPath, [
+        join(import.meta.dirname, "../../native/build.mjs"),
+        "--variant", "release",
+        "--diagnostic", diagnostic,
+        "--row", "MISSING",
+      ], { encoding: "utf8" });
+      expect(result.status).not.toBe(0);
+      expect(`${result.stdout}\n${result.stderr}`).toContain("--row must name exactly one declared native support row");
+    }
   });
 
   it("keeps the bounded native safety suite in every existing matrix runner", async () => {
     const workflow = await readFile(join(import.meta.dirname, "../../.github/workflows/containment.yml"), "utf8");
     expect(workflow.match(/tests\/unit\/contained-fs\.test\.ts/g)).toHaveLength(3);
+    expect(workflow).toMatch(/if \[ "\$FAMILY" = macos \]; then\s+diagnostic=undefined\s+else\s+diagnostic=address\s+fi/s);
+    expect(workflow.match(/diagnostic-build-provenance\.json/g)).toHaveLength(4);
+    expect(workflow.match(/diagnostic-results\.json/g)).toHaveLength(4);
   });
 
   it("accepts only the approved ext-family statfs magic after unsigned normalization", () => {

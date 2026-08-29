@@ -16,7 +16,7 @@ const variant = values.get("--variant");
 const diagnostic = values.get("--diagnostic");
 const rowId = values.get("--row");
 if (!["release", "test"].includes(variant)) throw new Error("--variant release|test is required");
-if (diagnostic !== undefined && diagnostic !== "address") throw new Error("--diagnostic address is the only supported native diagnostic");
+if (diagnostic !== undefined && !["address", "undefined"].includes(diagnostic)) throw new Error("--diagnostic address|undefined is required when a native diagnostic is selected");
 if (!rowId) throw new Error("--row must name a declared native support row");
 const matrix = JSON.parse(readFileSync(join(root, "native/support-matrix.json"), "utf8"));
 if (matrix.schemaVersion !== 2 || !Array.isArray(matrix.rows)) throw new Error("Invalid support matrix");
@@ -99,9 +99,11 @@ try {
   if (process.platform === "darwin") {
     args = ["-std=c++17", "-O2", "-Wall", "-Wextra", "-fvisibility=hidden", "-bundle", "-undefined", "dynamic_lookup", "-isysroot", sdk, `-mmacosx-version-min=${osVersion}`, "-DNAPI_VERSION=8", "-DNODE_GYP_MODULE_NAME=contained_fs", "-I", include];
     if (diagnostic === "address") args.push("-fsanitize=address", "-fno-omit-frame-pointer");
+    if (diagnostic === "undefined") args.push("-fsanitize=undefined", "-fno-sanitize-recover=all", "-fno-omit-frame-pointer");
     if (variant === "test") args.push("-DEXSPECSO_CONTAINMENT_TEST=1");
     args.push(join(root, "native", "contained-fs.cc"), "-o", binary);
   } else if (process.platform === "win32") {
+    if (diagnostic === "undefined") throw new Error("--diagnostic undefined is supported only on macOS");
     const msvc = resolve(dirname(compiler), "../../..");
     args = ["/nologo", "/std:c++17", "/O2", "/W4", "/EHsc", "/MT", "/LD", "/utf-8", "/D_WIN32_WINNT=0x0A00", "/DNAPI_VERSION=8", "/DNODE_GYP_MODULE_NAME=contained_fs", "/I" + include, "/I" + join(msvc, "include")];
     if (diagnostic === "address") args.push("/fsanitize=address");
@@ -115,6 +117,7 @@ try {
     if (process.arch === "arm64") args.splice(args.length - 2, 0, "/MACHINE:ARM64");
     buildEnvironment = { ...process.env, PATH: dirname(compiler) + ";" + process.env.PATH };
   } else {
+    if (diagnostic === "undefined") throw new Error("--diagnostic undefined is supported only on macOS");
     args = ["-std=c++17", "-O2", "-Wall", "-Wextra", "-fvisibility=hidden", "-fPIC", "-shared", "-DNAPI_VERSION=8", "-DNODE_GYP_MODULE_NAME=contained_fs", "-I", include];
     if (diagnostic === "address") args.push("-fsanitize=address", "-fno-omit-frame-pointer");
     if (variant === "test") args.push("-DEXSPECSO_CONTAINMENT_TEST=1");

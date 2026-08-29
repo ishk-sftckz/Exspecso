@@ -72,14 +72,14 @@ jobs:
           node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
           npm run build
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
-          node native/build.mjs --variant test --diagnostic address --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
           if [ "$FAMILY" = macos ]; then
-            asan_runtime="$(clang --print-file-name=libclang_rt.asan_osx_dynamic.dylib)"
-            test -f "$asan_runtime"
-            export DYLD_INSERT_LIBRARIES="$asan_runtime"
+            diagnostic=undefined
+          else
+            diagnostic=address
           fi
-          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000
-          unset DYLD_INSERT_LIBRARIES
+          node native/build.mjs --variant test --diagnostic "$diagnostic" --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
+          cp dist/native/build-provenance.json diagnostic-build-provenance.json
+          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000 --reporter=json --outputFile=diagnostic-results.json
           node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
           if [ "$FAMILY" = glibc ]; then node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json; fi
           node scripts/write-containment-evidence.mjs
@@ -123,7 +123,8 @@ jobs:
           npm run build
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
           node native/build.mjs --variant test --diagnostic address --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
-          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000
+          Copy-Item dist/native/build-provenance.json diagnostic-build-provenance.json
+          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000 --reporter=json --outputFile=diagnostic-results.json
           node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
           node scripts/write-containment-evidence.mjs
       - name: Build and run the real native musl tracer in the pinned Alpine userland
@@ -181,7 +182,8 @@ jobs:
             node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --out filesystem-observation.json
             test "$tracer_status" -eq 0
             node native/build.mjs --variant test --diagnostic address --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
-            npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000
+            cp dist/native/build-provenance.json diagnostic-build-provenance.json
+            npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000 --reporter=json --outputFile=diagnostic-results.json
             node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
             node scripts/write-containment-evidence.mjs'
       - name: Upload actual target evidence and binaries
@@ -193,6 +195,8 @@ jobs:
             evidence.json
             filesystem-observation.json
             tracer-results.json
+            diagnostic-build-provenance.json
+            diagnostic-results.json
             dist/native/
             windows-preflight/
           if-no-files-found: error

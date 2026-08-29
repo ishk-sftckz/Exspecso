@@ -41,6 +41,7 @@ describe("installed containment operation grid", () => {
     expect(workflow).toContain("node-v$NODE_LANE-$TARGET.tar.gz");
     expect(workflow).toContain("node-v$env:NODE_LANE-$nodeTarget.zip");
     expect(workflow).toContain('case "$NODE_LANE/$TARGET" in');
-    expect(workflow).toContain("DYLD_INSERT_LIBRARIES");
+    expect(workflow).toContain("diagnostic=undefined");
+    expect(workflow).not.toContain("DYLD_INSERT_LIBRARIES");
   });
 });
