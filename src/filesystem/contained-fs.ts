@@ -165,8 +165,15 @@ export class FileCapability extends Capability {
     const descriptor = this.handle();
     try {
       let offset = 0;
-      while (offset < bytes.length) offset += writeSync(descriptor, bytes, offset, bytes.length - offset);
-    } catch (error) { nodeFailure(error); }
+      while (offset < bytes.length) {
+        const written = writeSync(descriptor, bytes, offset, bytes.length - offset);
+        if (written <= 0) containment("CHANGED: file descriptor made no write progress");
+        offset += written;
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error;
+      nodeFailure(error);
+    }
   }
 
   sync(): boolean { try { fsyncSync(this.handle()); return true; } catch (error) { return nodeFailure(error); } }
