@@ -1,12 +1,5 @@
 name: Containment native target matrix
-on:
-  workflow_dispatch:
-    inputs:
-      mode:
-        description: Run the musl observation diagnostic or the complete approved matrix.
-        required: true
-        type: choice
-        options: [musl-diagnostic, full]
+on: {}
 permissions: {}
 concurrency:
   group: containment-native-matrix

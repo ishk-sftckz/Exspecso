@@ -1,7 +1,5 @@
 name: Containment Windows parity
-on:
-  push:
-    branches: [codex/containment-windows-parity-20260828]
+on: {}
 permissions: {}
 concurrency:
   group: containment-windows-parity

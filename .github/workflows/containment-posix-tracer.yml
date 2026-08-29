@@ -1,7 +1,5 @@
 name: Containment POSIX tracer
-on:
-  push:
-    branches: [codex/containment-posix-tracer-20260828]
+on: {}
 permissions: {}
 concurrency:
   group: containment-posix-tracer

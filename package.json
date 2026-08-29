@@ -5,13 +5,31 @@
   "description": "Spec-driven harness engineering for AI coding agents",
   "type": "module",
   "engines": {
-    "node": "^20.19.0 || ^22.13.0 || ^24.0.0 || 25.2.1 || ^26.0.0"
+    "node": "^22.13.0 || ^24.0.0"
   },
   "bin": {
     "exspecso": "dist/cli/main.js"
   },
   "files": [
-    "dist"
+    "dist/adapters",
+    "dist/artifacts",
+    "dist/cli",
+    "dist/errors",
+    "dist/init",
+    "dist/filesystem/contained-fs.js",
+    "dist/filesystem/contained-fs.d.ts",
+    "dist/filesystem/git-root.js",
+    "dist/filesystem/git-root.d.ts",
+    "dist/filesystem/journal.js",
+    "dist/filesystem/journal.d.ts",
+    "dist/filesystem/ownership.js",
+    "dist/filesystem/ownership.d.ts",
+    "dist/filesystem/recovery.js",
+    "dist/filesystem/recovery.d.ts",
+    "dist/filesystem/safe-path.js",
+    "dist/filesystem/safe-path.d.ts",
+    "dist/filesystem/transaction.js",
+    "dist/filesystem/transaction.d.ts"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
