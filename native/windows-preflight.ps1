@@ -25,6 +25,7 @@ $metadata | ConvertTo-Json -Depth 5 | Tee-Object -FilePath windows-preflight/env
 if (!$vs) { throw 'Approved Visual Studio installation missing' }
 $compiler = Join-Path $vs.installationPath "VC/Tools/MSVC/14.44.35207/bin/$hostArchitecture/$targetArchitecture/cl.exe"
 if (!(Test-Path $compiler)) { throw 'Approved native target compiler missing' }
+$metadata.visualStudioPath = $vs.installationPath
 $metadata.compiler = $compiler
 $metadata.compilerFileVersion = (Get-Item $compiler).VersionInfo.FileVersion
 $metadata.compilerSHA256 = (Get-FileHash $compiler -Algorithm SHA256).Hash.ToLowerInvariant()

@@ -131,9 +131,41 @@ describe("containment evidence aggregate", () => {
     expect(workflow).toContain("node scripts/containment-evidence.mjs --stage tracer --evidence-dir final-evidence --matrix native/support-matrix.json --source-commit \"$GITHUB_SHA\"");
     expect(workflow).toContain("merge-multiple: false");
     expect(workflow).toContain('asan_runtime="$(g++ -print-file-name=libasan.so)"');
-    expect(workflow).toContain("clang_rt.asan_dynamic-*.dll");
+    expect(workflow).toContain("clang_rt.asan_dynamic-$asanTarget.dll");
     expect(workflow.match(/--testTimeout 240000/g)).toHaveLength(2);
     expect(workflow).toContain("diagnostic=undefined");
+  });
+
+  it("uses a version-bearing Alpine musl package query", () => {
+    const loader = readFileSync(join(root, "src/filesystem/contained-fs.ts"), "utf8");
+
+    expect(loader).toContain('command("apk", ["info", "-v", "musl"])');
+  });
+
+  it("uses target-matched ASan discovery from the Visual Studio LLVM layout", () => {
+    const workflow = readFileSync(join(root, ".github/workflows/containment.yml"), "utf8");
+
+    expect(workflow).toContain("VC/Tools/Llvm");
+    expect(workflow).toContain("clang_rt.asan_dynamic-$asanTarget.dll");
+  });
+
+  it("records the approved Visual Studio installation for target runtime lookup", () => {
+    const preflight = readFileSync(join(root, "native/windows-preflight.ps1"), "utf8");
+
+    expect(preflight).toContain("$metadata.visualStudioPath = $vs.installationPath");
+  });
+
+  it("opens ordinary Windows directory capabilities without DELETE access", () => {
+    const windowsNative = readFileSync(join(root, "native/contained-fs-win.cc"), "utf8");
+
+    expect(windowsNative).toContain("auto h = acquire(parent.value, wide(name), true, create ? FILE_OPEN_IF : FILE_OPEN, 0, parent.authority);");
+  });
+
+  it("allows the Windows tracer to finish before afterEach removes its active fixtures", () => {
+    const tracer = readFileSync(join(root, "tests/integration/init-codex-tracer.test.ts"), "utf8");
+
+    expect(tracer).toContain('const tracerTimeout = process.platform === "win32" ? 240_000 : 60_000;');
+    expect(tracer).not.toContain("}, 60_000);");
   });
 
   it.each([

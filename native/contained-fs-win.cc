@@ -107,7 +107,7 @@ Owned acquire(HANDLE parent, const std::wstring& name, bool isDirectory, ULONG d
 }
 Owned openDirectory(Handle& parent, const std::string& name, bool create) {
   directory(parent);
-  auto h = acquire(parent.value, wide(name), true, create ? FILE_OPEN_IF : FILE_OPEN, DELETE, parent.authority);
+  auto h = acquire(parent.value, wide(name), true, create ? FILE_OPEN_IF : FILE_OPEN, 0, parent.authority);
   const auto parentId = identity(parent);
   require(parentId.VolumeSerialNumber == identity(*h).VolumeSerialNumber, "cross-volume descent rejected");
   h->parentIdentity = parentId; h->name = name;

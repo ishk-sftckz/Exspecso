@@ -12,6 +12,7 @@ import { inspectInstalledPackage, installContainedPackage, installVulnerablePack
 const temporaryPaths: string[] = [];
 const fixtures: GitFixture[] = [];
 const packageRoot = resolve(import.meta.dirname, "../..");
+const tracerTimeout = process.platform === "win32" ? 240_000 : 60_000;
 
 afterEach(async () => {
   await Promise.all(temporaryPaths.splice(0).map((path) => rm(path, { force: true, recursive: true })));
@@ -137,7 +138,7 @@ describe("packed Codex initializer tracer", () => {
     expect(publishedPackage.engines.node).toBe("^20.19.0 || ^22.13.0 || ^24.0.0 || 25.2.1 || ^26.0.0");
     expect(publishedPackage.scripts).toBeUndefined();
     await expect(readFile(join(rootRun.installed.installed, "npm-shrinkwrap.json"), "utf8")).resolves.toContain("lockfileVersion");
-  }, 60_000);
+  }, tracerTimeout);
 
   it("PK-04 provider unavailable rejects missing, corrupt, or manifest-swapped providers before exact repository mutation", async () => {
     for (const kind of ["missing", "corrupt", "manifest-swap"] as const) {
@@ -161,7 +162,7 @@ describe("packed Codex initializer tracer", () => {
       expect(result.stderr).toContain("EXSPECSO_CONTAINMENT_UNAVAILABLE");
       expect(await repositorySnapshot(fixture.root)).toEqual(before);
     }
-  }, 60_000);
+  }, tracerTimeout);
 
   for (const site of ["leaf", "parent", "ancestor"] as const) {
     it(`contained promotion tracer reaches the native ${site} substitution boundary`, async () => {
@@ -244,7 +245,7 @@ describe("packed Codex initializer tracer", () => {
         expect(await readFile(heldTarget, "utf8")).toContain("exspecso-start");
       }
       console.log(JSON.stringify({ family: "TR-01", site, mode: "instrumented", attackOutcome: result.attackBlocked ? "blocked-before-relocation" : "scheduled", relocationPerformed: !result.attackBlocked, movedObjectOracle: result.attackBlocked ? "not exercised" : site === "leaf" ? "not applicable" : "held-object relocation observed", attackBlocked: result.attackBlocked, provider: installed.provider, providerSHA256: installed.sha256, providerManifest: installed.manifest, tarballSHA256: installed.tarballSHA256, provenance: installed.provenance, packageInventory: installed.packageInventory, reached: result.record, exitCode: result.exitCode }));
-    }, 60_000);
+    }, tracerTimeout);
   }
 
   it("contained promotion tracer rejects incomplete test activation before replacement", async () => {
@@ -262,7 +263,7 @@ describe("packed Codex initializer tracer", () => {
     expect(child.exitCode).not.toBe(0);
     expect(child.stderr).toContain("EXSPECSO_CONTAINMENT");
     expect(await readFile(adapter, "utf8")).toBe("user-modified adapter\n");
-  }, 60_000);
+  }, tracerTimeout);
 
   it("contained promotion tracer preserves an external hardlink during an additive rerun", async () => {
     const fixture = await useFixture(createGitFixture);
@@ -278,7 +279,7 @@ describe("packed Codex initializer tracer", () => {
     expect(result.exitCode).toBe(0);
     expect(await readFile(config, "utf8")).not.toBe(before);
     expect(await readFile(sentinel, "utf8")).toBe(before);
-  }, 60_000);
+  }, tracerTimeout);
 
   it("creates only the canonical foundation and Codex adapter", async () => {
     const fixture = await useFixture(createGitFixture);

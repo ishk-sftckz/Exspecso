@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { sanitizeRuntimeObservationEnvironment } from "../../src/filesystem/contained-fs.js";
 import { isSupportedNodeVersion, loadSupportMatrix, parseAlpineMuslPackageVersion, resolveManifestEntry, resolveSupportRow, type RuntimeObservation } from "../../src/filesystem/support-matrix.js";
 
 describe("native containment support matrix", () => {
@@ -72,5 +73,14 @@ describe("Alpine musl runtime identity", () => {
   it("retains the package revision required by a declared musl support row", () => {
     expect(parseAlpineMuslPackageVersion("musl-1.2.6-r2\n")).toBe("musl-1.2.6-r2");
     expect(parseAlpineMuslPackageVersion("musl-1.2.6\n")).toBeUndefined();
+  });
+});
+
+describe("diagnostic runtime observation environment", () => {
+  it("does not pass the ASan loader preload into observation child processes", () => {
+    expect(sanitizeRuntimeObservationEnvironment({ PATH: "/usr/bin", LD_PRELOAD: "/usr/lib/libasan.so", ASAN_OPTIONS: "detect_leaks=1" })).toEqual({
+      PATH: "/usr/bin",
+      ASAN_OPTIONS: "detect_leaks=1",
+    });
   });
 });

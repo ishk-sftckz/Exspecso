@@ -45,8 +45,13 @@ function observeLinuxOperationRootFilesystem(root: string): { raw: bigint; norma
   return Object.freeze({ raw, normalized, hex: `0x${normalized.toString(16).padStart(8, "0")}`, mapping: isApprovedLinuxFilesystemType(raw) ? "ext2/ext3" : "unapproved" });
 }
 
+export function sanitizeRuntimeObservationEnvironment(environment: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+  const { LD_PRELOAD: _loaderPreload, ...sanitized } = environment;
+  return sanitized;
+}
+
 function command(program: string, args: readonly string[]): string {
-  return execFileSync(program, [...args], { encoding: "utf8" }).trim();
+  return execFileSync(program, [...args], { encoding: "utf8", env: sanitizeRuntimeObservationEnvironment() }).trim();
 }
 
 function observeRuntime(operationRoot: string): RuntimeObservation {
@@ -86,7 +91,7 @@ function observeRuntime(operationRoot: string): RuntimeObservation {
       libc = error.stderr;
     }
     const alpine = command("cut", ["-d", ".", "-f", "1,2", "/etc/alpine-release"]);
-    const muslPackage = libc.includes("musl libc") ? parseAlpineMuslPackageVersion(command("apk", ["info", "-e", "musl"])) : undefined;
+    const muslPackage = libc.includes("musl libc") ? parseAlpineMuslPackageVersion(command("apk", ["info", "-v", "musl"])) : undefined;
     return { platform: process.platform, arch: process.arch, osVersion: `Alpine ${alpine}`, osBuild, filesystem, libc: muslPackage ?? "unapproved", nodeVersion, napiVersion };
   }
 }

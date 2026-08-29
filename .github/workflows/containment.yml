@@ -132,9 +132,16 @@ jobs:
           npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 240000 --reporter=json --outputFile=tracer-results.json
           node native/build.mjs --variant test --diagnostic address --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
           Copy-Item dist/native/build-provenance.json diagnostic-build-provenance.json
-          $compiler = (Get-Content windows-preflight/environment.json -Raw | ConvertFrom-Json).compiler
-          $asanRuntime = @(Get-ChildItem -LiteralPath (Split-Path -Path $compiler -Parent) -Filter 'clang_rt.asan_dynamic-*.dll' -File)
-          if ($asanRuntime.Count -ne 1) { throw 'Expected exactly one ASan runtime beside the approved compiler' }
+          $preflight = Get-Content windows-preflight/environment.json -Raw | ConvertFrom-Json
+          $asanTarget = switch ($env:TARGET) {
+            'win32-x64' { 'x86_64' }
+            'win32-arm64' { 'aarch64' }
+            default { throw "Unsupported ASan runtime target $($env:TARGET)" }
+          }
+          $llvmRoot = Join-Path $preflight.visualStudioPath 'VC/Tools/Llvm'
+          if (!(Test-Path -LiteralPath $llvmRoot)) { throw "Approved Visual Studio LLVM directory missing: $llvmRoot" }
+          $asanRuntime = @(Get-ChildItem -LiteralPath $llvmRoot -Recurse -Filter "clang_rt.asan_dynamic-$asanTarget.dll" -File)
+          if ($asanRuntime.Count -ne 1) { throw "Expected exactly one target-matched ASan runtime for $($env:TARGET) under the approved Visual Studio LLVM layout" }
           $env:PATH = "$($asanRuntime[0].DirectoryName);$env:PATH"
           npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 240000 --reporter=json --outputFile=diagnostic-results.json
           node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
