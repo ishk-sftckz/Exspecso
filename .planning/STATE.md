@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
-status: Plan 01-16 complete; execute revised Plan 01-17 simplification
-stopped_at: Completed 01-16-PLAN.md
-last_updated: "2026-08-29T00:00:00.000Z"
-last_activity: 2026-08-28
-last_activity_desc: Plan 01-16 added row-qualified package assembly and isolated offline installed-CLI verification.
+status: executing
+stopped_at: Completed 01-17-PLAN.md
+last_updated: "2026-08-29T09:02:18.983Z"
+last_activity: 2026-08-29
+last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 20
-  completed_plans: 18
+  total_plans: 22
+  completed_plans: 19
 ---
 
 # Project State
@@ -23,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-26)
 
 **Core value:** Approved specs must survive context limits, implementation, failure, verification, runtime changes, and session boundaries without losing intent or allowing unproven work to count as complete.
-**Current focus:** Phase 01 — Initialize Canonical Projects
+**Current focus:** Phase 01 — initialize-canonical-projects
 
 ## Current Position
 
-Phase: 01 (Initialize Canonical Projects) — phase incomplete
-Plan: 17 of 20; Plan 01-16 is complete
-Status: Execute revised Plan 01-17 pure TypeScript/Node cutover, then Plan 01-18 installed-package and representative compatibility evidence, then independent Phase 1 verification
-Last activity: 2026-08-29 — Plans 01-17 and 01-18 were corrected to close Phase 1 as a pure TypeScript/Node package with a proportional compatibility gate.
+Phase: 01 (initialize-canonical-projects) — EXECUTING
+Plan: 2 of 20
+Status: Ready to execute
+Last activity: 2026-08-29 — Phase 01 execution started
 
 Plan execution: 18 plans are implementation-complete and 2 remain pending (20 total). Plan 01-17 now retires the partial native containment subsystem while preserving required initializer behavior through deterministic root-scoped Node filesystem operations. Plan 01-18 performs lean installed-package and representative compatibility closure before independent phase verification.
 
@@ -128,6 +128,7 @@ The records below preserve the investigation history. Their native-provider, exh
 | Phase 01 P14 | 15m | 2 tasks | 4 files |
 | Phase 01 P15 | 5min | 2 tasks | 6 files |
 | Phase 01 P16 | 25min | 2 tasks | 4 files |
+| Phase 01 P17 | 8min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -175,6 +176,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Retain distinct supportRowId paths when rows share a native target.
 - [Phase ?]: Use release-only npm shrinkwrap with a dedicated prefetched cache for offline package installs.
 - [Phase ?]: Require independent missing, corrupt, and manifest-swap package negatives to preserve repository bytes exactly.
+- [Phase ?]: Use root-scoped Node filesystem capabilities; host sandboxes remain the OS boundary.
+- [Phase ?]: Keep native material as historical provenance while active package, tests, and workflows use only TypeScript/Node entry points.
 
 ### Pending Todos
 
@@ -206,6 +209,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-28T13:19:50.055Z
-Stopped at: Completed 01-16-PLAN.md
+Last session: 2026-08-29T09:02:18.964Z
+Stopped at: Completed 01-17-PLAN.md
 Resume file: None
