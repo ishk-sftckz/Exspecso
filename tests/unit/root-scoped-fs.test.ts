@@ -1,6 +1,23 @@
+import { truncateSync } from "node:fs";
 import { mkdir, readFile, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const filesystemSpies = vi.hoisted(() => ({
+  fstatSync: vi.fn(),
+  readSync: vi.fn(),
+  actualFstatSync: undefined as undefined | ((...args: any[]) => any),
+  actualReadSync: undefined as undefined | ((...args: any[]) => any),
+}));
+
+vi.mock("node:fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs")>();
+  filesystemSpies.actualFstatSync = actual.fstatSync;
+  filesystemSpies.actualReadSync = actual.readSync;
+  filesystemSpies.fstatSync.mockImplementation(actual.fstatSync);
+  filesystemSpies.readSync.mockImplementation(actual.readSync);
+  return { ...actual, fstatSync: filesystemSpies.fstatSync, readSync: filesystemSpies.readSync };
+});
 import { openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 
@@ -8,6 +25,13 @@ const fixtures: GitFixture[] = [];
 
 afterEach(async () => {
   await Promise.all(fixtures.splice(0).map((fixture) => fixture.dispose()));
+});
+
+beforeEach(() => {
+  filesystemSpies.fstatSync.mockReset();
+  filesystemSpies.readSync.mockReset();
+  filesystemSpies.fstatSync.mockImplementation(filesystemSpies.actualFstatSync!);
+  filesystemSpies.readSync.mockImplementation(filesystemSpies.actualReadSync!);
 });
 
 async function fixture(): Promise<GitFixture> {
@@ -47,6 +71,59 @@ describe("root-scoped Node filesystem", () => {
     try {
       expect(() => filesystem.reader.read(["redirect", "sentinel.json"])).toThrow(/EXSPECSO_CONTAINMENT/);
       await expect(readFile(join(outside.root, "content", "sentinel.json"), "utf8")).resolves.toBe("outside\n");
+    } finally {
+      filesystem.close();
+    }
+  });
+
+  it("rejects a file truncated after its initial descriptor stat instead of spinning", async () => {
+    const repository = await fixture();
+    const path = join(repository.root, "changing.txt");
+    await writeFile(path, "initial bytes");
+    const filesystem = openContainedFilesystem(repository.root);
+    filesystemSpies.readSync
+      .mockImplementationOnce(() => {
+        truncateSync(path, 0);
+        return 0;
+      })
+      .mockImplementationOnce(() => {
+        throw new Error("unexpected second zero-progress read");
+      });
+
+    try {
+      expect(() => filesystem.reader.read(["changing.txt"])).toThrow(/EXSPECSO_CONTAINMENT_CHANGED/);
+    } finally {
+      filesystem.close();
+    }
+  });
+
+  it("rejects bytes when the descriptor changes after the read completes", async () => {
+    const repository = await fixture();
+    await writeFile(join(repository.root, "changing.txt"), "initial bytes");
+    const filesystem = openContainedFilesystem(repository.root);
+    let fstatCalls = 0;
+    filesystemSpies.fstatSync.mockImplementation((...args: any[]) => {
+      const observed = filesystemSpies.actualFstatSync!(...args);
+      fstatCalls += 1;
+      if (fstatCalls !== 2) return observed;
+      const changed = Object.create(observed);
+      Object.defineProperty(changed, "size", { value: observed.size + 1n });
+      return changed;
+    });
+
+    try {
+      expect(() => filesystem.reader.read(["changing.txt"])).toThrow(/EXSPECSO_CONTAINMENT_CHANGED/);
+    } finally {
+      filesystem.close();
+    }
+  });
+
+  it("returns exactly the initially observed bytes for an unchanged descriptor", async () => {
+    const repository = await fixture();
+    await writeFile(join(repository.root, "stable.txt"), "stable bytes");
+    const filesystem = openContainedFilesystem(repository.root);
+    try {
+      expect(filesystem.reader.read(["stable.txt"])).toEqual(Buffer.from("stable bytes"));
     } finally {
       filesystem.close();
     }
