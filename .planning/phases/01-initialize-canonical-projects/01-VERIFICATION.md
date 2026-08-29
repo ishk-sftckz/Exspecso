@@ -1,65 +1,49 @@
 ---
 phase: 01-initialize-canonical-projects
-verified: 2026-08-29T13:05:34Z
+verified: 2026-08-29T14:02:04Z
 status: gaps_found
-score: 7/14 must-haves verified
+score: 9/14 must-haves verified
 behavior_unverified: 1
 overrides_applied: 0
 re_verification:
   previous_status: gaps_found
-  previous_score: 10/14
+  previous_score: 7/14
   gaps_closed:
-    - "The pre-journal crash window is closed: a schema-2 preparing journal is written before staged bytes or destination-parent mutation, and active recovery tests pass."
-    - "The descriptor-read hang is closed: zero progress and changed final descriptor state fail closed in active unit tests."
-  gaps_remaining:
-    - "Windows additive initialization creates an invalid backslash-form journal backup path and cannot recover it."
-    - "The published CLI exposes environment-controlled test hooks that write outside the repository and can wait indefinitely."
+    - "Windows additive journal backup paths are now serialized as slash-form data and the active recovery regression passes."
+    - "The shipped CLI now ignores the legacy EXSPECSO_TEST_* environment controls; the installed-tarball negative regression passes."
+    - "Zero-progress synchronous writes now fail closed and release the internally acquired lease."
+  gaps_remaining: []
   regressions:
-    - "The independent review found the Windows journal-path and packaged test-hook defects after Plan 21."
+    - "The active Node containment capability accepts Windows device, alternate-data-stream, and normalized-alias components despite its declared cross-platform relative-component validation contract."
 gaps:
-  - truth: "A user can rerun initialization to add or refresh adapters without replacing confirmed canonical project artifacts."
+  - truth: "The initialized project keeps deterministic repository-root and relative-component validation for its journaled atomic write and recovery path."
     status: failed
-    reason: "On Windows, transaction.ts serializes a preimage backup path with path.join(), producing backslashes. The parser rejects that path and recovery cannot clean the transaction."
+    reason: "On Windows, the shipped DirectoryCapability accepts device names, NTFS alternate data stream names, and trailing-dot/space aliases. A crafted transaction/recovery component can therefore resolve to a device, stream, or normalized alias rather than one portable repository entry."
     artifacts:
-      - path: "src/filesystem/transaction.ts"
-        issue: "Line 227 creates host-native journal data with path.join()."
-      - path: "src/filesystem/journal.ts"
-        issue: "Line 50 correctly rejects backslashes, making the transaction's own Windows journal invalid."
+      - path: src/filesystem/contained-fs.ts
+        issue: "component() rejects only empty, dot, separators, and NUL; it permits colon, reserved DOS devices, and trailing dot/space aliases."
+      - path: vitest.config.ts
+        issue: "The only affected-name coverage in tests/unit/contained-fs.test.ts is excluded from the active suite, while root-scoped-fs.test.ts does not cover the portable component contract."
     missing:
-      - "Encode journal-relative backup paths with slash separators independently of the host OS."
-      - "Add a Windows-path regression covering additive commit and recovery."
-  - truth: "The initialized project keeps filesystem mutation and interruption controls inside the containing Git repository."
-    status: failed
-    reason: "Packaged production modules honor EXSPECSO_TEST_SYNC_FILE and EXSPECSO_TEST_OWNERSHIP_SYNC_FILE. A normal compiled CLI invocation wrote a signal to an arbitrary /tmp path outside its Git repository; matching wait variables can keep it alive forever."
-    artifacts:
-      - path: "src/filesystem/transaction.ts"
-        issue: "Lines 163-177 use caller-controlled environment values with unbound writeFile and an unbounded wait."
-      - path: "src/filesystem/ownership.ts"
-        issue: "Lines 138-145 provide the same external-write and unbounded-wait behavior."
-    missing:
-      - "Remove environment-controlled fault/synchronization behavior from packaged production modules."
-      - "Move child-process coordination to a test-only harness and add an installed-package negative regression."
-deferred:
-  - truth: "A user can run npx exspecso init from a registry-installed package."
-    addressed_in: "Phase 6"
-    evidence: "Phase 6 success criterion 5 requires one documented npm package; Phase 1 remains private and explicitly says it does not publish or release a package."
+      - "Reject Windows-unsafe component names before every filesystem operation (ADS/colon and other prohibited characters, controls, trailing dot/space, DOS device names including extension and superscript variants, and a portable length bound)."
+      - "Move the affected-name regression into the active Node containment test suite and prove it on the supported Windows CI row."
 behavior_unverified_items:
   - truth: "A real interactive terminal user can choose detected Claude Code, OpenAI Codex, and/or OpenCode integrations and receives only those adapter files."
     test: "Run the packed initializer in a real TTY with detection enabled; submit an empty selection, a nonempty subset, and cancellation."
     expected: "All choices render unchecked; detection changes labels only; empty/cancelled selection writes nothing; a submitted subset writes only its adapters."
-    why_human: "Injected prompt tests prove the selection contract but do not exercise Inquirer's terminal rendering or cancellation behavior."
+    why_human: "Injected prompt tests prove the selection state machine but not Inquirer's actual terminal rendering or cancellation behavior."
 ---
 
 # Phase 1: Initialize Canonical Projects Verification Report
 
 **Phase Goal:** Users can initialize an Exspecso project that has only the selected runtime adapters and minimal, durable canonical artifact foundations.
-**Verified:** 2026-08-29T13:05:34Z
+**Verified:** 2026-08-29T14:02:04Z
 **Status:** gaps_found
-**Re-verification:** Yes — after Plan 01-21 gap closure
+**Re-verification:** Yes — after Plan 01-22 gap closure
 
 ## MVP Mode Guard
 
-Phase 1 is marked `mvp`, but its roadmap goal is not a valid `As a …, I want …, so that … .` user story (`user-story.validate` returned `false`). This report therefore verifies the concrete roadmap success criteria and active implementation rather than asserting a formal MVP user-flow verdict.
+Phase 1 is marked `mvp`, but `user-story.validate` reports that its roadmap goal is not an `As a …, I want …, so that … .` user story. This report therefore verifies the concrete roadmap success criteria and approved Phase 1 contracts. No user-story flow verdict is asserted.
 
 ## Goal Achievement
 
@@ -67,130 +51,118 @@ Phase 1 is marked `mvp`, but its roadmap goal is not a valid `As a …, I want �
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | A user can run `npx exspecso init` from a root or nested directory. | ✗ DEFERRED | Root/nested behavior is exercised from a local packed tarball, but `package.json` is private and Phase 1 does not publish. Phase 6 owns documented npm installation. |
-| 2 | A user can choose detected Claude/Codex/OpenCode integrations and receive only selected adapter files. | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | Flags and all seven nonempty selections pass; `runtime-selection.test.ts` proves detection is label-only. Real TTY behavior is unexercised. |
-| 3 | Rerun adds/refreshes adapters without replacing confirmed canonical artifacts. | ✗ FAILED — BLOCKER | Works on the host test platform but cannot work on Windows when a preimage needs a backup: the serialized `backupPath` is invalid and recovery cannot parse it. |
-| 4 | Canonical artifacts use stable IDs in ordinary Markdown/JSON with no hidden duplicate projection. | ✓ VERIFIED | Active artifact tests cover exact ID families, reserved ROADMAP location, rename stability, duplicate diagnostics, TASK sections, and lazy artifacts. |
-| 5 | Interrupted atomic writes preserve the prior valid set, and invalid direct edits produce explicit errors. | ✗ FAILED — BLOCKER | Plan 21 fixed the previous pre-journal/read defects, but a Windows invalid journal path leaves additive transaction recovery ambiguous. Invalid JSON diagnostics/no-mutation behavior passes. |
-| 6 | The active initializer is pure TypeScript/Node with no native provider, support lookup, compiler/header prerequisite, prebuilt selection, or lifecycle hook. | ✓ VERIFIED | `package.json` has only build/test scripts and an explicit dist allow-list; build and the 43-entry pack inventory contain the Node path, not native artifacts. |
-| 7 | Filesystem safety claims are limited to the stated repository-root and host-boundary contract. | ✗ FAILED — BLOCKER | The shipped CLI can write a caller-selected external path and wait indefinitely through `EXSPECSO_TEST_*` variables, bypassing repository containment. |
-| 8 | Superseded native plans/evidence remain historical rather than proof of the shipped TypeScript path. | ✓ VERIFIED | README labels Plans 01-19/01-20 historical; active build, package, tests, and triggered CI use TypeScript. |
-| 9 | Retained native material is non-shipped and non-invoked. | ✓ VERIFIED | Package allow-list excludes it; active workflow scan passes and retained workflows are disabled. |
-| 10 | Routine CI is the four-row D-22 representative matrix. | ✓ VERIFIED | `ci.yml` declares Ubuntu/22.13.0 and Ubuntu/macOS/Windows/24.x, each with install, build, full test, and pack steps. |
-| 11 | Standard tarball installation runs the compiled initializer without native inputs. | ✓ VERIFIED | The installed-package test packs, installs with lifecycle scripts disabled outside the checkout, resolves the declared bin, and executes it. |
-| 12 | Installed CLI preserves adapter subsets, root/nested targeting, rerun, canonical-first completion, and a minimal tree. | ✗ FAILED — BLOCKER | Local evidence passes, but the supported Windows rerun path is broken by invalid journal serialization. |
-| 13 | README support and safety claims match measured behavior. | ✗ FAILED | README presents a public `npx exspecso init` command despite no published package and omits the packaged external-write test hooks. Registry availability is deferred; the unsafe hook is not. |
-| 14 | Closure hands the phase to independent verification without publishing, releasing, or marking it complete. | ✓ VERIFIED | Package is private, README says Phase 1 does not publish/release, and ROADMAP remains in progress. |
+| 1 | Root and nested initialization target the containing Git repository. | ✓ VERIFIED | Packed and installed CLI tests cover root, nested, and nested-repository invocation. Registry publication is explicitly deferred to Phase 6. |
+| 2 | Users select only Claude Code, Codex, and/or OpenCode adapters. | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | `runtime-selection.ts` and active injected-prompt tests prove selection, detection-as-labels, and all nonempty subsets; real TTY rendering/cancellation is not exercised. |
+| 3 | Reruns add or refresh selected adapters without replacing confirmed canonical artifacts. | ✓ VERIFIED | `installed-cli.test.ts` and `windows-journal-paths.test.ts` pass; journal `backupPath` is now `backups/${relativePath}` and parses cross-platform. |
+| 4 | Canonical artifacts are inspectable Markdown/JSON with stable IDs and no hidden duplicate state. | ✓ VERIFIED | Artifact schema, resolver, and validation are substantive and active tests cover exact IDs, rename stability, lazy artifacts, duplicate diagnostics, and reserved ROADMAP placement. |
+| 5 | Interrupted atomic writes preserve a valid prior artifact set, and invalid direct edits produce explicit errors. | ✗ FAILED — BLOCKER | Transaction/recovery evidence is substantive and Plan 22 fixes pass, but the active capability allows Windows device/ADS/normalized-alias components. That violates the required relative-component validation underpinning safe recovery. |
+| 6 | The active package is pure TypeScript/Node, with historical native material non-shipped and non-invoked. | ✓ VERIFIED | `package.json` allow-list, active build/test, pack inventory (43 entries), and CI route through `dist` only; native material is absent from the tarball. |
+| 7 | Filesystem claims are bounded to the documented repository-root/host boundary. | ✗ FAILED — BLOCKER | README promises relative-component checks, but `contained-fs.ts` accepts `ordinary:secret`, `CON`, `NUL.txt`, `COM1`, `tail.`, and `tail `; these are unsafe on the supported Windows family. |
+| 8 | Historical native plans/evidence remain provenance rather than proof of the shipped Node path. | ✓ VERIFIED | README and Plans 17–18 make this boundary explicit; package/build/test entry points do not invoke native components. |
+| 9 | Routine compatibility CI is the four-row representative sample. | ✓ VERIFIED | `.github/workflows/ci.yml` declares Ubuntu/Node 22.13.0 and Ubuntu/macOS/Windows Node 24 rows. |
+| 10 | The standard tarball installs and runs the declared compiled CLI without native inputs. | ✓ VERIFIED | Installed-package tests pass; dry-run inventory contains the declared bin and pure Node `dist` files only. |
+| 11 | The installed CLI preserves subsets, minimal initialization, canonical-first output, and additive reruns. | ✓ VERIFIED | Active installed CLI suite and Plan 22 Windows-journal regression pass. |
+| 12 | README claims match the shipped package boundary. | ✗ FAILED — BLOCKER | README claims relative-component validation, which the active implementation demonstrably does not provide on Windows. |
+| 13 | Previous Windows journal, shipped-hook, and zero-progress defects are closed. | ✓ VERIFIED | The focused four-file run passes 37 tests; static and installed-package scans show legacy hooks remain only in test fixtures; `write()` rejects non-positive `writeSync()` results. |
+| 14 | Phase closure remains independent and does not publish or mark the phase complete. | ✓ VERIFIED | Package remains private; README and ROADMAP state independent verification is pending. |
 
-**Score:** 7/14 truths verified; 1 present but behavior-unverified.
-
-### Deferred Items
-
-| # | Item | Addressed In | Evidence |
-| --- | --- | --- | --- |
-| 1 | Registry-installed `npx exspecso init` | Phase 6 | Phase 6 SC 5: one documented npm package. |
+**Score:** 9/14 truths verified; 1 present but behavior-unverified.
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| `src/init/run-init.ts` | Root-scoped initialization orchestrator | ✓ VERIFIED | Validates, acquires ownership, recovers, plans, and commits through the capability facade. |
-| `src/init/runtime-selection.ts` | Selected-runtime choice contract | ✓ VERIFIED | Prompt/flag results drive selected adapter IDs; supported selection data is tested. |
-| `src/artifacts/{schema,resolve,validate}.ts` | Durable canonical artifacts | ✓ VERIFIED | Active tests exercise IDs, direct validation, lazy materialization, and canonical locations. |
-| `src/filesystem/{journal,transaction,recovery}.ts` | Journaled transaction/recovery | ⚠️ SUBSTANTIVE, BLOCKED | Plan 21 artifacts and recovery tests are real, but Windows `backupPath` serialization violates their parser contract. |
-| `src/filesystem/contained-fs.ts` | Root-scoped descriptor capability | ⚠️ PARTIAL | Read guards are substantive/tested; `write()` line 168 lacks a zero-progress guard. |
-| `src/filesystem/ownership.ts` | Repository-local lease | ✗ BLOCKED | Packaged environment hook writes caller-controlled external paths and can wait forever. |
-| `tests/integration/{transaction-recovery,installed-cli}.test.ts` | Recovery/installed-package proof | ⚠️ PARTIAL | Substantive and passing, but no Windows serialization or installed-package hook-negative test. |
-| `package.json` / `dist/cli/main.js` | Packaged compiled CLI | ⚠️ PARTIAL | Bin/allow-list are wired; packed filesystem modules retain unsafe hooks. |
+| `src/init/{run-init,runtime-selection}.ts` | Root-scoped initialization and explicit runtime choice | ✓ VERIFIED | Imported by the compiled CLI; selected agent IDs flow to adapter planning and completion output. |
+| `src/artifacts/{schema,resolve,validate}.ts` | Durable canonical Markdown/JSON and ID contracts | ✓ VERIFIED | Bound reads feed validation and diagnostics; no DB/cloud/projection path is wired. |
+| `src/filesystem/{journal,transaction,recovery}.ts` | Journaled atomic transaction and conservative recovery | ⚠️ PARTIAL — BLOCKED | Schema-2 preparation and slash-form backup serialization are wired/tested; portable component validation is incomplete. |
+| `src/filesystem/contained-fs.ts` | Root-scoped pure Node capability | ✗ SUBSTANTIVE BUT UNSAFE | Existence/wiring/normal-path tests pass, but `component()` accepts Windows-special names. |
+| `tests/integration/{installed-cli,windows-journal-paths,transaction-recovery}.test.ts` | Installed/recovery regression evidence | ✓ VERIFIED | Present, substantive, active, and the focused suite reports 37 passing tests. |
+| `tests/unit/root-scoped-fs.test.ts` | Bound descriptor read/write safety | ✓ VERIFIED | Active test covers final-stat/zero-progress behavior; it lacks the Windows component cases required for the capability contract. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
-| --- | --- | --- | --- | --- |
-| `src/init/run-init.ts` | `src/filesystem/contained-fs.ts` | `openContainedFilesystem()` | ✓ WIRED | Direct import/call; root capability supplies validation and transaction work. |
-| `src/init/runtime-selection.ts` | adapter registry / init plan | selected agent IDs | ✓ WIRED | Selection drives adapter writes; all nonempty subsets are tested. |
-| `src/filesystem/transaction.ts` | `src/filesystem/recovery.ts` | schema-2 `preparing` journal | ⚠️ PARTIAL | Mechanical key-link query passes and POSIX recovery passes; Windows journals violate the parser contract. |
-| `package.json` | `dist/cli/main.js` | declared `bin` | ✓ WIRED | Installed-tarball helper resolves the declared bin and executes it. |
-| `transaction.ts` / `ownership.ts` | external filesystem | `EXSPECSO_TEST_*` environment values | ✗ UNWANTED WIRING | Unbound `writeFile`/`rename` are included in `dist` and package inventory. |
+| --- | --- | --- | --- |
+| `src/cli/main.ts` | `src/init/run-init.ts` | `runInit()` | ✓ WIRED | CLI passes cwd and process I/O into initialization. |
+| `src/init/run-init.ts` | `src/filesystem/contained-fs.ts` | `openContainedFilesystem()` | ✓ WIRED | One root capability supplies preflight, validation, recovery, and transaction work. |
+| `src/filesystem/transaction.ts` | `src/filesystem/journal.ts` | `backups/${relativePath}` | ✓ WIRED | Parser and Plan 22 Windows-form regression agree on slash-only backup data. |
+| installed tarball | compiled filesystem modules | `dist/cli/main.js` | ✓ WIRED | Installed-package test runs the declared bin under hostile legacy environment values and finds no signals. |
+| `DirectoryCapability` | Windows filesystem operations | `component()` then `node:path.join()` | ✗ UNSAFE WIRING | Permitted components can resolve as ADS, DOS devices, or normalized aliases on NTFS. |
 
-### Data-Flow Trace (Level 4)
+### Data-Flow Trace
 
-| Artifact | Data Variable | Source | Produces Real Data | Status |
+| Artifact | Data variable | Source | Produces real data | Status |
 | --- | --- | --- | --- | --- |
-| Adapter plan | `selectedAgents` | flags or Inquirer prompt → registry → init plan | Selected IDs determine adapter paths | ✓ FLOWING |
-| Canonical validation | definitions/diagnostics | bound repository Markdown/JSON reader → validation | Diagnostics reach `runInit()` before mutation | ✓ FLOWING |
-| Transaction recovery | journal entries/preimages | stage journal → parser → recovery cleanup | Host path flows; Windows backup paths do not parse | ✗ DISCONNECTED ON WINDOWS |
-| Fault signal | `EXSPECSO_TEST_*_SYNC_FILE` | caller environment → unbound `writeFile` / `rename` | Creates data outside the repository | ✗ UNSAFE EXTERNAL FLOW |
+| Runtime selection | `selectedAgents` | flags/TTY prompt → adapter registry → init plan | Selected IDs determine adapter paths | ✓ FLOWING |
+| Artifact validation | definitions/diagnostics | bound repository Markdown/JSON reader → validator | Errors reach `runInit()` before mutation | ✓ FLOWING |
+| Recovery | journal entries/preimages | staged journal → parser → capability recovery | Valid regular paths recover; Windows-special components have an unsafe resolution path | ✗ UNSAFE ON WINDOWS |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Plan 21 recovery/read fixes | focused transaction/recovery, root-FS, installed-CLI, tracer, selection tests | 5 files / 41 tests passed | ✓ PASS |
-| Current active package behavior | `npm run build && npm test -- --run` | Build passed; 9 files / 86 tests passed | ✓ PASS |
-| Native-free pack inventory | `npm pack --dry-run --json` | 43 entries; declared CLI and pure Node dist files present | ✓ PASS |
-| Windows journal serialization | `path.win32.join` plus `parseTransactionJournal()` | `backups\\.exspecso\\exspecso.config.json` parsed as `journal entries are invalid` | ✗ FAIL |
-| Production external write | compiled CLI with `EXSPECSO_TEST_SYNC_FILE` and matching promotion point | Normal `init --agent codex` exited 0 and wrote `/tmp/exspecso-verifier.YKvIAa/outside-signal.json` outside its Git repo | ✗ FAIL |
+| Active package build/test/pack | `npm run build && npm test -- --run && npm pack --dry-run --json` | build passed; 10 files / 90 tests passed; 43 tarball entries | ✓ PASS |
+| Plan 22 defects | `npx vitest run` for Windows journal, installed CLI, transaction recovery, and root FS suites | 4 files / 37 tests passed | ✓ PASS |
+| Legacy shipped hooks | `rg EXSPECSO_TEST src dist package.json` | no production match; only tests/fixtures use the legacy identifiers | ✓ PASS |
+| Windows journal serialization | source/test inspection and active Windows-form test | `backups/` serialization is parser-compatible; regression passed | ✓ PASS |
+| Windows component validation | direct compiled-capability probe | all of `ordinary:secret`, `CON`, `NUL.txt`, `COM1`, `tail.`, `tail ` were accepted | ✗ FAIL |
 
 ### Probe Execution
 
-Step 7c: SKIPPED — no active Phase 1 probe is declared and no `scripts/**/tests/probe-*.sh` probe applies to the pure TypeScript/Node closure.
+Step 7c: SKIPPED — no active pure-Node Phase 1 probe is declared. Historical native probes are provenance only and are not Phase 1 verification evidence.
 
 ### Requirements Coverage
 
-Every Phase 1 requirement ID is declared by at least one plan; Plan 01-20 declares all 17. No requirement is orphaned.
+All 17 Phase 1 requirement IDs are declared across the executed plans; none is orphaned.
 
-| Requirement | Source Plans | Description | Status | Evidence |
-| --- | --- | --- | --- | --- |
-| SETUP-01 | 02, 09–12, 16–20 | Root `npx` initialization | ⚠️ DEFERRED | Local packed-tarball root behavior passes; registry install is Phase 6. |
-| SETUP-02 | 02, 09–12, 16–20 | Nested directory targets Git root | ✓ SATISFIED | Installed and integration tests pass. |
-| SETUP-03 | 01, 03, 09, 17, 18, 20 | Choose one or more runtimes | ⚠️ NEEDS HUMAN | Data contract passes; terminal behavior needs a real TTY. |
-| SETUP-04 | 03, 17, 18, 20 | Detection is suggestion with user control | ⚠️ NEEDS HUMAN | Injected prompt proves unchecked label-only detection, not real TTY. |
-| SETUP-05 | 02, 03, 05, 17, 18, 20 | Only selected integration files | ✓ SATISFIED | Seven selected-subset installed tests pass. |
-| SETUP-06 | 02, 03, 05, 12–20 | Minimal canonical files only | ✓ SATISFIED | Installed/minimal-artifact assertions pass. |
-| SETUP-07 | 05, 12–14, 17–20 | Additive rerun preserves artifacts | ✗ BLOCKED | Windows preimage backup serialization breaks rerun/recovery. |
-| SETUP-08 | 02, 03, 17, 18, 20 | Canonical next-operation output | ✓ SATISFIED | Installed test asserts canonical-first/runtimes-native completion. |
-| ART-01 | 02, 04, 06, 08, 10, 12–20 | Inspect Markdown/JSON | ✓ SATISFIED | Artifact construction/validation use repository files. |
-| ART-02 | 02, 04, 06, 09, 13, 15–20 | No database/cloud/hidden projection | ✓ SATISFIED | No DB/cloud or generated projection is wired. |
-| ART-03 | 04, 07, 12, 20 | Stable ID families | ✓ SATISFIED | Exact ID-family tests pass. |
-| ART-04 | 04, 12, 20 | Rename-stable identity | ✓ SATISFIED | Rename/reordering tests pass. |
-| ART-05 | 04, 12, 20 | Lazy deeper artifacts | ✓ SATISFIED | Deferred-artifact test passes. |
-| ART-06 | 04, 07, 12, 20 | Resolve canonical file/section | ✓ SATISFIED | ROADMAP/TASK resolution tests pass. |
-| ART-07 | 06, 08–11, 13–21 | Preserve valid set on atomic failure | ✗ BLOCKED | Plan 21 closes two defects, but Windows recovery is ambiguous and production hooks bypass containment. |
-| ART-08 | 01, 04, 06–9, 12–20 | Explicit invalid-edit errors | ✓ SATISFIED | Invalid JSON/no-mutation test passes. |
-| ART-09 | 04, 06, 08, 12–20 | One stable ROADMAP path | ✓ SATISFIED | Reserved-path/lazy-artifact tests pass. |
+| Requirement | Status | Evidence |
+| --- | --- | --- |
+| SETUP-01 | ⚠️ DEFERRED | Root init is tested from a local tarball; registry availability is explicitly Phase 6 work. |
+| SETUP-02 | ✓ SATISFIED | Root/nested/nearest Git-root installed tests pass. |
+| SETUP-03 | ⚠️ NEEDS HUMAN | Selection state machine passes; real TTY remains untested. |
+| SETUP-04 | ⚠️ NEEDS HUMAN | Detected labels never select an agent in tests; real TTY remains untested. |
+| SETUP-05 | ✓ SATISFIED | All nonempty selected subsets produce only their native adapters. |
+| SETUP-06 | ✓ SATISFIED | Minimal tree and tarball inventory assertions pass. |
+| SETUP-07 | ✓ SATISFIED | Additive rerun and Windows slash-form journal/recovery regressions pass. |
+| SETUP-08 | ✓ SATISFIED | Completion output is canonical-first and adapter-specific. |
+| ART-01 | ✓ SATISFIED | Repository Markdown/JSON is the active data source. |
+| ART-02 | ✓ SATISFIED | No database, cloud, hidden canonical projection, or export dependency is wired. |
+| ART-03 | ✓ SATISFIED | Exact stable ID-family tests pass. |
+| ART-04 | ✓ SATISFIED | Rename/reorder stability tests pass. |
+| ART-05 | ✓ SATISFIED | Lazy deeper artifacts remain absent after initialization. |
+| ART-06 | ✓ SATISFIED | Canonical file/section resolution is active and tested. |
+| ART-07 | ✗ BLOCKED | Windows component acceptance breaks the contracted portable root/component validation for atomic write and recovery. |
+| ART-08 | ✓ SATISFIED | Invalid JSON/relationship errors are explicit and non-mutating. |
+| ART-09 | ✓ SATISFIED | One reserved `.exspecso/roadmap.md` contract is active and tested. |
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 | --- | --- | --- | --- |
-| `src/filesystem/transaction.ts` | 227 | Host-native `join()` used for slash-only journal data | 🛑 BLOCKER | Windows additive reruns create invalid recovery records. |
-| `src/filesystem/transaction.ts` | 163–177, 312 | Production environment hook writes arbitrary path / waits forever | 🛑 BLOCKER | Bypasses repository containment and permits CLI denial of service. |
-| `src/filesystem/ownership.ts` | 138–145, 154 | Production ownership hook writes arbitrary path / waits forever | 🛑 BLOCKER | Same escape exists before staging. |
-| `src/filesystem/contained-fs.ts` | 168 | Write loop does not reject zero progress | ⚠️ WARNING | A zero-byte write would spin while holding the transaction lease; no test exercises it. |
-| `README.md` | 14 | Public `npx` command for a private unpublished package | ⚠️ WARNING / deferred | Registry installation is Phase 6 scope. |
+| `src/filesystem/contained-fs.ts` | 30–34 | Incomplete cross-platform component validator | 🛑 BLOCKER | Windows names can address noncanonical targets during active capability operations. |
+| `vitest.config.ts` | 6–13 | Affected-name test suite excluded | ⚠️ WARNING | Full suite does not guard the required portable component boundary. |
 
-No unreferenced `TBD`, `FIXME`, or `XXX` marker was found in active Phase 21 source/test files.
+No unreferenced `TBD`, `FIXME`, or `XXX` marker was found in the active Plan 22 source/test surface.
 
 ### Independent Review Disposition
 
-`01-REVIEW.md` reported two critical findings and one warning. Both critical findings are confirmed and invalidate Phase 1 goal/requirement achievement: CR-01 blocks SETUP-07 and ART-07 on a supported CI platform; CR-02 violates the repository-contained mutation boundary in the shipped package. WR-01 is confirmed by source inspection but not force-invoked because forcing `writeSync()` to return zero is not a safe normal-runtime probe; it remains a warning rather than a silent pass.
+The fresh review's former blockers are closed by Plan 22: slash-form journal data is parser-compatible, the installed CLI ignores legacy `EXSPECSO_TEST_*` values, and zero-progress writes fail closed. Its remaining CR-01 is confirmed independently, not treated as a defect in excluded historical native material. The active pure-Node `component()` implementation accepts every reviewed Windows-special form, and the current `vitest.config.ts` excludes the legacy test that enumerates those forms. D-21 does not promise race-proof or universal filesystem containment, but it expressly retains relative-component validation; this gap falls within that retained contract and blocks ART-07/phase closure.
 
 ### Human Verification After Gap Closure
 
 1. **Real TTY runtime selection**
 
-   **Test:** Run a packed local tarball initializer in a temporary Git repository with detection enabled. Try empty selection, a subset, and cancellation.
+**Test:** Run a packed local tarball initializer in a temporary Git repository with detection enabled. Try empty selection, a subset, and cancellation.
 
-   **Expected:** Choices start unchecked; detection affects only labels; empty/cancelled selection writes nothing; only selected adapters are written.
+**Expected:** Choices start unchecked; detection affects only labels; empty/cancelled selection writes nothing; only selected adapters are written.
 
-   **Why human:** Prompt-injection tests cover the data contract, not terminal UI/cancellation.
+**Why human:** Prompt-injection tests cover the state contract, not terminal rendering/cancellation.
 
 ### Gaps Summary
 
-Plan 21 genuinely repaired the old pre-journal recovery and descriptor-read defects, and the repaired tests pass. Phase 1 cannot proceed: Windows is an advertised supported CI family but cannot complete an additive transaction with a preimage, and the shipped CLI contains environment-controlled hooks that escape the held repository root and can hang forever. The registry command is deferred to Phase 6; it does not defer either blocker.
+Phase 1 is not complete. The three concrete Plan 22 closure defects are genuinely repaired and tested, but the current Node containment layer does not provide the portable component validation the active package and README claim. Because Windows is a supported representative runtime and the capability is used by journaled transaction/recovery operations, this is a blocker for ART-07 and the durable-foundation part of the Phase goal. It is not deferred: Phase 6 owns registry publishing, not Phase 1 filesystem safety.
 
 ---
 
-_Verified: 2026-08-29T13:05:34Z_
+_Verified: 2026-08-29T14:02:04Z_
 _Verifier: the agent (gsd-verifier)_
