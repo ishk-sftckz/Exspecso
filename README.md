@@ -1,11 +1,72 @@
 # Exspecso
 
-Exspecso is a local-first, spec-driven harness for AI coding agents. Its canonical project state remains ordinary repository files rather than a hidden service or database.
+Exspecso is a local-first, spec-driven harness for AI coding agents. It keeps
+canonical project state as ordinary Markdown and JSON files in the repository,
+rather than in a hidden service or database.
 
-## Native containment support
+## Package contract
 
-The current tested local native tuple is exactly **ENV-MA25**: macOS 26.5.1 build 25F80, arm64, APFS, Node 25.2.1 (live Node-API 10), and a Node-API 8 provider built with Command Line Tools clang 17.0.0 `clang-1700.6.4.2` and macOS SDK 26.2 build 25C58. It is one declared support row, not a claim for other macOS 26 patches, other Node 25 patches, future macOS releases, or undeclared filesystem/toolchain combinations. Unknown tuples fail before repository mutation.
+Exspecso ships as one pure TypeScript/Node npm package. It supports Node 22.13+
+within major 22 and Node 24. The initializer is run from a Git repository and
+uses the containing Git root, including when invoked from a nested directory:
 
-End-user installation uses the package's included provider only: it does not download a provider, invoke an npm lifecycle source build, or require a compiler or Node headers. Maintainers build and validate providers under the exact row contract; the retained ENV-MA25 evidence is in `.planning/phases/01-initialize-canonical-projects/01-20-EVIDENCE/local/`.
+```sh
+npx exspecso init --agent claude --agent codex
+```
 
-The support matrix may contain multiple environment rows for the same OS/CPU target. Provider and manifest selection is therefore by declared support-row ID, then revalidated against the live host, not by target string alone. See the approved [containment support contract](.planning/phases/01-initialize-canonical-projects/01-CONTAINMENT-SUPPORT.md) and [test matrix](.planning/phases/01-initialize-canonical-projects/01-CONTAINMENT-TEST-MATRIX.md) for the full evidence contract and remaining release gates.
+Select one or more of `claude`, `codex`, and `opencode` with repeatable
+`--agent` flags. The command creates only the minimal canonical foundation and
+the selected runtime adapters. Re-running it is additive: selected adapters are
+added or refreshed, while unselected installed adapters remain untouched.
+Successful output names `/exspecso-start` first, followed by the exact
+runtime-native invocation for each selected adapter.
+
+## Filesystem and recovery boundary
+
+Within the containing repository, Exspecso performs deterministic root and
+relative-component checks, rejects symlinked targets, validates expected file
+preimages, and uses repository-local journaled atomic writes with conservative
+recovery. Its canonical state remains inspectable and editable Markdown/JSON.
+
+Claude Code, OpenAI Codex, and OpenCode host permissions and sandboxes are the
+operating-system security boundary. Exspecso does not claim kernel-level,
+race-proof, hostile same-user, or universal-filesystem containment. Its
+process-failure tests cover deterministic interruption and recovery, not
+physical power loss or every filesystem implementation.
+
+## Compatibility evidence
+
+Routine CI is a representative compatibility sample, not universal
+certification. It runs `npm ci`, build, the full test suite, and npm-pack
+inventory inspection on these four rows:
+
+- Ubuntu with Node 22.13.0 (the engine boundary)
+- Ubuntu with Node 24.x
+- macOS with Node 24.x
+- Windows with Node 24.x
+
+To reproduce the local checks separately:
+
+```sh
+npm run build
+npm test -- --run
+npm pack --dry-run --json
+npm test -- --run tests/integration/installed-cli.test.ts
+```
+
+The installed-CLI test builds the standard npm tarball, verifies its dry-run
+inventory, installs it outside the checkout with lifecycle scripts disabled,
+and invokes its declared bin from temporary Git repositories.
+
+## Historical native material
+
+Some native source, tests, scripts, workflows, and evidence remain in this
+repository as non-shipped, non-invoked historical material. They are not part
+of the active build, test, npm package, installation, runtime, or triggered CI
+workflow; removing them physically is outside Phase 1. Plans 01-19 and 01-20
+and their summaries remain immutable historical records of the superseded
+native approach, not evidence for this TypeScript/Node package.
+
+This repository does not publish or release a package as part of Phase 1. The
+next step after the local evidence is independent Phase 1 verification; a green
+implementation summary is not a phase-completion verdict.
