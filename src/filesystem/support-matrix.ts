@@ -122,6 +122,12 @@ export function isSupportedNodeVersion(policy: SupportMatrix["nodePolicy"], node
   return policy.ranges.some((range) => parsed[0] === range.major && compare(parsed, version(range.minimum)) >= 0);
 }
 
+/** Alpine's package database, unlike ldd, preserves the revision required by the support matrix. */
+export function parseAlpineMuslPackageVersion(value: string): string | undefined {
+  const match = /^musl-(\d+\.\d+\.\d+-r\d+)\s*$/m.exec(value);
+  return match ? `musl-${match[1]}` : undefined;
+}
+
 function familyFor(platform: string): SupportRow["os"]["family"] | undefined {
   if (platform === "darwin") return "macos";
   if (platform === "win32") return "windows";

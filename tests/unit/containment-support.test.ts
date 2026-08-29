@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSupportedNodeVersion, loadSupportMatrix, resolveManifestEntry, resolveSupportRow, type RuntimeObservation } from "../../src/filesystem/support-matrix.js";
+import { isSupportedNodeVersion, loadSupportMatrix, parseAlpineMuslPackageVersion, resolveManifestEntry, resolveSupportRow, type RuntimeObservation } from "../../src/filesystem/support-matrix.js";
 
 describe("native containment support matrix", () => {
   it("declares and resolves the local macOS 26.5.1 Node 25.2.1 support row", () => {
@@ -65,5 +65,12 @@ describe("declared and undeclared support tuples", () => {
     expect(() => resolveManifestEntry(matrix, observation, [{ ...manifest[0], path: "darwin-arm64/contained-fs.node" }])).toThrow(/native support row/);
     expect(() => resolveManifestEntry(matrix, observation, [{ ...manifest[0], napiVersion: 7 }])).toThrow(/native support row/);
     expect(() => resolveManifestEntry(matrix, observation, [...manifest, manifest[0]])).toThrow(/duplicate native support row/);
+  });
+});
+
+describe("Alpine musl runtime identity", () => {
+  it("retains the package revision required by a declared musl support row", () => {
+    expect(parseAlpineMuslPackageVersion("musl-1.2.6-r2\n")).toBe("musl-1.2.6-r2");
+    expect(parseAlpineMuslPackageVersion("musl-1.2.6\n")).toBeUndefined();
   });
 });

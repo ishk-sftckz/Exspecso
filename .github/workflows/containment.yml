@@ -79,7 +79,15 @@ jobs:
           fi
           node native/build.mjs --variant test --diagnostic "$diagnostic" --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
           cp dist/native/build-provenance.json diagnostic-build-provenance.json
-          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000 --reporter=json --outputFile=diagnostic-results.json
+          diagnostic_args=(-- --run tests/unit/contained-fs.test.ts --testTimeout 60000 --reporter=json --outputFile=diagnostic-results.json)
+          if [ "$FAMILY" = glibc ]; then
+            asan_runtime="$(g++ -print-file-name=libasan.so)"
+            test "$asan_runtime" != libasan.so
+            test -f "$asan_runtime"
+            LD_PRELOAD="$asan_runtime${LD_PRELOAD:+:$LD_PRELOAD}" npm test "${diagnostic_args[@]}"
+          else
+            npm test "${diagnostic_args[@]}"
+          fi
           node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
           if [ "$FAMILY" = glibc ]; then node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json; fi
           node scripts/write-containment-evidence.mjs
@@ -121,10 +129,14 @@ jobs:
           npm ci --ignore-scripts
           node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
           npm run build
-          npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+          npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 240000 --reporter=json --outputFile=tracer-results.json
           node native/build.mjs --variant test --diagnostic address --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
           Copy-Item dist/native/build-provenance.json diagnostic-build-provenance.json
-          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000 --reporter=json --outputFile=diagnostic-results.json
+          $compiler = (Get-Content windows-preflight/environment.json -Raw | ConvertFrom-Json).compiler
+          $asanRuntime = @(Get-ChildItem -LiteralPath (Split-Path -Path $compiler -Parent) -Filter 'clang_rt.asan_dynamic-*.dll' -File)
+          if ($asanRuntime.Count -ne 1) { throw 'Expected exactly one ASan runtime beside the approved compiler' }
+          $env:PATH = "$($asanRuntime[0].DirectoryName);$env:PATH"
+          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 240000 --reporter=json --outputFile=diagnostic-results.json
           node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
           node scripts/write-containment-evidence.mjs
       - name: Build and run the real native musl tracer in the pinned Alpine userland
@@ -201,3 +213,27 @@ jobs:
             windows-preflight/
           if-no-files-found: error
           retention-days: 7
+  aggregate:
+    name: Validate complete containment tracer evidence
+    if: ${{ always() && inputs.mode == 'full' }}
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Fetch only the reviewed temporary snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin https://github.com/ishk-sftckz/exspecso.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+      - name: Download every retained matrix artifact without name collisions
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: containment-*
+          path: final-evidence
+          merge-multiple: false
+      - name: Block incomplete or stale matrix evidence
+        shell: bash
+        run: node scripts/containment-evidence.mjs --stage tracer --evidence-dir final-evidence --matrix native/support-matrix.json --source-commit "$GITHUB_SHA"

@@ -28,9 +28,19 @@ const requiredLanes = stage === "prerequisite" ? new Set([localRow.node.testedVe
 function requiredLanesForRow(row) {
   return row.id === localRow.id ? new Set([localRow.node.testedVersion]) : nodeLanes;
 }
-const files = readdirSync(evidenceDir).filter((file) => file.endsWith(".json") && !new Set(["full-suite.json", "provider-manifest.json", "build-provenance.json"]).has(file)).sort();
+const nonEvidenceRootJson = new Set(["full-suite.json", "provider-manifest.json", "build-provenance.json"]);
+function evidenceFiles(directory, includeRootJson = true) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) return evidenceFiles(path, false);
+    if (!entry.isFile()) return [];
+    if (entry.name === "evidence.json" || (includeRootJson && entry.name.endsWith(".json") && !nonEvidenceRootJson.has(entry.name))) return [path];
+    return [];
+  });
+}
+const files = evidenceFiles(evidenceDir).sort();
 if (!files.length) fail("no evidence records found");
-const records = files.map((file) => JSON.parse(readFileSync(join(evidenceDir, file), "utf8")));
+const records = files.map((file) => JSON.parse(readFileSync(file, "utf8")));
 const seen = new Map();
 const observedLanes = new Set();
 let sourceCommit;
@@ -99,5 +109,5 @@ for (const row of requiredRows) {
   }
 }
 for (const lane of requiredLanes) if (!observedLanes.has(lane)) fail(`missing required Node lane ${lane}`);
-if (stage === "prerequisite" && expectedSourceCommit !== undefined && sourceCommit !== expectedSourceCommit) fail("prerequisite evidence is not from the expected current source commit");
+if (expectedSourceCommit !== undefined && sourceCommit !== expectedSourceCommit) fail(`${stage} evidence is not from the expected current source commit`);
 console.log(JSON.stringify({ plan_complete: true, stage, matrixRevision: matrix.revision, sourceCommit, rows: [...seen.keys()].sort(), nodeLanes: [...observedLanes].sort() }));

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -13,6 +13,22 @@ function aggregate(records: unknown[], stage = "final", expectedSourceCommit?: s
   try {
     for (const [index, record] of records.entries()) {
       writeFileSync(join(evidenceDir, `record-${index}.json`), JSON.stringify(record));
+    }
+    const args = ["scripts/containment-evidence.mjs", "--stage", stage, "--evidence-dir", evidenceDir, "--matrix", "native/support-matrix.json"];
+    if (expectedSourceCommit) args.push("--source-commit", expectedSourceCommit);
+    return execFileSync(process.execPath, args, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  } finally {
+    rmSync(evidenceDir, { recursive: true, force: true });
+  }
+}
+
+function aggregateDownloaded(records: unknown[], stage = "tracer", expectedSourceCommit?: string) {
+  const evidenceDir = mkdtempSync(join(tmpdir(), "exspecso-containment-download-"));
+  try {
+    for (const [index, record] of records.entries()) {
+      const artifactDir = join(evidenceDir, `containment-${index}`);
+      mkdirSync(artifactDir, { recursive: true });
+      writeFileSync(join(artifactDir, "evidence.json"), JSON.stringify(record));
     }
     const args = ["scripts/containment-evidence.mjs", "--stage", stage, "--evidence-dir", evidenceDir, "--matrix", "native/support-matrix.json"];
     if (expectedSourceCommit) args.push("--source-commit", expectedSourceCommit);
@@ -107,6 +123,19 @@ describe("containment evidence aggregate", () => {
     expect(workflow).toContain("wget -q https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz");
   });
 
+  it("runs a terminal tracer aggregate without changing the approved macOS UBSan lane", () => {
+    const workflow = readFileSync(join(root, ".github/workflows/containment.yml"), "utf8");
+    expect(workflow).toContain("aggregate:");
+    expect(workflow).toContain("needs: native");
+    expect(workflow).toContain("actions/download-artifact@");
+    expect(workflow).toContain("node scripts/containment-evidence.mjs --stage tracer --evidence-dir final-evidence --matrix native/support-matrix.json --source-commit \"$GITHUB_SHA\"");
+    expect(workflow).toContain("merge-multiple: false");
+    expect(workflow).toContain('asan_runtime="$(g++ -print-file-name=libasan.so)"');
+    expect(workflow).toContain("clang_rt.asan_dynamic-*.dll");
+    expect(workflow.match(/--testTimeout 240000/g)).toHaveLength(2);
+    expect(workflow).toContain("diagnostic=undefined");
+  });
+
   it.each([
     ["missing prior row", (records: unknown[]) => records.slice(1)],
     ["missing ENV-MA25", (records: any[]) => records.filter((record) => record.rowId !== "ENV-MA25")],
@@ -135,6 +164,14 @@ describe("containment evidence aggregate", () => {
     const records = completeMatrixRecords();
     expect(() => aggregate([...records, { ...records[0], environment: { ...records[0].environment, kernel: "different" } }])).toThrow();
     expect(aggregate(records)).toContain('"plan_complete":true');
+  });
+
+  it("reads artifact-directory evidence and binds terminal tracer evidence to the current snapshot", () => {
+    const records = completeMatrixRecords()
+      .filter((record) => record.rowId !== "ENV-MA25")
+      .map(({ finalTarball: _finalTarball, ...record }) => ({ ...record, stage: "tracer" }));
+    expect(aggregateDownloaded(records, "tracer", sourceCommit)).toContain('"plan_complete":true');
+    expect(() => aggregateDownloaded(records.map((record) => ({ ...record, sourceCommit: "b".repeat(40) })), "tracer", sourceCommit)).toThrow();
   });
 
   it("requires the current ENV-MA25 local record at the prerequisite stage", () => {

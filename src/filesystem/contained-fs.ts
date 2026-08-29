@@ -4,7 +4,7 @@ import { lstatSync, readFileSync, realpathSync, statfsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadSupportMatrix, resolveManifestEntry, type RuntimeObservation, type SupportManifestEntry } from "./support-matrix.js";
+import { loadSupportMatrix, parseAlpineMuslPackageVersion, resolveManifestEntry, type RuntimeObservation, type SupportManifestEntry } from "./support-matrix.js";
 
 interface NativeProvider {
   readonly variant: "release" | "test";
@@ -86,8 +86,8 @@ function observeRuntime(operationRoot: string): RuntimeObservation {
       libc = error.stderr;
     }
     const alpine = command("cut", ["-d", ".", "-f", "1,2", "/etc/alpine-release"]);
-    const match = /Version\s+(\d+\.\d+\.\d+(?:-r\d+)?)/.exec(libc);
-    return { platform: process.platform, arch: process.arch, osVersion: `Alpine ${alpine}`, osBuild, filesystem, libc: match ? `musl-${match[1]}` : "unapproved", nodeVersion, napiVersion };
+    const muslPackage = libc.includes("musl libc") ? parseAlpineMuslPackageVersion(command("apk", ["info", "-e", "musl"])) : undefined;
+    return { platform: process.platform, arch: process.arch, osVersion: `Alpine ${alpine}`, osBuild, filesystem, libc: muslPackage ?? "unapproved", nodeVersion, napiVersion };
   }
 }
 
