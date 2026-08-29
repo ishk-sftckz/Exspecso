@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { lstat, readFile, writeFile } from "node:fs/promises";
+import { lstat, readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import type { PlannedWrite } from "../init/plan.js";
@@ -160,29 +160,12 @@ async function updateJournal(stage: DirectoryCapability, journal: TransactionJou
   return journal;
 }
 
-async function signalExternalFault(point: PromotionFaultPoint): Promise<void> {
-  const signalPath = process.env.EXSPECSO_TEST_SYNC_FILE;
-  if (signalPath === undefined || process.env.EXSPECSO_TEST_FAULT_POINT !== point) return;
-  await writeFile(signalPath, `${JSON.stringify({ point, pid: process.pid })}\n`, "utf8");
-  if (process.env.EXSPECSO_TEST_WAIT_FOR_KILL === "1") {
-    await new Promise<void>(() => { setInterval(() => undefined, 1_000); });
-  }
-}
-
-function environmentFaultOptions(): CommitTransactionOptions {
-  const point = process.env.EXSPECSO_TEST_FAULT_POINT;
-  if (point !== undefined && (point.startsWith("before-promotion:") || point.startsWith("after-promotion:") || point.startsWith("after-journal:"))) {
-    return { faultAt: point as PromotionFaultPoint, faultMode: process.env.EXSPECSO_TEST_FAULT_MODE === "interrupt" ? "interrupt" : "throw" };
-  }
-  return {};
-}
-
 /**
  * Stages and journals the whole mutation set before promoting any output. A
  * failure intentionally retains the identified journal and byte copies for
  * conservative next-invocation recovery; only a validated success cleans it.
  */
-export async function commitTransaction(plan: { readonly repositoryRoot: string; readonly writes: readonly PlannedWrite[] }, options: CommitTransactionOptions = environmentFaultOptions()): Promise<TransactionResult> {
+export async function commitTransaction(plan: { readonly repositoryRoot: string; readonly writes: readonly PlannedWrite[] }, options: CommitTransactionOptions = {}): Promise<TransactionResult> {
   const root = resolve(plan.repositoryRoot);
   if (plan.writes.length === 0) return { kind: "no-op" };
   const transactionId = randomUUID();
@@ -309,7 +292,6 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
       if (options.faultAt === afterJournal) throw new Error(`EXSPECSO_TRANSACTION_TEST_FAULT: ${afterJournal}`);
       const point = faultPoint(relativePath);
       await options.onPromotion?.(point);
-      await signalExternalFault(point);
       if (options.faultAt === point) {
         if (options.faultMode === "interrupt") throw new Error(`EXSPECSO_TRANSACTION_TEST_INTERRUPT: ${point}`);
         throw new Error(`EXSPECSO_TRANSACTION_TEST_FAULT: ${point}`);

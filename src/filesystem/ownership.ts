@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { realpath, rename, writeFile } from "node:fs/promises";
+import { realpath } from "node:fs/promises";
 import { resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import { openContainedFilesystem, type DirectoryCapability, type RootCapability } from "./contained-fs.js";
@@ -135,14 +135,6 @@ function removeObservedDeadCandidate(root: string, operational: DirectoryCapabil
     candidate.unlink(observed.recordName); candidate.close(); candidate = undefined; operational.removeDirectory(observed.name); return true;
   } catch { return false; } finally { candidate?.close(); }
 }
-async function signalExternalOwnershipPublication(): Promise<void> {
-  const signalPath = process.env.EXSPECSO_TEST_OWNERSHIP_SYNC_FILE;
-  if (signalPath === undefined) return;
-  const temporaryPath = `${signalPath}.${process.pid}.tmp`;
-  await writeFile(temporaryPath, `${JSON.stringify({ point: "after-ownership-publication", pid: process.pid })}\n`, "utf8");
-  await rename(temporaryPath, signalPath);
-  if (process.env.EXSPECSO_TEST_WAIT_FOR_OWNERSHIP_KILL === "1") await new Promise<void>(() => { setInterval(() => undefined, 1_000); });
-}
 async function publishOwnership(root: string, rootDirectory: DirectoryCapability, ownedFilesystem?: RootCapability): Promise<InitOwnershipAcquisition> {
   let operational: DirectoryCapability | undefined; let candidate: DirectoryCapability | undefined; let lock: DirectoryCapability | undefined;
   const token = randomUUID(); const candidateName = `${candidatePrefix}${token}`; const recordName = ownerFileName(token);
@@ -151,7 +143,7 @@ async function publishOwnership(root: string, rootDirectory: DirectoryCapability
     const record = candidate.createFile(recordName);
     try { record.write(Buffer.from(`${JSON.stringify({ schemaVersion: ownershipSchemaVersion, pid: process.pid, token, rootFingerprint: sha256(root) })}\n`, "utf8")); record.sync(); } finally { record.close(); }
     candidate.sync(); operational.sync(); operational.publishDirectory(candidate, ".init.lock"); candidate.close(); candidate = undefined; operational.sync();
-    lock = operational.openDirectory(".init.lock"); await signalExternalOwnershipPublication();
+    lock = operational.openDirectory(".init.lock");
     return { kind: "acquired", ownership: { [ownershipBrand]: true, root, token, recordName, rootDirectory, operationalDirectory: operational, lockDirectory: lock, ownedFilesystem, state: "acquired" } };
   } catch (error) {
     try { candidate?.unlink(recordName); } catch {} try { candidate?.close(); operational?.removeDirectory(candidateName); } catch {}
