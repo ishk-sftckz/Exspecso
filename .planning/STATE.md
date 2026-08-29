@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
 status: executing
-stopped_at: Completed 01-18-PLAN.md; independent Phase 1 verification next
-last_updated: "2026-08-29T12:31:50.539Z"
+stopped_at: Completed 01-21-PLAN.md; independent Phase 1 verification next
+last_updated: "2026-08-29T12:54:39.870Z"
 last_activity: 2026-08-29
-last_activity_desc: Phase 01 execution started
+last_activity_desc: Plan 01-21 completed; independent Phase 1 verification next
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 23
-  completed_plans: 20
+  total_plans: 21
+  completed_plans: 21
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (initialize-canonical-projects) — EXECUTING
-Plan: 20 of 20
+Plan: 21 of 21
 Status: Awaiting independent phase verification
-Last activity: 2026-08-29 — Plan 01-18 completed; independent Phase 1 verification next
+Last activity: 2026-08-29 — Plan 01-21 completed; independent Phase 1 verification next
 
-Plan execution: 18 plans are implementation-complete and 2 remain pending (20 total). Plan 01-17 now retires the partial native containment subsystem while preserving required initializer behavior through deterministic root-scoped Node filesystem operations. Plan 01-18 performs lean installed-package and representative compatibility closure before independent phase verification.
+Plan execution: 21 plans are implementation-complete (21 total). Plan 01-21 closes the two filesystem verifier blockers; independent Phase 1 verification remains the next gate before Phase completion.
 
 ### Active Execution — Pure TypeScript/Node architecture correction
 
@@ -130,6 +130,7 @@ The records below preserve the investigation history. Their native-provider, exh
 | Phase 01 P16 | 25min | 2 tasks | 4 files |
 | Phase 01 P17 | 8min | 2 tasks | 12 files |
 | Phase 01 P18 | 10min | 2 tasks | 4 files |
+| Phase 01-initialize-canonical-projects P21 | 17min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -182,6 +183,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Use four representative D-22 CI rows: Ubuntu Node 22.13.0 plus Ubuntu, macOS, and Windows Node 24.x.
 - [Phase ?]: Prove the shipped package through a standard tarball, scripts-disabled isolated install, and its declared bin outside the checkout.
 - [Phase ?]: Document host permissions and sandboxes as the OS boundary; do not claim kernel-level, race-proof, or universal-filesystem containment.
+- [Phase ?]: Use a schema-2 preparing state as the exclusive proof that transaction recovery may remove declared pre-promotion debris.
+- [Phase ?]: Fail FileCapability reads closed on zero progress and any final descriptor type, identity, or size mismatch.
 
 ### Pending Todos
 
@@ -193,7 +196,7 @@ None yet.
 - The live-writer recovery and stale-owner races are repaired and tested in 01-08; CR-02 still requires independent phase re-verification before it is closed.
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
 - Plans 01-09 and 01-10 are complete. Phase 1 remains incomplete.
-- Next: execute revised 01-17, then revised 01-18. After both deltas pass, hand the resulting pure TypeScript/Node package to independent Phase 1 verification. Revised 01-17 is the exclusive forward D-21 supersession owner; completed Plans 01-19/01-20 and their summaries remain immutable historical evidence and are not TypeScript-path proof.
+- All Phase 1 plans are implementation-complete. Hand the resulting pure TypeScript/Node package to independent Phase 1 verification before any Phase completion claim; completed Plans 01-19/01-20 and their summaries remain immutable historical evidence and are not TypeScript-path proof.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
 ### Quick Tasks Completed
@@ -213,6 +216,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-29T09:07:55.509Z
-Stopped at: Completed 01-18-PLAN.md; independent Phase 1 verification next
+Last session: 2026-08-29T12:54:39.861Z
+Stopped at: Completed 01-21-PLAN.md; independent Phase 1 verification next
 Resume file: None

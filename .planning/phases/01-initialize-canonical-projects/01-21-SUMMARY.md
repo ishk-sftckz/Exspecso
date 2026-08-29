@@ -108,7 +108,17 @@ actuals:
 
 ## Deviations from Plan
 
-None - plan executed exactly as written.
+### Auto-fixed Issues
+
+**1. [Rule 1 - Tracking state] Correct stale phase handoff metadata after the prescribed state advance**
+- **Found during:** Plan close-out
+- **Issue:** The state helper read a stale `Plan: 1 of 21` handoff and displayed `Plan: 2 of 21`, although all 21 plan summaries now exist. It also retained obsolete 20-plan wording.
+- **Fix:** Preserved the helper's metric, decision, session, roadmap, and requirement updates, then restored the human-readable state to 21/21 implementation-complete with independent Phase 1 verification as the next gate.
+- **Files modified:** `.planning/STATE.md`, `01-21-SUMMARY.md`
+- **Verification:** `init.execute-phase` reports 21 plans with 21 summaries, and the roadmap reports 21/21 In Progress.
+
+**Total deviations:** 1 auto-fixed (1 Rule 1 tracking-state correction).
+**Impact on plan:** Preserves the required independent verification gate and prevents a stale counter from directing another implementation plan.
 
 ## Issues Encountered
 
