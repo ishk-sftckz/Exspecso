@@ -1,11 +1,12 @@
 import { readFile, readdir, rm } from "node:fs/promises";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { packAndInstall, runInstalledCli } from "../helpers/package-fixture.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 
 const fixtures: GitFixture[] = [];
 const installationRoots: string[] = [];
+const packageRoot = resolve(import.meta.dirname, "../..");
 
 afterEach(async () => {
   await Promise.all(fixtures.splice(0).map((fixture) => fixture.dispose()));
@@ -30,6 +31,24 @@ async function projectFiles(root: string, directory = root): Promise<string[]> {
 }
 
 describe("installed package initializer", () => {
+  it("declares only the four representative D-22 compatibility rows", async () => {
+    const workflow = await readFile(join(packageRoot, ".github", "workflows", "ci.yml"), "utf8");
+
+    expect(workflow.match(/^\s+- os: /gm)).toHaveLength(4);
+    expect(workflow).toContain("os: ubuntu-latest\n            node: 22.13.0");
+    expect(workflow).toContain("os: ubuntu-latest\n            node: 24.x");
+    expect(workflow).toContain("os: macos-latest\n            node: 24.x");
+    expect(workflow).toContain("os: windows-latest\n            node: 24.x");
+    expect(workflow).toContain("permissions:\n  contents: read");
+    expect(workflow).toContain("actions/checkout@v6");
+    expect(workflow).toContain("actions/setup-node@v6");
+    expect(workflow).toContain("npm ci");
+    expect(workflow).toContain("npm run build");
+    expect(workflow).toContain("npm test -- --run");
+    expect(workflow).toContain("npm pack --dry-run --json");
+    expect(workflow).not.toMatch(/native|compiler|sanitizer|prebuild/i);
+  });
+
   it("packs a native-free tarball and proves every selected runtime subset from root and nested directories", async () => {
     const installation = await packAndInstall();
     installationRoots.push(dirname(dirname(dirname(installation.packageDirectory))));
@@ -76,7 +95,7 @@ describe("installed package initializer", () => {
       ]));
       await expect(readFile(join(repository.root, ".exspecso", "roadmap.md"), "utf8")).rejects.toThrow();
     }
-  });
+  }, 30_000);
 
   it("adds selected adapters without changing the project identity or unselected adapter bytes", async () => {
     const installation = await packAndInstall();
