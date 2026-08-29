@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { realpath, writeFile } from "node:fs/promises";
+import { realpath, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import { openContainedFilesystem, type DirectoryCapability, type RootCapability } from "./contained-fs.js";
@@ -138,7 +138,9 @@ function removeObservedDeadCandidate(root: string, operational: DirectoryCapabil
 async function signalExternalOwnershipPublication(): Promise<void> {
   const signalPath = process.env.EXSPECSO_TEST_OWNERSHIP_SYNC_FILE;
   if (signalPath === undefined) return;
-  await writeFile(signalPath, `${JSON.stringify({ point: "after-ownership-publication", pid: process.pid })}\n`, "utf8");
+  const temporaryPath = `${signalPath}.${process.pid}.tmp`;
+  await writeFile(temporaryPath, `${JSON.stringify({ point: "after-ownership-publication", pid: process.pid })}\n`, "utf8");
+  await rename(temporaryPath, signalPath);
   if (process.env.EXSPECSO_TEST_WAIT_FOR_OWNERSHIP_KILL === "1") await new Promise<void>(() => { setInterval(() => undefined, 1_000); });
 }
 async function publishOwnership(root: string, rootDirectory: DirectoryCapability, ownedFilesystem?: RootCapability): Promise<InitOwnershipAcquisition> {
