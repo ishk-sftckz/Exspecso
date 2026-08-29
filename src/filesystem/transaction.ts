@@ -207,7 +207,7 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
         throw new Error(`EXSPECSO_TRANSACTION_STALE_PREIMAGE: ${write.relativePath}`);
       }
       preimages.set(write.relativePath, current);
-      const backupPath = current === undefined ? null : join("backups", write.relativePath);
+      const backupPath = current === undefined ? null : `backups/${write.relativePath}`;
       entries.push({
         relativePath: write.relativePath,
         preimageHash: current === undefined ? null : sha256(current),
