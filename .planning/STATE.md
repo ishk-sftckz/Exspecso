@@ -4,9 +4,9 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
-status: Plan 01-16 complete; resume Plan 01-17
+status: Plan 01-16 complete; execute revised Plan 01-17 simplification
 stopped_at: Completed 01-16-PLAN.md
-last_updated: "2026-08-28T13:19:50.068Z"
+last_updated: "2026-08-29T00:00:00.000Z"
 last_activity: 2026-08-28
 last_activity_desc: Plan 01-16 added row-qualified package assembly and isolated offline installed-CLI verification.
 progress:
@@ -29,12 +29,22 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 
 Phase: 01 (Initialize Canonical Projects) — phase incomplete
 Plan: 17 of 20; Plan 01-16 is complete
-Status: Resume Plan 01-17 all-row evidence and Node-lane execution
-Last activity: 2026-08-28 — Plan 01-16 added row-qualified package assembly and isolated offline installed-CLI verification.
+Status: Execute revised Plan 01-17 pure TypeScript/Node cutover, then Plan 01-18 installed-package and representative compatibility evidence, then independent Phase 1 verification
+Last activity: 2026-08-29 — Plans 01-17 and 01-18 were corrected to close Phase 1 as a pure TypeScript/Node package with a proportional compatibility gate.
 
-Plan execution: 18 plans are implementation-complete and 2 remain pending (20 total). Plan 01-16 completed row-qualified package assembly and isolated offline installed-CLI verification; Plan 01-17 may now collect all-row evidence and named Node-lane execution.
+Plan execution: 18 plans are implementation-complete and 2 remain pending (20 total). Plan 01-17 now retires the partial native containment subsystem while preserving required initializer behavior through deterministic root-scoped Node filesystem operations. Plan 01-18 performs lean installed-package and representative compatibility closure before independent phase verification.
 
-### Active Execution — Native target matrix
+### Active Execution — Pure TypeScript/Node architecture correction
+
+- D-21 locks the shipped Phase 1/V1 package to pure TypeScript/Node. Markdown and small JSON remain canonical; deterministic repository-root scoping, component and symlink validation, preimage checks, journaled atomic writes, conservative recovery, and Git checkpoints remain required.
+- Claude Code, Codex, and OpenCode permissions and sandboxes are the OS-level boundary. Exspecso makes no kernel-level, race-proof, hostile same-user, or universal filesystem-containment claim.
+- D-22 replaces exhaustive native certification with representative supported OS-family and Node boundary/LTS coverage. Exact hosted runner, compiler, libc, and package versions remain provenance rather than runtime requirements.
+- D-21 supersession boundary: completed Plans 01-19 and 01-20 and their summaries remain immutable historical evidence of the earlier native approach. Revised Plan 01-17 exclusively owns the forward cutover away from their shipped native surfaces; this is not re-execution, and their past completion status cannot evidence the new TypeScript path.
+- Native source, tests, scripts, workflows, research, CI logs, evidence records, and debug sessions remaining in the repository are non-shipped, non-invoked historical/deferred material. Their physical deletion is not Phase 1 work; revised 01-17 changes only the active runtime/build/test/package entry points and disables the expensive containment trigger.
+
+### Superseded Native Target Matrix — history only
+
+The records below preserve the investigation history. Their native-provider, exhaustive-matrix, and certification directives are not Phase 1/V1 completion requirements after D-21 and D-22.
 
 - Post-Wave-12 support correction: the current macOS 26.5.1 build 25F80 / arm64 / local APFS / Node 25.2.1 machine is a declared support row, not development-only. Plan 01-20 built its real Node-API 8 release provider and retained an unfiltered 123/123 local regression result, then set Plan 01-12 complete and marked its continuation checkpoint resolved. Plan 01-13 is now unblocked; all prior rows and lanes remain final-candidate obligations.
 
@@ -176,7 +186,7 @@ None yet.
 - The live-writer recovery and stale-owner races are repaired and tested in 01-08; CR-02 still requires independent phase re-verification before it is closed.
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
 - Plans 01-09 and 01-10 are complete. Phase 1 remains incomplete.
-- Next: execute 01-20 within the amended target contract, then resume 01-13. After the remaining serial plans, independent re-verification, real-TTY UAT, prohibition acknowledgement, and `$gsd-secure-phase 1` remain required.
+- Next: execute revised 01-17, then revised 01-18. After both deltas pass, hand the resulting pure TypeScript/Node package to independent Phase 1 verification. Revised 01-17 is the exclusive forward D-21 supersession owner; completed Plans 01-19/01-20 and their summaries remain immutable historical evidence and are not TypeScript-path proof.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
 ### Quick Tasks Completed

@@ -41,6 +41,10 @@ Phase 1 delivers the repository-local foundation for Exspecso: one idempotent np
 - **D-19:** Phase 1 proves ART-07 against deterministic process interruption, injected exceptions, and killed-process recovery at every declared promotion step. It does not claim physical power-loss durability or universal guarantees across APFS, NTFS, ext4, or other filesystems without separate platform evidence. — **Reversibility:** reversible — later platform testing may strengthen the evidence claim without changing the canonical write contract.
 - **D-20:** The public stable-ID vocabulary is `ROADMAP`, `PHASE-NNN`, `SPEC-NNN`, `REQ-NNN`, `AC-NNN`, `PLAN-NNN`, `TASK-NNN`, `DEC-NNN`, and `FINDING-NNN`. These exact literals cover Roadmap, Phase, Spec, Requirement, Acceptance Criterion, Plan, Task, Decision, and review finding respectively. — **Reversibility:** one-way — changing issued identifiers would break persisted references or require an explicit migration.
 
+### Filesystem safety and compatibility correction
+- **D-21:** The shipped package is one pure TypeScript/Node package. Exspecso keeps deterministic repository-root scoping, relative-component and symlink validation, expected-preimage checks, journaled atomic writes, conservative recovery, and Git checkpoints. Claude Code, OpenAI Codex, and OpenCode host permissions and sandboxes are the OS-level security boundary. Exspecso does not claim kernel-level, race-proof, hostile same-user, or universal-filesystem containment. The native C/C++ provider, prebuilt loader, runtime support-row gate, and native certification system are outside Phase 1 and V1; the prior research, debug records, CI logs, and evidence remain historical records explaining this decision, not normative completion requirements. **Supersession boundary:** completed Plans 01-19 and 01-20 and their summaries remain immutable historical evidence of the earlier native approach; revised Plan 01-17 exclusively owns the forward cutover away from their shipped native surfaces. This is not re-execution, and their past completion status is not evidence that the new TypeScript path works. Native source, tests, scripts, workflows, and evidence left in the repository are non-shipped, non-invoked historical/deferred material; their physical deletion is not Phase 1 work. — **Reversibility:** costly — reintroducing native hardening would require a separately approved threat model, support contract, build path, packaging design, and evidence program.
+- **D-22:** Routine compatibility evidence uses a small representative set of supported OS families and Node boundary/LTS lanes. Exact runner images, compiler builds, SDKs, libc/package revisions, and historical Node patches may be retained as provenance, but they do not become runtime compatibility requirements. No exhaustive OS-by-Node cross-product or further native certification run is a Phase 1 completion condition.
+
 ### the agent's Discretion
 - Exact TypeScript libraries for CLI prompts, schema validation, atomic filesystem operations, and unique-ID generation.
 - Exact error-code names, provided they are stable and structured.
@@ -107,7 +111,7 @@ Phase 1 delivers the repository-local foundation for Exspecso: one idempotent np
 <deferred>
 ## Deferred Ideas
 
-None — discussion stayed within phase scope.
+- Optional native or kernel-assisted filesystem hardening, only under a separately approved post-V1 threat model and only if real user evidence requires it. The existing containment research and execution evidence are retained as historical inputs to that decision, not as active Phase 1 requirements.
 
 </deferred>
 

@@ -34,7 +34,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 18/20 plans executed implementation-complete; 01-12 remains verification-halted until 01-20 records exact ENV-MA25 proof and a full unfiltered local regression
+**Plans**: 18/20 plans are implementation-complete; revised Plans 01-17 and 01-18 remain pending under the pure TypeScript/Node architecture correction
 
 Plans:
 **Wave 1**
@@ -108,13 +108,13 @@ Plans:
 
 **Wave 18** *(gap closure; depends on 01-16)*
 
-- [ ] 01-17-PLAN.md — Run the complete installed containment test matrix
+- [ ] 01-17-PLAN.md — Retire native containment and preserve initializer behavior through the pure Node root-scoped filesystem contract
 
 **Wave 19** *(gap closure; depends on 01-17)*
 
-- [ ] 01-18-PLAN.md — Gate the final package candidate on platform evidence and review
+- [ ] 01-18-PLAN.md — Verify representative compatibility and installed-package behavior, document the safety boundary, and hand off phase verification
 
-**Cross-cutting constraints:** Preserve all completed contracts and all three agent adapters; the corrected macOS 26.5.1 / arm64 / local APFS / Node 25.2.1 tuple is a real supported row, not a development-only exception; support matching is matrix-driven and unlisted tuples fail before mutation; the existing eight rows and nine Node lanes remain required alongside the new row/lane; same-package row-qualified prebuilts; no unsafe pathname fallback; evidence distinguishes test and release binaries; missing native matrix rows or Node lanes block support; no publishing or Phase 2 advancement before independent closure.
+**Cross-cutting constraints:** Preserve all completed initializer, canonical-artifact, recovery, packaging, and three-adapter contracts while shipping one pure TypeScript/Node package. Repository-root scoping, deterministic component and symlink validation, preimage checks, journaled atomic writes, conservative recovery, and Git checkpoints remain required. Claude Code, Codex, and OpenCode host permissions and sandboxes are the OS-level security boundary; Exspecso does not claim kernel-level, race-proof, hostile same-user, or universal filesystem containment. Routine CI covers a small representative set of supported OS families and Node boundary/LTS versions. Exact runner, compiler, libc, and package versions remain provenance rather than runtime compatibility requirements. Historical native containment and certification evidence is retained, but native providers, exhaustive cross-products, and an 80-job certification run are outside Phase 1/V1. No publishing or Phase 2 advancement before independent closure.
 
 ### Phase 2: Build the Project Truth Engine
 
