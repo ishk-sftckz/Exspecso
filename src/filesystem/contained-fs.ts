@@ -1,231 +1,340 @@
-import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
-import { lstatSync, readFileSync, realpathSync, statfsSync } from "node:fs";
-import { createRequire } from "node:module";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { loadSupportMatrix, parseAlpineMuslPackageVersion, resolveManifestEntry, type RuntimeObservation, type SupportManifestEntry } from "./support-matrix.js";
+import { closeSync, fsyncSync, fstatSync, lstatSync, mkdirSync, openSync, readSync, readdirSync, renameSync, rmdirSync, unlinkSync, writeSync } from "node:fs";
+import { realpathSync } from "node:fs";
+import { join } from "node:path";
 
-interface NativeProvider {
-  readonly variant: "release" | "test";
-  openRoot(path: string): object;
-  openDirectory(parent: object, name: string, create: boolean): object;
-  createDirectory(parent: object, name: string): object;
-  openFile(parent: object, name: string, create: boolean): object;
-  read(file: object): Buffer;
-  write(file: object, bytes: Buffer): void;
-  sync(handle: object): boolean;
-  close(handle: object): void;
-  list(directory: object): string[];
-  replace(parent: object, source: object, target: string, testBoundary: boolean): void;
-  publishDirectory(parent: object, source: object, target: string): void;
-  unlink(parent: object, name: string, directory: boolean): void;
-  stat(handle: object): { device: bigint; inode: bigint; size: bigint };
+export interface ProviderProvenance {
+  readonly path: string;
+  readonly sha256: string;
+  readonly buildCommit: string;
+  readonly variant: "release";
+  readonly supportRowId: "node-fs";
 }
-interface Target extends SupportManifestEntry { readonly byteLength: number; readonly sha256: string; }
-interface Manifest { schemaVersion: 2; packageVersion: string; buildCommit: string; variant: "release" | "test"; targets: Target[] }
-export interface ProviderProvenance { readonly path: string; readonly sha256: string; readonly buildCommit: string; readonly variant: "release" | "test"; readonly supportRowId: string }
+
 export type BoundEntryKind = "directory" | "file";
 
-/** Read-only traversal rooted at an already-open native directory capability. */
+/** Read-only traversal rooted at an already validated repository directory. */
 export interface BoundReader {
   list(components: readonly string[]): readonly string[];
   metadata(components: readonly string[]): BoundEntryKind;
   read(components: readonly string[]): Buffer;
 }
-const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const require = createRequire(import.meta.url);
-const APPROVED_LINUX_FILESYSTEM_MAGIC = 0xef53n;
-function unavailable(message: string): never { throw new Error(`EXSPECSO_CONTAINMENT_UNAVAILABLE: ${message}`); }
-export function normalizeLinuxFilesystemType(type: bigint): bigint { return BigInt.asUintN(32, type); }
-export function isApprovedLinuxFilesystemType(type: bigint): boolean { return normalizeLinuxFilesystemType(type) === APPROVED_LINUX_FILESYSTEM_MAGIC; }
-function observeLinuxOperationRootFilesystem(root: string): { raw: bigint; normalized: bigint; hex: string; mapping: "ext2/ext3" | "unapproved" } {
-  const raw = BigInt(statfsSync(root, { bigint: true }).type);
-  const normalized = normalizeLinuxFilesystemType(raw);
-  return Object.freeze({ raw, normalized, hex: `0x${normalized.toString(16).padStart(8, "0")}`, mapping: isApprovedLinuxFilesystemType(raw) ? "ext2/ext3" : "unapproved" });
+
+type Identity = Readonly<{ device: bigint; inode: bigint }>;
+
+function containment(message: string): never {
+  const error = new Error(`EXSPECSO_CONTAINMENT_${message}`) as Error & { code?: string };
+  error.code = `EXSPECSO_CONTAINMENT_${message.split(":", 1)[0]}`;
+  throw error;
 }
 
-export function sanitizeRuntimeObservationEnvironment(environment: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
-  const { LD_PRELOAD: _loaderPreload, ...sanitized } = environment;
-  return sanitized;
-}
-
-function command(program: string, args: readonly string[]): string {
-  return execFileSync(program, [...args], { encoding: "utf8", env: sanitizeRuntimeObservationEnvironment() }).trim();
-}
-
-function observeRuntime(operationRoot: string): RuntimeObservation {
-  const nodeVersion = process.versions.node;
-  const napiVersion = Number(process.versions.napi);
-  if (process.platform === "darwin") {
-    const mount = command("/bin/df", ["-P", operationRoot]).split("\n").at(-1)?.trim().split(/\s+/).at(-1);
-    if (!mount) unavailable("cannot determine the operation-root filesystem mount");
-    const disk = command("/usr/sbin/diskutil", ["info", mount]);
-    return {
-      platform: process.platform,
-      arch: process.arch,
-      osVersion: command("/usr/bin/sw_vers", ["-productVersion"]),
-      osBuild: command("/usr/bin/sw_vers", ["-buildVersion"]),
-      filesystem: /File System Personality:\s+APFS/m.test(disk) ? "apfs" : "unapproved",
-      libc: "system",
-      nodeVersion,
-      napiVersion,
-    };
+function component(name: string): void {
+  if (typeof name !== "string" || !name || name === "." || name === ".." || name.includes("/") || name.includes("\\") || name.includes("\0")) {
+    containment("INVALID: every path segment must be one non-empty relative component");
   }
-  if (process.platform === "win32") {
-    const powershell = join(process.env.SystemRoot ?? "C:\\Windows", "System32/WindowsPowerShell/v1.0/powershell.exe");
-    const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== "psmodulepath"));
-    const observed = JSON.parse(execFileSync(powershell, ["-NoProfile", "-NonInteractive", "-Command", "$o=Get-CimInstance Win32_OperatingSystem;$r=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion';$d=(Get-Volume -DriveLetter $env:SystemDrive.TrimEnd(':')).FileSystem;@{version=$o.Version;build=$o.BuildNumber;ubr=$r.UBR;filesystem=$d}|ConvertTo-Json -Compress"], { encoding: "utf8", windowsHide: true, env: environment })) as { version: string; build: string; ubr: number; filesystem: string };
-    return { platform: process.platform, arch: process.arch, osVersion: observed.version, osBuild: `${observed.build}.${observed.ubr}`, filesystem: observed.filesystem.toLowerCase(), libc: "system", nodeVersion, napiVersion };
-  }
-  const filesystem = observeLinuxOperationRootFilesystem(operationRoot).mapping === "ext2/ext3" ? "ext4" : "unapproved";
-  const osBuild = command("uname", ["-r"]);
+}
+
+function components(parts: readonly string[]): void { for (const part of parts) component(part); }
+
+function nodeFailure(error: unknown): never {
+  if (error instanceof Error && "code" in error && typeof error.code === "string") containment(`${error.code}: ${error.message}`);
+  containment(error instanceof Error ? `IO: ${error.message}` : "IO: filesystem operation failed");
+}
+
+function identity(path: string): Identity {
   try {
-    const libc = command("getconf", ["GNU_LIBC_VERSION"]);
-    return { platform: process.platform, arch: process.arch, osVersion: command("lsb_release", ["-ds"]), osBuild, filesystem, libc: libc.replace("glibc ", "glibc-"), nodeVersion, napiVersion };
-  } catch {
-    let libc: string;
-    try { libc = command("ldd", ["--version"]); }
-    catch (error: any) {
-      if (typeof error?.stderr !== "string" || !error.stderr.includes("musl libc")) throw error;
-      libc = error.stderr;
+    const entry = lstatSync(path, { bigint: true });
+    if (entry.isSymbolicLink()) containment("SYMLINK: symbolic links are not valid repository entries");
+    if (!entry.isFile() && !entry.isDirectory()) containment("UNSUPPORTED_KIND: repository entries must be regular files or directories");
+    return { device: entry.dev, inode: entry.ino };
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error;
+    return nodeFailure(error);
+  }
+}
+
+function entryKind(path: string): BoundEntryKind {
+  try {
+    const entry = lstatSync(path);
+    if (entry.isSymbolicLink()) containment("SYMLINK: symbolic links are not valid repository entries");
+    if (entry.isDirectory()) return "directory";
+    if (entry.isFile()) return "file";
+    containment("UNSUPPORTED_KIND: repository entries must be regular files or directories");
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error;
+    return nodeFailure(error);
+  }
+}
+
+function sameIdentity(left: Identity, right: Identity): boolean { return left.device === right.device && left.inode === right.inode; }
+
+function findIdentity(root: string, expected: Identity): string | undefined {
+  const pending = [root];
+  while (pending.length > 0) {
+    const current = pending.pop()!;
+    let names: string[];
+    try { names = readdirSync(current); } catch { continue; }
+    for (const name of names) {
+      if (current === root && (name === ".git" || name === "node_modules")) continue;
+      const candidate = join(current, name);
+      try {
+        const observed = lstatSync(candidate, { bigint: true });
+        if (observed.isSymbolicLink()) continue;
+        if (observed.dev === expected.device && observed.ino === expected.inode) return candidate;
+        if (observed.isDirectory()) pending.push(candidate);
+      } catch { /* Concurrent changes are rejected by the subsequent operation. */ }
     }
-    const alpine = command("cut", ["-d", ".", "-f", "1,2", "/etc/alpine-release"]);
-    const muslPackage = libc.includes("musl libc") ? parseAlpineMuslPackageVersion(command("apk", ["info", "-v", "musl"])) : undefined;
-    return { platform: process.platform, arch: process.arch, osVersion: `Alpine ${alpine}`, osBuild, filesystem, libc: muslPackage ?? "unapproved", nodeVersion, napiVersion };
+  }
+  return undefined;
+}
+
+class CapabilityRegistry {
+  readonly capabilities: Capability[] = [];
+  closed = false;
+  constructor(readonly root: string) {}
+  track<T extends Capability>(capability: T): T { this.capabilities.push(capability); return capability; }
+}
+
+abstract class Capability {
+  private closed = false;
+  constructor(protected readonly registry: CapabilityRegistry, protected path: string, private readonly expected: Identity) {}
+
+  protected location(): string {
+    if (this.closed || this.registry.closed) containment("CLOSED: capability is closed");
+    try {
+      if (sameIdentity(identity(this.path), this.expected)) return this.path;
+    } catch (error) {
+      if (!(error instanceof Error) || (!error.message.includes("ENOENT") && !error.message.includes("SYMLINK"))) throw error;
+    }
+    const relocated = findIdentity(this.registry.root, this.expected);
+    if (relocated === undefined) containment("STALE: the held repository entry is no longer reachable");
+    this.path = relocated;
+    return relocated;
+  }
+
+  operationPath(): string { return this.location(); }
+
+  close(): void { this.closed = true; }
+  stat(): { device: bigint; inode: bigint; size: bigint } {
+    try {
+      const observed = lstatSync(this.location(), { bigint: true });
+      return { device: observed.dev, inode: observed.ino, size: observed.size };
+    } catch (error) { return nodeFailure(error); }
   }
 }
 
-function loadProvider(operationRoot: string): { native: NativeProvider; provenance: ProviderProvenance } {
-  try {
-    const matrix = loadSupportMatrix();
-    const observation = observeRuntime(operationRoot);
-    const manifest = JSON.parse(readFileSync(join(packageRoot, "dist/native/manifest.json"), "utf8")) as Manifest;
-    const metadata = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as { version: string };
-    if (manifest.schemaVersion !== 2 || manifest.packageVersion !== metadata.version || !/^[a-f0-9]{40}$/.test(manifest.buildCommit) || !["release", "test"].includes(manifest.variant) || !Array.isArray(manifest.targets)) unavailable("invalid provider manifest");
-    const resolved = resolveManifestEntry(matrix, observation, manifest.targets);
-    const supportRow = resolved.supportRow;
-    const entry = resolved.entry as Target;
-    if (Number(process.versions.napi) < entry.napiVersion || !Number.isSafeInteger(entry.byteLength) || entry.byteLength <= 0 || !/^[a-f0-9]{64}$/.test(entry.sha256)) unavailable("incompatible native support row");
-    const binary = join(packageRoot, "dist/native", entry.path);
-    if (!lstatSync(binary).isFile()) unavailable("provider must be an in-package regular file");
-    const actual = realpathSync(binary);
-    if (actual !== join(realpathSync(packageRoot), "dist/native", entry.path)) unavailable("provider path escapes its package");
-    const bytes = readFileSync(binary);
-    const sha256 = createHash("sha256").update(bytes).digest("hex");
-    if (bytes.length !== entry.byteLength || sha256 !== entry.sha256) unavailable("provider checksum mismatch");
-    const native = require(binary) as NativeProvider;
-    if (native.variant !== manifest.variant) unavailable("provider variant mismatch");
-    return { native, provenance: Object.freeze({ path: actual, sha256, buildCommit: manifest.buildCommit, variant: manifest.variant, supportRowId: supportRow.id }) };
-  } catch (error) { unavailable(error instanceof Error ? error.message : "cannot load the bundled provider"); }
-}
-
-const handles = new WeakMap<Capability, object>();
-class Capability {
-  constructor(protected readonly native: NativeProvider, handle: object) { handles.set(this, handle); }
-  protected get handle(): object { const value = handles.get(this); if (!value) unavailable("closed capability"); return value; }
-  close(): void { const handle = handles.get(this); if (handle) { handles.delete(this); this.native.close(handle); } }
-  sync(): boolean { return this.native.sync(this.handle); }
-  stat(): { device: bigint; inode: bigint; size: bigint } { return this.native.stat(this.handle); }
-}
 export class FileCapability extends Capability {
-  read(): Buffer { return this.native.read(this.handle); }
-  write(bytes: Buffer): void { this.native.write(this.handle, bytes); }
-}
-export class DirectoryCapability extends Capability {
-  constructor(native: NativeProvider, handle: object, private readonly track: (capability: Capability) => void) { super(native, handle); }
-  openDirectory(name: string, create = false): DirectoryCapability { const value = new DirectoryCapability(this.native, this.native.openDirectory(this.handle, name, create), this.track); this.track(value); return value; }
-  createDirectory(name: string): DirectoryCapability { const value = new DirectoryCapability(this.native, this.native.createDirectory(this.handle, name), this.track); this.track(value); return value; }
-  openFile(name: string): FileCapability { const value = new FileCapability(this.native, this.native.openFile(this.handle, name, false)); this.track(value); return value; }
-  createFile(name: string): FileCapability { const value = new FileCapability(this.native, this.native.openFile(this.handle, name, true)); this.track(value); return value; }
-  list(): string[] { return this.native.list(this.handle); }
-  replace(source: FileCapability, target: string, testBoundary = false): void { const handle = handles.get(source); if (!handle) unavailable("closed or foreign source"); this.native.replace(this.handle, handle, target, testBoundary); }
-  publishDirectory(source: DirectoryCapability, target: string): void { const handle = handles.get(source); if (!handle) unavailable("closed or foreign source"); this.native.publishDirectory(this.handle, handle, target); }
-  unlink(name: string): void { this.native.unlink(this.handle, name, false); }
-  removeDirectory(name: string): void { this.native.unlink(this.handle, name, true); }
-}
+  private descriptor: number | undefined;
+  constructor(registry: CapabilityRegistry, path: string, expected: Identity, descriptor: number, private readonly writable: boolean) {
+    super(registry, path, expected);
+    this.descriptor = descriptor;
+  }
 
-function requireRelativeComponents(components: readonly string[]): void {
-  for (const component of components) {
-    if (!component || component === "." || component === ".." || component.includes("/") || component.includes("\\")) {
-      throw new Error("EXSPECSO_CONTAINMENT_INVALID: reader components must be one relative name each");
+  private handle(): number {
+    this.location();
+    if (this.descriptor === undefined) containment("CLOSED: file capability is closed");
+    return this.descriptor;
+  }
+
+  read(): Buffer {
+    const descriptor = this.handle();
+    try {
+      const size = Number(fstatSync(descriptor, { bigint: true }).size);
+      const bytes = Buffer.alloc(size);
+      let offset = 0;
+      while (offset < bytes.length) offset += readSync(descriptor, bytes, offset, bytes.length - offset, offset);
+      return bytes;
+    } catch (error) { return nodeFailure(error); }
+  }
+
+  write(bytes: Buffer): void {
+    if (!Buffer.isBuffer(bytes)) containment("INVALID: file writes require a Buffer");
+    if (!this.writable) containment("READ_ONLY: this file capability was not created for writing");
+    const descriptor = this.handle();
+    try {
+      let offset = 0;
+      while (offset < bytes.length) offset += writeSync(descriptor, bytes, offset, bytes.length - offset);
+    } catch (error) { nodeFailure(error); }
+  }
+
+  sync(): boolean { try { fsyncSync(this.handle()); return true; } catch (error) { return nodeFailure(error); } }
+
+  override close(): void {
+    const descriptor = this.descriptor;
+    this.descriptor = undefined;
+    if (descriptor !== undefined) {
+      try { closeSync(descriptor); } catch (error) { nodeFailure(error); }
     }
+    super.close();
   }
 }
 
-class NativeBoundReader implements BoundReader {
+export class DirectoryCapability extends Capability {
+  private directory(): string {
+    const location = this.location();
+    if (entryKind(location) !== "directory") containment("NOT_DIRECTORY: directory capability no longer names a directory");
+    return location;
+  }
+  private child(name: string): string { component(name); return join(this.directory(), name); }
+
+  openDirectory(name: string, create = false): DirectoryCapability {
+    const candidate = this.child(name);
+    try {
+      if (create) {
+        try { mkdirSync(candidate); } catch (error) {
+          if (!(error instanceof Error) || !("code" in error) || error.code !== "EEXIST") throw error;
+        }
+      }
+      if (entryKind(candidate) !== "directory") containment("NOT_DIRECTORY: expected a directory");
+      return this.registry.track(new DirectoryCapability(this.registry, candidate, identity(candidate)));
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error;
+      return nodeFailure(error);
+    }
+  }
+
+  createDirectory(name: string): DirectoryCapability {
+    const candidate = this.child(name);
+    try { mkdirSync(candidate); return this.registry.track(new DirectoryCapability(this.registry, candidate, identity(candidate))); }
+    catch (error) { return nodeFailure(error); }
+  }
+
+  openFile(name: string): FileCapability {
+    const candidate = this.child(name);
+    try {
+      if (entryKind(candidate) !== "file") containment("NOT_FILE: expected a regular file");
+      return this.registry.track(new FileCapability(this.registry, candidate, identity(candidate), openSync(candidate, "r"), false));
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error;
+      return nodeFailure(error);
+    }
+  }
+
+  createFile(name: string): FileCapability {
+    const candidate = this.child(name);
+    try {
+      const descriptor = openSync(candidate, "wx+");
+      return this.registry.track(new FileCapability(this.registry, candidate, identity(candidate), descriptor, true));
+    } catch (error) { return nodeFailure(error); }
+  }
+
+  list(): string[] { try { return readdirSync(this.directory()).sort((left, right) => left.localeCompare(right)); } catch (error) { return nodeFailure(error); } }
+
+  replace(source: FileCapability, target: string, _testBoundary = false): void {
+    component(target);
+    const destination = join(this.directory(), target);
+    try {
+      try { if (entryKind(destination) !== "file") containment("NOT_FILE: replacement target is not a regular file"); } catch (error) {
+        if (!(error instanceof Error) || !error.message.includes("ENOENT")) throw error;
+      }
+      renameSync(source.operationPath(), destination);
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error;
+      nodeFailure(error);
+    }
+  }
+
+  publishDirectory(source: DirectoryCapability, target: string): void {
+    component(target);
+    const destination = join(this.directory(), target);
+    try {
+      try { identity(destination); containment("EXISTS: publication target already exists"); } catch (error) {
+        if (!(error instanceof Error) || !error.message.includes("ENOENT")) throw error;
+      }
+      renameSync(source.directory(), destination);
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error;
+      nodeFailure(error);
+    }
+  }
+
+  unlink(name: string): void {
+    const candidate = this.child(name);
+    try { if (entryKind(candidate) !== "file") containment("NOT_FILE: expected a regular file"); unlinkSync(candidate); }
+    catch (error) { if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error; nodeFailure(error); }
+  }
+
+  removeDirectory(name: string): void {
+    const candidate = this.child(name);
+    try { if (entryKind(candidate) !== "directory") containment("NOT_DIRECTORY: expected a directory"); rmdirSync(candidate); }
+    catch (error) { if (error instanceof Error && error.message.startsWith("EXSPECSO_CONTAINMENT_")) throw error; nodeFailure(error); }
+  }
+
+  sync(): boolean {
+    // Node has no portable directory-handle fsync. File bytes are fsynced before promotion;
+    // a directory sync is attempted where the host permits it and otherwise remains best-effort.
+    try {
+      const descriptor = openSync(this.directory(), "r");
+      try { fsyncSync(descriptor); } finally { closeSync(descriptor); }
+    } catch { /* host does not support syncing a directory */ }
+    return true;
+  }
+}
+
+class NodeBoundReader implements BoundReader {
   constructor(private readonly root: DirectoryCapability) {}
 
-  private inDirectory<T>(components: readonly string[], action: (directory: DirectoryCapability) => T): T {
-    requireRelativeComponents(components);
+  private inDirectory<T>(parts: readonly string[], operation: (directory: DirectoryCapability) => T): T {
+    components(parts);
     let directory = this.root;
     const opened: DirectoryCapability[] = [];
     try {
-      for (const component of components) {
-        directory = directory.openDirectory(component);
-        opened.push(directory);
-      }
-      return action(directory);
-    } finally {
-      for (const capability of opened.reverse()) capability.close();
-    }
+      for (const part of parts) { directory = directory.openDirectory(part); opened.push(directory); }
+      return operation(directory);
+    } finally { for (const capability of opened.reverse()) capability.close(); }
   }
 
-  list(components: readonly string[]): readonly string[] {
-    return this.inDirectory(components, (directory) => directory.list());
-  }
+  list(parts: readonly string[]): readonly string[] { return this.inDirectory(parts, (directory) => directory.list()); }
 
-  metadata(components: readonly string[]): BoundEntryKind {
-    requireRelativeComponents(components);
-    if (components.length === 0) return "directory";
-    const name = components.at(-1)!;
-    return this.inDirectory(components.slice(0, -1), (parent) => {
-      try {
-        const directory = parent.openDirectory(name);
-        directory.close();
-        return "directory";
-      } catch (directoryError) {
-        try {
-          const file = parent.openFile(name);
-          file.close();
-          return "file";
-        } catch {
-          throw directoryError;
-        }
+  metadata(parts: readonly string[]): BoundEntryKind {
+    components(parts);
+    if (parts.length === 0) return "directory";
+    const name = parts.at(-1)!;
+    return this.inDirectory(parts.slice(0, -1), (parent) => {
+      try { const directory = parent.openDirectory(name); directory.close(); return "directory" as const; }
+      catch (directoryError) {
+        try { const file = parent.openFile(name); file.close(); return "file" as const; }
+        catch { throw directoryError; }
       }
     });
   }
 
-  read(components: readonly string[]): Buffer {
-    requireRelativeComponents(components);
-    if (components.length === 0) throw new Error("EXSPECSO_CONTAINMENT_INVALID: cannot read a directory");
-    return this.inDirectory(components.slice(0, -1), (parent) => {
-      const file = parent.openFile(components.at(-1)!);
-      try {
-        return file.read();
-      } finally {
-        file.close();
-      }
+  read(parts: readonly string[]): Buffer {
+    components(parts);
+    if (parts.length === 0) containment("INVALID: cannot read a directory");
+    return this.inDirectory(parts.slice(0, -1), (parent) => {
+      const file = parent.openFile(parts.at(-1)!);
+      try { return file.read(); } finally { file.close(); }
     });
   }
 }
+
 export interface RootCapability {
   readonly root: DirectoryCapability;
   readonly reader: BoundReader;
   readonly provenance: ProviderProvenance;
   close(): void;
 }
-/** Synchronous native primitives never take a path after the initial root open. */
+
+/** Node primitives are scoped to one real Git repository root; hostile same-user races remain a host sandbox concern. */
 export function openContainedFilesystem(path: string): RootCapability {
-  const operationRoot = realpathSync(path);
-  const { native, provenance } = loadProvider(operationRoot);
-  const capabilities: Capability[] = [];
-  const root = new DirectoryCapability(native, native.openRoot(operationRoot), (capability) => capabilities.push(capability));
-  return { root, reader: new NativeBoundReader(root), provenance, close() {
-    let failure: unknown;
-    for (const capability of capabilities.splice(0).reverse().concat(root)) {
-      try { capability.close(); } catch (error) { failure ??= error; }
-    }
-    if (failure) throw failure;
-  } };
+  let rootPath: string;
+  try { rootPath = realpathSync(path); } catch (error) { return nodeFailure(error); }
+  const rootIdentity = identity(rootPath);
+  if (entryKind(rootPath) !== "directory") containment("NOT_DIRECTORY: repository root must be a directory");
+  const registry = new CapabilityRegistry(rootPath);
+  const root = registry.track(new DirectoryCapability(registry, rootPath, rootIdentity));
+  return {
+    root,
+    reader: new NodeBoundReader(root),
+    provenance: Object.freeze({ path: "node:fs", sha256: "", buildCommit: "", variant: "release", supportRowId: "node-fs" }),
+    close() {
+      if (registry.closed) return;
+      registry.closed = true;
+      let failure: unknown;
+      for (const capability of registry.capabilities.slice().reverse()) {
+        try { capability.close(); } catch (error) { failure ??= error; }
+      }
+      if (failure !== undefined) throw failure;
+    },
+  };
 }

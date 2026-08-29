@@ -67,14 +67,14 @@ export async function runInit(input: InitInput): Promise<number> {
     return 1;
   }
 
-  // Provider/marker preflight precedes all ownership, recovery, and staging effects.
+  // Repository-access/marker preflight precedes all ownership, recovery, and staging effects.
   let capability;
   try {
     capability = openContainedFilesystem(repositoryRoot);
     const marker = capability.reader.metadata([".git"]);
     if (marker !== "directory" && marker !== "file") throw new Error("Git marker is not a regular file or directory.");
   } catch (error) {
-    writeError(input.stderr, "EXSPECSO_INIT_PREFLIGHT_FAILED", error instanceof Error ? error.message : "The bundled filesystem provider is unavailable.");
+    writeError(input.stderr, "EXSPECSO_INIT_PREFLIGHT_FAILED", error instanceof Error ? error.message : "Repository access is unavailable.");
     return 1;
   }
 
