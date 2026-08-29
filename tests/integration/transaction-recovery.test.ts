@@ -191,6 +191,88 @@ describe("journaled init transaction", () => {
     await expect(readdir(fixture.root)).resolves.toEqual([".git"]);
   });
 
+  it("recovers an identified empty transaction directory after a preimage changes before staging", async () => {
+    const fixture = await useFixture();
+    const target = join(fixture.root, "artifact.txt");
+    await writeFile(target, "prior", "utf8");
+    const plan = {
+      repositoryRoot: fixture.root,
+      writes: [{ target, relativePath: "artifact.txt", content: "replacement", expectedExists: true, expectedPreimageHash: sha256("prior") }],
+    };
+
+    await expect(commitTransaction(plan, {
+      onBeforeStaging: async () => { await writeFile(target, "changed", "utf8"); },
+    })).resolves.toMatchObject({ kind: "failed" });
+    await writeFile(target, "prior", "utf8");
+
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "recovered", disposition: "restored-prior" });
+    await expect(readFile(target, "utf8")).resolves.toBe("prior");
+    await expect(readdir(join(fixture.root, ".exspecso"))).rejects.toThrow();
+  });
+
+  it("recovers an empty preparation directory after a later target parent blocks staging", async () => {
+    const fixture = await useFixture();
+    const first = join(fixture.root, "first.txt");
+    const parent = join(fixture.root, "nested");
+    const second = join(parent, "second.txt");
+    const sentinel = join(fixture.root, "external-sentinel.txt");
+    await mkdir(parent);
+    await Promise.all([
+      writeFile(first, "first prior", "utf8"),
+      writeFile(second, "second prior", "utf8"),
+      writeFile(sentinel, "preserve", "utf8"),
+    ]);
+    const plan = {
+      repositoryRoot: fixture.root,
+      writes: [
+        { target: first, relativePath: "first.txt", content: "first replacement", expectedExists: true, expectedPreimageHash: sha256("first prior") },
+        { target: second, relativePath: "nested/second.txt", content: "second replacement", expectedExists: true, expectedPreimageHash: sha256("second prior") },
+      ],
+    };
+
+    await expect(commitTransaction(plan, {
+      onBeforeStaging: async () => {
+        await rm(parent, { recursive: true });
+        await writeFile(parent, "not a directory", "utf8");
+      },
+    })).resolves.toMatchObject({ kind: "failed" });
+    await rm(parent);
+    await mkdir(parent);
+    await writeFile(second, "second prior", "utf8");
+
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "recovered", disposition: "restored-prior" });
+    await expect(readFile(first, "utf8")).resolves.toBe("first prior");
+    await expect(readFile(second, "utf8")).resolves.toBe("second prior");
+    await expect(readFile(sentinel, "utf8")).resolves.toBe("preserve");
+    await expect(readdir(join(fixture.root, ".exspecso"))).rejects.toThrow();
+  });
+
+  it("preserves unknown evidence beside a preparation journal as ambiguous", async () => {
+    const fixture = await useFixture();
+    const transactionId = randomUUID();
+    const stage = join(fixture.root, stagingRelativePath, transactionId);
+    const sentinel = join(fixture.root, "external-sentinel.txt");
+    await mkdir(stage, { recursive: true });
+    await writeFile(sentinel, "preserve", "utf8");
+    const journal = {
+      schemaVersion: 2,
+      transactionId,
+      repositoryRootFingerprint: sha256(resolve(fixture.root)),
+      entries: [{ relativePath: "artifact.txt", preimageHash: null, stagedHash: sha256("replacement"), backupPath: null, backupHash: null }],
+      promotionOrder: ["artifact.txt"],
+      state: "preparing",
+      inFlight: null,
+      completedPromotions: [],
+      completedStep: -1,
+    };
+    await writeFile(join(stage, "journal.json"), `${JSON.stringify(journal)}\n`, "utf8");
+    await writeFile(join(stage, "unknown-evidence"), "preserve", "utf8");
+
+    await expect(recoverInterruptedTransaction(fixture.root)).resolves.toMatchObject({ kind: "ambiguous" });
+    await expect(readFile(join(stage, "unknown-evidence"), "utf8")).resolves.toBe("preserve");
+    await expect(readFile(sentinel, "utf8")).resolves.toBe("preserve");
+  });
+
   it("excludes a second writer while the first has a prepared journal", async () => {
     const fixture = await useFixture();
     const firstPlan = await buildInitPlan({ repositoryRoot: fixture.root, selectedAgents: ["codex"] });
