@@ -1,6 +1,6 @@
 ---
 phase: 01-initialize-canonical-projects
-reviewed: 2026-08-29T09:12:46Z
+reviewed: 2026-08-29T13:00:32Z
 depth: standard
 files_reviewed: 30
 files_reviewed_list:
@@ -36,77 +36,80 @@ files_reviewed_list:
   - vitest.config.ts
 findings:
   critical: 2
-  warning: 2
+  warning: 1
   info: 0
-  total: 4
+  total: 3
 status: issues_found
 ---
 
 # Phase 01: Code Review Report
 
-**Reviewed:** 2026-08-29T09:12:46Z
+**Reviewed:** 2026-08-29T13:00:32Z
 **Depth:** standard
 **Files Reviewed:** 30
 **Status:** issues_found
 
 ## Summary
 
-The TypeScript initializer, transaction/recovery paths, packaging surface, retained native material, and selected tests were reviewed. `npm run build` and the active Vitest suite pass (79 tests), but the transaction state machine has an unrecoverable crash window and the Node filesystem provider can spin forever if a file changes while it is read. The ownership and public-install documentation also have correctness gaps.
+The active TypeScript package, its transaction/recovery paths, package contents, CI surface, and scoped tests were reviewed. Historical native material was treated as retained, non-shipped provenance under D-21 rather than as a defect in itself. `npm run build` and the default Vitest suite pass locally (9 files, 86 tests), but the shipped implementation has two release-blocking defects: additive initialization fails on Windows, and production code retains environment-controlled test hooks that permit arbitrary writes and indefinite hangs.
+
+## Narrative Findings (AI reviewer)
 
 ## Critical Issues
 
-### CR-01: A failure before the first journal write permanently blocks recovery
+### CR-01: Windows additive initialization cannot stage backups
 
 **Classification:** BLOCKER
 
-**File:** `src/filesystem/transaction.ts:217-250`; `src/filesystem/recovery.ts:150-152`
+**File:** `/Users/ishk.sftckz/Projects/exspecso/src/filesystem/transaction.ts:227`
 
-**Issue:** The transaction creates the staging directory and stages bytes, then creates destination parent directories at lines 243-248, but writes its first journal only at line 250. A crash or ordinary error in that interval leaves a nonempty `.exspecso/.staging/<id>` with no `journal.json`. Every subsequent init treats this as ambiguous evidence and refuses recovery. This is reachable today: if a target ancestor becomes a symlink after the initial safe-path check, the parent capture fails after staging and before `updateJournal`; recovery returns `transaction journal is unreadable` indefinitely. The existing test at `transaction-recovery.test.ts:145-162` reaches the same pre-journal failure state but does not attempt recovery.
+**Issue:** `backupPath` is persisted as transaction-journal data but is constructed with the host-native `path.join`. On Windows this creates a value such as `backups\\.exspecso\\exspecso.config.json`. The later `components()` helper splits only on `/`, so it passes the backslash-containing value as one directory/file component. `DirectoryCapability` rejects that component, and the journal parser also rejects `backupPath` values containing `\\`. Any transaction with an existing preimage—such as the documented additive rerun that updates `exspecso.config.json`—therefore fails on Windows and leaves recovery evidence that cannot parse. The Windows CI row exercises this product contract but this platform-specific branch is not covered by the current local tests.
 
-**Fix:** Persist a recoverable preparation record before any staged or destination-side mutation, and extend the journal state model to distinguish an incomplete preparation from a prepared transaction. Recovery must be able to validate and remove that record (and only its identified staging entries) when no promotion could have occurred. Add an interruption test for every pre-journal boundary, including target-parent acquisition.
-
-### CR-02: Concurrent truncation can make init spin indefinitely
-
-**Classification:** BLOCKER
-
-**File:** `src/filesystem/contained-fs.ts:141-145`
-
-**Issue:** `read()` allocates from the initial `fstat` size and repeatedly adds `readSync`'s return value. If another process truncates the file after `fstatSync` and before all reads complete, `readSync` returns `0` at EOF. `offset` then never advances, so the synchronous loop never exits. Init reads repository-controlled files before it can report a stale preimage, so this can wedge the CLI rather than returning a containment or precondition error.
-
-**Fix:** Reject a zero-byte read before the expected length has been consumed, and verify the descriptor's final size/identity before returning. For example:
+**Fix:** Store journal-relative paths in a platform-independent slash format; reserve `path.join()` for actual host filesystem paths.
 
 ```ts
-const count = readSync(descriptor, bytes, offset, bytes.length - offset, offset);
-if (count === 0) containment("CHANGED: file changed while reading");
-offset += count;
+const backupPath = current === undefined
+  ? null
+  : `backups/${write.relativePath}`;
 ```
 
-Add a test that truncates a file between the size observation and a subsequent read.
+Add a Windows-path unit test (for example using `path.win32`) that stages a write with a preimage and verifies both commit and recovery accept the resulting journal path.
+
+### CR-02: Shipped test environment hooks allow arbitrary writes and a permanent CLI hang
+
+**Classification:** BLOCKER
+
+**Files:**
+
+- `/Users/ishk.sftckz/Projects/exspecso/src/filesystem/transaction.ts:164-168`
+- `/Users/ishk.sftckz/Projects/exspecso/src/filesystem/ownership.ts:139-144`
+
+**Issue:** Both modules are included in the published package, yet production execution honors `EXSPECSO_TEST_*` variables. A caller can set the corresponding sync-file variable to any writable path and the matching fault-point variable to make the normal CLI write a JSON signal outside the repository. Setting either `EXSPECSO_TEST_WAIT_FOR_KILL=1` or `EXSPECSO_TEST_WAIT_FOR_OWNERSHIP_KILL=1` then waits forever. This is not merely a test concern: the hooks are reachable from the released CLI and bypass the containment layer entirely. The transaction hook was reproduced with the built CLI, which created the specified external signal file while initialization ran.
+
+**Fix:** Remove process-environment fault/synchronization handling from shipped modules. Put child-process control in test-only harness code, or pass an in-memory test callback through a non-exported test seam that has no file path or wait behavior. Add an installed-package regression test proving these environment variables cannot create an external file or block `exspecso init`.
 
 ## Warnings
 
-### WR-01: PID reuse can turn a dead lock into an indefinite busy state
+### WR-01: A zero-progress synchronous write loops forever while holding the transaction lease
 
 **Classification:** WARNING
 
-**File:** `src/filesystem/ownership.ts:64`
+**File:** `/Users/ishk.sftckz/Projects/exspecso/src/filesystem/contained-fs.ts:168`
 
-**Issue:** Lock liveness is derived solely from `process.kill(record.pid, 0)`. Once the initializer dies, the OS may reuse its PID for an unrelated live process. The stale lock will then be classified as `busy` and cannot be reclaimed until that unrelated process exits, despite no initialization being active.
+**Issue:** The write loop advances solely by the return value of `writeSync`. Unlike the guarded read loop, it does not reject a non-positive result. If a non-empty write ever returns `0`, `offset` never changes and initialization hangs while retaining its lock and staging state.
 
-**Fix:** Record and validate process-start identity in addition to PID (using a platform-specific start time when available), or use an expiring lease with conservative renewal and an explicit stale-age policy. Exercise the stale-reclaim path with a deliberately mismatched process identity.
+**Fix:** Require forward progress and fail closed, mirroring `read()`.
 
-### WR-02: The documented npx invocation cannot be delivered by this package
-
-**Classification:** WARNING
-
-**File:** `README.md:13-15`; `package.json:4`
-
-**Issue:** The README presents `npx exspecso init` as the normal initializer command, but `package.json` marks the package `private: true`, which prevents publishing it to npm. The same README later says Phase 1 does not publish or release a package. A reader following the documented command cannot obtain this package from npm.
-
-**Fix:** Until publication is authorized, document a local invocation such as `npm exec -- exspecso init ...` after installation from a checkout/tarball, or remove the `npx` example. When publishing is in scope, remove `private`, publish the package, and verify the exact README command against a registry install.
+```ts
+while (offset < bytes.length) {
+  const written = writeSync(descriptor, bytes, offset, bytes.length - offset);
+  if (written <= 0) containment("CHANGED: file descriptor made no write progress");
+  offset += written;
+}
+```
 
 ---
 
-_Reviewed: 2026-08-29T09:12:46Z_
+_Reviewed: 2026-08-29T13:00:32Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
