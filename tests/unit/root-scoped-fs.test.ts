@@ -6,19 +6,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const filesystemSpies = vi.hoisted(() => ({
   fstatSync: vi.fn(),
   readSync: vi.fn(),
+  writeSync: vi.fn(),
   actualFstatSync: undefined as undefined | ((...args: any[]) => any),
   actualReadSync: undefined as undefined | ((...args: any[]) => any),
+  actualWriteSync: undefined as undefined | ((...args: any[]) => any),
 }));
 
 vi.mock("node:fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:fs")>();
   filesystemSpies.actualFstatSync = actual.fstatSync;
   filesystemSpies.actualReadSync = actual.readSync;
+  filesystemSpies.actualWriteSync = actual.writeSync;
   filesystemSpies.fstatSync.mockImplementation(actual.fstatSync);
   filesystemSpies.readSync.mockImplementation(actual.readSync);
-  return { ...actual, fstatSync: filesystemSpies.fstatSync, readSync: filesystemSpies.readSync };
+  filesystemSpies.writeSync.mockImplementation(actual.writeSync);
+  return { ...actual, fstatSync: filesystemSpies.fstatSync, readSync: filesystemSpies.readSync, writeSync: filesystemSpies.writeSync };
 });
 import { openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
+import { buildInitPlan } from "../../src/init/plan.js";
+import { acquireInitOwnership, releaseInitOwnership } from "../../src/filesystem/ownership.js";
+import { commitTransaction } from "../../src/filesystem/transaction.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 
 const fixtures: GitFixture[] = [];
@@ -30,8 +37,10 @@ afterEach(async () => {
 beforeEach(() => {
   filesystemSpies.fstatSync.mockReset();
   filesystemSpies.readSync.mockReset();
+  filesystemSpies.writeSync.mockReset();
   filesystemSpies.fstatSync.mockImplementation(filesystemSpies.actualFstatSync!);
   filesystemSpies.readSync.mockImplementation(filesystemSpies.actualReadSync!);
+  filesystemSpies.writeSync.mockImplementation(filesystemSpies.actualWriteSync!);
 });
 
 async function fixture(): Promise<GitFixture> {
@@ -125,6 +134,48 @@ describe("root-scoped Node filesystem", () => {
     try {
       expect(filesystem.reader.read(["stable.txt"])).toEqual(Buffer.from("stable bytes"));
     } finally {
+      filesystem.close();
+    }
+  });
+
+  it("fails a preparation journal with no write progress and releases its internally owned lease", async () => {
+    const repository = await fixture();
+    const plan = await buildInitPlan({ repositoryRoot: repository.root, selectedAgents: ["codex"] });
+    let zeroProgressCalls = 0;
+    filesystemSpies.writeSync.mockImplementation((descriptor: number, bytes: Buffer, offset: number, length: number, position: number | null) => {
+      if (bytes.subarray(offset, offset + length).toString("utf8").includes('"state": "preparing"')) {
+        zeroProgressCalls += 1;
+        if (zeroProgressCalls > 1) throw new Error("unchanged preparation-journal offset was retried");
+        return 0;
+      }
+      return filesystemSpies.actualWriteSync!(descriptor, bytes, offset, length, position);
+    });
+
+    const result = await commitTransaction(plan);
+    expect(result).toMatchObject({ kind: "failed" });
+    if (result.kind !== "failed") throw new Error("zero-progress write unexpectedly committed");
+    expect(result.error.code).toBe("EXSPECSO_CONTAINMENT_CHANGED");
+    expect(zeroProgressCalls).toBe(1);
+
+    const acquisition = await acquireInitOwnership(repository.root);
+    expect(acquisition.kind).toBe("acquired");
+    if (acquisition.kind === "acquired") await releaseInitOwnership(acquisition.ownership);
+  });
+
+  it("continues exact writes after positive partial progress", async () => {
+    const repository = await fixture();
+    const filesystem = openContainedFilesystem(repository.root);
+    const file = filesystem.root.createFile("partial-write.txt");
+    const bytes = Buffer.from("partial write stays exact");
+    filesystemSpies.writeSync.mockImplementationOnce((descriptor: number, buffer: Buffer, offset: number, _length: number, position: number | null) => (
+      filesystemSpies.actualWriteSync!(descriptor, buffer, offset, 1, position)
+    ));
+
+    try {
+      file.write(bytes);
+      expect(file.read()).toEqual(bytes);
+    } finally {
+      file.close();
       filesystem.close();
     }
   });
