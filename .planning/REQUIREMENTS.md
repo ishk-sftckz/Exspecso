@@ -10,12 +10,12 @@
 
 - [x] **SETUP-01**: User can initialize Exspecso from the repository root with `npx exspecso init`.
 - [x] **SETUP-02**: User can initialize Exspecso from a nested directory while Exspecso targets the containing Git repository root.
-- [ ] **SETUP-03**: User can select one or more of Claude Code, OpenAI Codex, and OpenCode during initialization.
-- [ ] **SETUP-04**: User receives suggested runtime selections when supported coding agents are detected, while retaining final control over selections.
-- [ ] **SETUP-05**: User receives only the native integration files for the runtimes selected during initialization.
+- [x] **SETUP-03**: User can select one or more of Claude Code, OpenAI Codex, and OpenCode during initialization.
+- [x] **SETUP-04**: User receives suggested runtime selections when supported coding agents are detected, while retaining final control over selections.
+- [x] **SETUP-05**: User receives only the native integration files for the runtimes selected during initialization.
 - [x] **SETUP-06**: User receives only the minimal canonical project files during initialization, without empty Roadmap, Phase, Spec, trace, research, or report artifacts.
 - [x] **SETUP-07**: User can rerun initialization to add or refresh runtime integrations without replacing confirmed canonical artifacts.
-- [ ] **SETUP-08**: User sees the next Exspecso operation after initialization completes, using the canonical `/exspecso-<operation>` notation and any unavoidable runtime-native invocation sigil.
+- [x] **SETUP-08**: User sees the next Exspecso operation after initialization completes, using the canonical `/exspecso-<operation>` notation and any unavoidable runtime-native invocation sigil.
 
 ### Artifact and State Model
 
@@ -203,12 +203,12 @@ Deferred to future releases and not included in the current roadmap.
 |-------------|-------|--------|
 | SETUP-01 | Phase 1 | Complete |
 | SETUP-02 | Phase 1 | Complete |
-| SETUP-03 | Phase 1 | Gaps Found |
-| SETUP-04 | Phase 1 | Gaps Found |
-| SETUP-05 | Phase 1 | Gaps Found |
+| SETUP-03 | Phase 1 | Complete |
+| SETUP-04 | Phase 1 | Complete |
+| SETUP-05 | Phase 1 | Complete |
 | SETUP-06 | Phase 1 | Complete |
 | SETUP-07 | Phase 1 | Complete |
-| SETUP-08 | Phase 1 | Gaps Found |
+| SETUP-08 | Phase 1 | Complete |
 | ART-01 | Phase 1 | Complete |
 | ART-02 | Phase 1 | Complete |
 | ART-03 | Phase 1 | Complete |

@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
 status: executing
-stopped_at: Completed 01-17-PLAN.md
-last_updated: "2026-08-29T09:02:18.983Z"
+stopped_at: Completed 01-18-PLAN.md; independent Phase 1 verification next
+last_updated: "2026-08-29T09:07:55.522Z"
 last_activity: 2026-08-29
 last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 22
-  completed_plans: 19
+  completed_plans: 20
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (initialize-canonical-projects) — EXECUTING
-Plan: 2 of 20
+Plan: 3 of 20
 Status: Ready to execute
 Last activity: 2026-08-29 — Phase 01 execution started
 
@@ -129,6 +129,7 @@ The records below preserve the investigation history. Their native-provider, exh
 | Phase 01 P15 | 5min | 2 tasks | 6 files |
 | Phase 01 P16 | 25min | 2 tasks | 4 files |
 | Phase 01 P17 | 8min | 2 tasks | 12 files |
+| Phase 01 P18 | 10min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -178,6 +179,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Require independent missing, corrupt, and manifest-swap package negatives to preserve repository bytes exactly.
 - [Phase ?]: Use root-scoped Node filesystem capabilities; host sandboxes remain the OS boundary.
 - [Phase ?]: Keep native material as historical provenance while active package, tests, and workflows use only TypeScript/Node entry points.
+- [Phase ?]: Use four representative D-22 CI rows: Ubuntu Node 22.13.0 plus Ubuntu, macOS, and Windows Node 24.x.
+- [Phase ?]: Prove the shipped package through a standard tarball, scripts-disabled isolated install, and its declared bin outside the checkout.
+- [Phase ?]: Document host permissions and sandboxes as the OS boundary; do not claim kernel-level, race-proof, or universal-filesystem containment.
 
 ### Pending Todos
 
@@ -209,6 +213,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-29T09:02:18.964Z
-Stopped at: Completed 01-17-PLAN.md
+Last session: 2026-08-29T09:07:55.509Z
+Stopped at: Completed 01-18-PLAN.md; independent Phase 1 verification next
 Resume file: None

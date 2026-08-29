@@ -34,7 +34,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 19/20 plans executed are implementation-complete; revised Plans 01-17 and 01-18 remain pending under the pure TypeScript/Node architecture correction
+**Plans**: 20/20 plans executed are implementation-complete; revised Plans 01-17 and 01-18 remain pending under the pure TypeScript/Node architecture correction
 
 Plans:
 **Wave 1**
@@ -112,7 +112,7 @@ Plans:
 
 **Wave 19** *(gap closure; depends on 01-17)*
 
-- [ ] 01-18-PLAN.md — Verify representative compatibility and installed-package behavior, document the safety boundary, and hand off phase verification
+- [x] 01-18-PLAN.md — Verify representative compatibility and installed-package behavior, document the safety boundary, and hand off phase verification
 
 **Cross-cutting constraints:** Preserve all completed initializer, canonical-artifact, recovery, packaging, and three-adapter contracts while shipping one pure TypeScript/Node package. Repository-root scoping, deterministic component and symlink validation, preimage checks, journaled atomic writes, conservative recovery, and Git checkpoints remain required. Claude Code, Codex, and OpenCode host permissions and sandboxes are the OS-level security boundary; Exspecso does not claim kernel-level, race-proof, hostile same-user, or universal filesystem containment. Routine CI covers a small representative set of supported OS families and Node boundary/LTS versions. Exact runner, compiler, libc, and package versions remain provenance rather than runtime compatibility requirements. Historical native containment and certification evidence is retained, but native providers, exhaustive cross-products, and an 80-job certification run are outside Phase 1/V1. No publishing or Phase 2 advancement before independent closure.
 
@@ -202,7 +202,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Initialize Canonical Projects | 19/20 | In Progress|  |
+| 1. Initialize Canonical Projects | 20/20 | In Progress|  |
 | 2. Build the Project Truth Engine | 0/TBD | Not started | - |
 | 3. Orient and Plan One Approved Phase | 0/TBD | Not started | - |
 | 4. Deliver One Approved Phase | 0/TBD | Not started | - |
