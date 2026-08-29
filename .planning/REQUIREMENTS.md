@@ -25,7 +25,7 @@
 - [ ] **ART-04**: User can rename human-readable titles and slugs without changing stable artifact identity or explicit parent relationships.
 - [ ] **ART-05**: User receives deeper artifacts only when the corresponding workflow first makes them actionable.
 - [ ] **ART-06**: User can resolve an artifact ID to its canonical file or stable section, including a `TASK-NNN` section inside one Spec-level `tasks.md`.
-- [x] **ART-07**: User retains the previous valid artifact set when an atomic multi-file workflow write fails or is interrupted.
+- [ ] **ART-07**: User retains the previous valid artifact set when an atomic multi-file workflow write fails or is interrupted.
 - [ ] **ART-08**: User can edit canonical artifacts directly and receive explicit validation errors for invalid structure or relationships.
 - [ ] **ART-09**: User can rely on one stable `ROADMAP` artifact at `.exspecso/roadmap.md` without numbered Roadmap folders, an active-Roadmap selector, or a separate canonical Roadmap status file.
 
@@ -215,7 +215,7 @@ Deferred to future releases and not included in the current roadmap.
 | ART-04 | Phase 1 | Gaps Found |
 | ART-05 | Phase 1 | Gaps Found |
 | ART-06 | Phase 1 | Gaps Found |
-| ART-07 | Phase 1 | Complete |
+| ART-07 | Phase 1 | Gaps Found |
 | ART-08 | Phase 1 | Gaps Found |
 | ART-09 | Phase 1 | Gaps Found |
 | DISC-01 | Phase 3 | Pending |
