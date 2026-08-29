@@ -1,263 +1,183 @@
 ---
 phase: 01-initialize-canonical-projects
-verified: 2026-08-28T11:40:15Z
+verified: 2026-08-29T09:16:34Z
 status: gaps_found
-score: 44/74 plan must-haves verified
-behavior_unverified: 4
+score: 10/14 must-haves verified
+behavior_unverified: 1
 overrides_applied: 0
 re_verification:
   previous_status: gaps_found
-  previous_score: 19/25
+  previous_score: 44/74
   gaps_closed:
-    - "Invalid JSON id/parent declarations now survive scanning and block init before mutation."
-    - "Recovery and writers now share the UUID ownership lease; live-writer recovery returns busy."
-    - "Normal transaction promotion now uses a native directory capability and sibling replacement rather than pathname copyFile."
+    - "The superseded native-provider, support-row, prebuilt, and evidence-aggregation obligations are no longer active under D-21; the shipped tarball excludes them."
   gaps_remaining:
-    - "Recovery restores through pathname rm/writeFile after validation."
-    - "Release evidence and the local gate are self-attesting and cannot prove the claimed candidate."
-    - "Plans 01-13 through 01-18 remain incomplete."
+    - "The required interruption/recovery guarantee is still not achieved in the replacement Node transaction path."
   regressions:
-    - "npm test -- --run currently fails 6 of 123 tests because containment fixtures default to a nonexistent approved-header archive."
+    - "A crash before the first transaction journal write leaves unrecoverable staging evidence that permanently blocks later init."
+    - "A concurrent file truncation can make the Node FileCapability read loop spin indefinitely."
+    - "README still documents registry npx usage although this private package is absent from npm."
 gaps:
-  - truth: "Interrupted recovery preserves the prior valid canonical set without a substitution escape."
+  - truth: "An interrupted atomic write preserves the previous valid artifact set."
     status: failed
-    reason: "Recovery validates a path, then uses pathname rm() and writeFile(); a target or ancestor can change before restoration."
+    reason: "The Node transaction creates and fills a staging directory and creates destination parents before its first journal write. A crash or error in that interval leaves a nonempty stage without journal.json; recovery returns ambiguous forever rather than restoring or safely cleaning the prior state."
     artifacts:
-      - path: "src/filesystem/recovery.ts"
-        issue: "restorePrior() at lines 81-95 reconstructs paths and writes outside the opened root capability."
-    missing:
-      - "Implement Plan 01-14's capability-bound, restartable recovery and leaf/ancestor substitution tests."
-  - truth: "Evidence labelled as release proves an actual release provider and a real full-suite result."
-    status: failed
-    reason: "The evidence writer hard-codes release mode and the aggregate accepts self-reported hashes while excluding the manifest, provenance, and full-suite artifacts."
-    artifacts:
-      - path: "scripts/write-containment-evidence.mjs"
-        issue: "Writes evidenceMode: release without validating manifest.variant or build.variant."
-      - path: "scripts/containment-evidence.mjs"
-        issue: "Reads arbitrary evidence records and does not authenticate the referenced provider or test report."
-    missing:
-      - "Bind evidence bundles to raw manifest, provenance, provider binary, tarball, and full-suite bytes; reject test variants and forged records."
-  - truth: "The current repository has a reproducible, source-bound full native regression result."
-    status: failed
-    reason: "Retained 123/123 evidence names source commit 2fe9a678, while HEAD is 1a68cb2; the local gate does not reject a dirty tree and the current full suite fails."
-    artifacts:
-      - path: "scripts/run-local-containment-gate.mjs"
-        issue: "Records HEAD as sourceCommit without cleanliness/digest enforcement and overwrites root build outputs."
-    missing:
-      - "Require a clean/digested source tree, stage builds outside the checkout, and rerun the full suite from the final source."
-  - truth: "Staging, backup, promotion, cleanup, and recovery are wholly capability-bound and restartable."
-    status: failed
-    reason: "Plans 01-13, 01-14, and 01-15 are incomplete; journal.ts is absent and the current code still uses pathname operational files."
-    artifacts:
-      - path: "src/filesystem/journal.ts"
-        issue: "Missing."
       - path: "src/filesystem/transaction.ts"
-        issue: "Staging/backup creation and cleanup still use mkdir/rm/reconstructed paths."
+        issue: "Lines 216-250 perform staging and destination-parent mutation before updateJournal()."
+      - path: "src/filesystem/recovery.ts"
+        issue: "Lines 150-152 turn a stage with no journal into permanent 'transaction journal is unreadable' ambiguity."
     missing:
-      - "Execute Plans 01-13 through 01-15 with their operational-path and restartability tests."
-  - truth: "The final release tarball contains every row-qualified prebuilt and rejects missing or incompatible providers before mutation."
+      - "Persist and test a recoverable preparation record before any staged or destination-side mutation."
+      - "Make recovery safely remove only identified pre-journal staging evidence when promotion was impossible."
+  - truth: "Repository-root scoping, component validation, stable symlink rejection, expected-preimage checks, journaled atomic promotion, process-interruption recovery, and conservative ambiguity handling remain executable and tested."
     status: failed
-    reason: "Plan 01-16 is incomplete and scripts/assemble-containment-package.mjs is absent."
+    reason: "FileCapability.read() trusts the initial fstat length and loops until that length is filled. If a file is truncated during the read, readSync() returns zero and offset never advances, so the initializer can hang instead of failing closed. No active test exercises this error path."
     artifacts:
-      - path: "scripts/assemble-containment-package.mjs"
-        issue: "Missing."
+      - path: "src/filesystem/contained-fs.ts"
+        issue: "Lines 141-145 have no zero-byte-read or final identity/size check."
     missing:
-      - "Implement the isolated same-package assembly and installed-provider negative tests from Plan 01-16."
-  - truth: "Every required platform/Node lane has authentic installed-matrix evidence before the package candidate is accepted."
-    status: failed
-    reason: "Plans 01-17 and 01-18 are incomplete; the complete installed race matrix and final gate have not been implemented."
-    artifacts:
-      - path: "tests/integration/containment-races.test.ts"
-        issue: "Missing."
-      - path: ".planning/phases/01-initialize-canonical-projects/01-SECURITY.md"
-        issue: "Missing; security enforcement is active but no security audit has passed."
-    missing:
-      - "Execute Plans 01-17 and 01-18, then run the required security audit."
+      - "Reject a zero-byte read before the initially observed length is consumed and revalidate final descriptor identity/size."
+      - "Add a deterministic truncation-during-read test."
+deferred:
+  - truth: "A user can run `npx exspecso init` from a registry-installed package."
+    addressed_in: "Phase 6"
+    evidence: "Phase 6 success criterion 5 requires one documented npm package; Phase 1 Plan 18 explicitly forbids publication/release."
 behavior_unverified_items:
-  - truth: "Interactive users can select a non-empty runtime subset in a real terminal."
-    test: "Run the packed initializer in a TTY, attempt an empty submission, choose a subset, then cancel a second run."
-    expected: "All options initially render unchecked; only the submitted subset writes; empty selection and cancellation write nothing."
-    why_human: "Injected prompt tests do not observe actual Inquirer TTY rendering or cancellation."
-  - truth: "Detection remains label-only in the real interactive selector."
-    test: "Set a supported runtime-detection environment signal and inspect the initial checkbox state in a TTY."
-    expected: "Detected runtimes may be labelled but remain unchecked until explicitly selected."
-    why_human: "The terminal presentation path is not exercised by an automated test."
-  - truth: "Installed native promotion reaches the leaf/parent/ancestor substitution boundary."
-    test: "Run the named installed-tracer tests with a verified Node-header archive supplied to the fixture."
-    expected: "Each boundary is reached and the external sentinel remains unchanged."
-    why_human: "The current automated attempt fails in fixture setup before its native assertions run."
-  - truth: "Provider failure occurs before ownership or staging mutation."
-    test: "Run the named provider-failure integration test with its verified build prerequisite available."
-    expected: "Init returns the provider diagnostic and creates no ownership or staging evidence."
-    why_human: "The current automated attempt fails building the fixture before it reaches runInit()."
-unverified_prohibitions:
-  - "No hidden/duplicate canonical state or export requirement."
-  - "Runtime detection never becomes consent or installation authority."
-  - "Omitted or locally modified adapters never become deletion/overwrite authority."
-  - "Process-level evidence is not presented as universal filesystem or power-loss proof."
-  - "Required environments are not silently accepted from binary availability alone."
+  - truth: "A real interactive terminal user can choose detected Claude Code, OpenAI Codex, and/or OpenCode integrations and receives only those adapter files."
+    test: "Run the packed initializer in a TTY with a detected-runtime signal; submit empty once, choose a nonempty subset once, and cancel once."
+    expected: "All choices initially render unchecked; detection only changes labels; empty/cancelled selection writes nothing; a submitted subset writes only its adapters."
+    why_human: "The active test injects a prompt function and proves the data contract, but does not exercise Inquirer's real terminal rendering or cancellation behavior."
 ---
 
 # Phase 1: Initialize Canonical Projects Verification Report
 
 **Phase Goal:** Users can initialize an Exspecso project that has only the selected runtime adapters and minimal, durable canonical artifact foundations.
-**Verified:** 2026-08-28T11:40:15Z
+**Verified:** 2026-08-29T09:16:34Z
 **Status:** gaps_found
-**Re-verification:** Yes — after gap closure
+**Re-verification:** Yes — after D-21/D-22 TypeScript/Node cutover
 
 ## MVP Mode Guard
 
-The roadmap marks this phase `mvp`, but its goal is not a valid `As a …, I want …, so that … .` user story. This report therefore verifies the concrete roadmap success criteria and the non-reduced union of all PLAN `must_haves`; it does not claim a formal MVP user-flow verdict.
+Phase 1 is marked `mvp`, but its goal is not a valid `As a …, I want …, so that … .` user story (`user-story.validate` returned `false`). This report therefore evaluates the concrete roadmap success criteria plus revised Plans 01-17/01-18 must-haves. It does not assert a formal MVP user-flow verdict.
 
 ## Goal Achievement
 
 ### Observable Truths
 
-| # | Roadmap success criterion | Status | Evidence |
+| # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Init from repository root or nested directory targets the containing Git repository. | ✓ VERIFIED | The current full run's seven passing packed-tracer cases include root, deep nested, nested-repository, and no-repository behavior; `main()` → `runInit()` → `findGitRoot()` is wired. |
-| 2 | Users choose integrations and receive only selected native adapter files. | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | `resolveSelectedAgents()` feeds `buildInitPlan()` and `ADAPTER_REGISTRY`; flags/subsets are tested, but real TTY interaction is not. |
-| 3 | Rerun adds/refreshes adapters without replacing confirmed canonical artifacts. | ✓ VERIFIED | The passing rerun integration cases cover additive selection, conflicts, scoped replacement, stale preimages, and unchanged canonical bytes. |
-| 4 | Canonical artifacts use stable IDs in ordinary Markdown/JSON without hidden duplicate state. | ✓ VERIFIED | `scanArtifacts()` retains JSON declaration diagnostics; `validateProject()` consumes them before init mutation, and the direct-edit tests pass except the unrelated provider-fixture setup case. |
-| 5 | Interrupted atomic writes preserve a valid set and invalid direct edits return explicit errors. | ✗ FAILED — BLOCKER | Invalid-edit behavior is now covered, but recovery uses pathname restoration after validation; current suite also fails 6/123 tests and no authentic final containment matrix exists. |
+| 1 | A user can run `npx exspecso init` from a root or nested directory. | ✗ FAILED — deferred | `package.json` is `private: true`; `npm view exspecso@0.1.0` returned E404, while README line 14 advertises the registry command. Local-tarball root/nested behavior is proven, but it is not the specified public `npx` path. Phase 6 explicitly owns a documented npm package. |
+| 2 | A user can choose detected Claude/Codex/OpenCode integrations and receive only selected adapter files. | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | Flags and the injected prompt contract pass; `runtime-selection.test.ts` proves detection is label-only and `installed-cli.test.ts` proves all seven nonempty subsets. Real TTY presentation remains unexercised. |
+| 3 | Rerun adds/refreshes adapters without replacing confirmed canonical artifacts. | ✓ VERIFIED | The installed-tarball test preserves project identity and unselected Codex adapter bytes while adding Claude; active full suite passes. |
+| 4 | Canonical artifacts use stable IDs in ordinary Markdown/JSON with no hidden duplicate projection. | ✓ VERIFIED | `artifacts.test.ts` covers exact ID families, reserved ROADMAP path, rename stability, duplicate failure, TASK section resolution, and lazy artifacts; package contains no database or generated projection. |
+| 5 | Interrupted atomic writes preserve the prior valid set, and invalid direct edits produce explicit errors. | ✗ FAILED — BLOCKER | Invalid JSON diagnostics/no-mutation are covered, but the transaction has an unrecoverable pre-journal crash window and a concurrent truncation can hang reads. |
+| 6 | The active initializer is pure TypeScript/Node with no native provider, support lookup, compiler/header prerequisite, prebuilt selection, or lifecycle hook. | ✓ VERIFIED | `package.json` has only build/test scripts; active source imports the Node facade; `npm pack --dry-run --json` produced 43 files with no native, scripts, tests, `dist/native`, or support-matrix output. |
+| 7 | Security reporting correctly limits the boundary to Claude/Codex/OpenCode host permissions and sandboxes. | ✓ VERIFIED | README lines 24-35 explicitly disclaims kernel-level, race-proof, hostile-same-user, universal-filesystem, and power-loss guarantees. |
+| 8 | Plans 01-19/01-20 remain historical rather than proof of the shipped TypeScript path. | ✓ VERIFIED | Plans/summaries remain present; Plan 17 and README lines 61-68 explicitly label their native material and evidence superseded/non-shipped. |
+| 9 | Retained native material is non-shipped and non-invoked. | ✓ VERIFIED | The three containment workflows have `on: {}`; Vitest excludes six native suites; the active CI workflow has no native reference; package allow-list excludes historical surfaces. |
+| 10 | Routine CI is the four-row D-22 representative matrix. | ✓ VERIFIED | `ci.yml` has exactly Ubuntu/22.13.0 and Ubuntu/macOS/Windows/24.x rows, each running `npm ci`, build, full tests, and pack inventory. |
+| 11 | Standard tarball installation runs the compiled initializer without native inputs. | ✓ VERIFIED | `packAndInstall()` builds, dry-runs, packs, installs outside the checkout with `--ignore-scripts`, reads the declared bin, and invokes it; its three installed-package tests passed in the full run. |
+| 12 | Installed CLI preserves all seven selected subsets, root/nested targeting, rerun, canonical-first completion, and minimal tree. | ✓ VERIFIED | `installed-cli.test.ts` exercises all seven subsets and root/nested reruns; it checks completion, selected config, minimal artifacts, identity, and additive behavior. |
+| 13 | README support/safety claims match measured behavior. | ✗ FAILED — BLOCKER | README promises `npx exspecso init`, but the package is private and unavailable from npm; it also presents journaled recovery as a usable feature despite the pre-journal unrecoverable state. |
+| 14 | Closure hands the phase to independent verification without publishing, releasing, or marking it complete. | ✓ VERIFIED | `package.json` remains private, README says no Phase 1 release, and ROADMAP still marks Phase 1 in progress. |
 
-**Score:** 44/74 plan must-haves verified; 4 are present but behavior-unverified; 26 failed.
-
-### Plan Must-Have Coverage
-
-Every plan frontmatter `must_haves.truths` item was classified; artifacts and links were checked separately.
-
-| Plan | Verified | Behavior-unverified | Failed | Verdict |
-| --- | ---: | ---: | ---: | --- |
-| 01-01 | 2 | 0 | 0 | verified |
-| 01-02 | 4 | 0 | 0 | verified |
-| 01-03 | 1 | 2 | 0 | real-TTY UAT pending |
-| 01-04 | 8 | 0 | 0 | verified |
-| 01-05 | 1 | 0 | 0 | verified |
-| 01-06 | 7 | 0 | 0 | verified for its injected-fault contract |
-| 01-07 | 3 | 0 | 0 | prior JSON gap closed |
-| 01-08 | 4 | 0 | 0 | prior ownership-race gap closed |
-| 01-09 | 3 | 0 | 0 | approval contract present |
-| 01-10 | 0 | 1 | 2 | release/tracer assertions unproven or contradicted |
-| 01-11 | 1 | 0 | 2 | evidence is self-attesting, not authentic |
-| 01-12 | 2 | 1 | 0 | provider-failure path is not currently executable |
-| 01-13 | 0 | 0 | 3 | incomplete |
-| 01-14 | 0 | 0 | 3 | incomplete; required journal artifact missing |
-| 01-15 | 0 | 0 | 4 | incomplete |
-| 01-16 | 0 | 0 | 4 | incomplete; package assembly artifact missing |
-| 01-17 | 0 | 0 | 3 | incomplete; race matrix artifact missing |
-| 01-18 | 0 | 0 | 3 | incomplete; final/security closure absent |
-| 01-19 | 5 | 0 | 0 | matrix matching and exact ENV-MA25 policy are wired/tested |
-| 01-20 | 3 | 0 | 2 | matrix set derivation/record formatting exist, but the claimed final evidence is unauthenticated and stale |
+**Score:** 10/14 truths verified; 1 present but behavior-unverified.
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| CLI, root resolver, init flow | Repository-contained initialization | ✓ VERIFIED | `package.json` bin → `main()` → `runInit()` → validation/plan/transaction. |
-| Selection, registry, completion | Explicit selected-native adapter output | ⚠️ WIRED | Data flow is real; TTY behavior remains unobserved. |
-| Schema, resolver, validation | Stable ID and direct-edit diagnostics | ✓ VERIFIED | Lossless JSON scanner diagnostics flow through `validateProject()`. |
-| Ownership and transaction promotion | Exclusive, capability-based write path | ⚠️ PARTIAL | Normal promotion uses `RootCapability`; operational staging/cleanup remains pathname-based. |
-| Recovery | Capability-bound restoration | ✗ FAILED | `restorePrior()` uses `rm()` and `writeFile()` on reconstructed paths. |
-| Final package assembly | All row-qualified installed providers | ✗ MISSING | `scripts/assemble-containment-package.mjs` does not exist. |
-| Complete installed matrix | Real race/matrix proof | ✗ MISSING | `tests/integration/containment-races.test.ts` does not exist. |
-| Security closure | Required security audit | ✗ MISSING | No `01-SECURITY.md` exists. |
+| `src/filesystem/contained-fs.ts` | Pure Node capability facade | ⚠️ SUBSTANTIVE, BLOCKED | Exists (327 lines), exports all declared capability symbols, and is wired into production consumers. Its read loop has the truncation hang above. The automated artifact query falsely reported its bracketed export list missing; source exports confirm them. |
+| `tests/unit/root-scoped-fs.test.ts` | Root/traversal/symlink coverage | ✓ VERIFIED | Active 2-test suite exercises validated components and stable symlink rejection. |
+| `tests/integration/init-typescript-tracer.test.ts` | Pure-Node root/nested and rerun tracer | ✓ VERIFIED | Active compiled-CLI tracer covers root/nested routing, additive rerun, JSON diagnostics/no mutation, and workflow entry-point scan. |
+| `package.json` | Native-free package allow-list | ✓ VERIFIED | Explicit `files` allow-list includes the CLI/required declarations and excludes native/support artifacts; no lifecycle/native script exists. |
+| `.github/workflows/ci.yml` | Four-row representative CI | ✓ VERIFIED | Substantive four-row read-only workflow; no native job or command. |
+| `tests/helpers/package-fixture.ts` | Pack/install/declared-bin helper | ✓ VERIFIED | `packAndInstall()` and `runInstalledCli()` are exported and used. The automated artifact query misses `async function` export syntax, but source and consuming test prove it. |
+| `tests/integration/installed-cli.test.ts` | Installed package behavior | ✓ VERIFIED | Three substantive tests use a packed, isolated installation rather than checkout imports. |
+| `README.md` | Accurate package and safety contract | ⚠️ PARTIAL | Honest host-boundary language is present, but registry `npx` instructions cannot work before publication and recovery availability is overstated. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
-| --- | --- | --- | --- | --- |
-| `package.json` | `src/cli/main.ts` | compiled `dist/cli/main.js` bin | ✓ WIRED | Declared bin and packed tracer path agree. |
-| `main.ts` | `run-init.ts` | parsed selection and process I/O | ✓ WIRED | Direct `runInit()` delegation. |
-| `run-init.ts` | validation/plan/transaction | validate before plan, plan before commit | ✓ WIRED | Calls occur in that order under one ownership lease. |
-| resolver | validator | `scanArtifacts()` diagnostics | ✓ WIRED | Invalid JSON declarations cannot disappear before validation. |
-| transaction | native capability | parent-handle sibling replace | ✓ WIRED | Promotion uses `createFile()` and `replace()`. |
-| recovery | native capability | restore/cleanup | ✗ NOT WIRED | Recovery falls back to path-string `rm`/`writeFile`. |
-| evidence aggregate | real provider/report bytes | evidence bundle validation | ✗ NOT WIRED | Aggregate explicitly excludes bundle artifacts and trusts evidence JSON claims. |
-| final package/matrix | package assembly and race suite | Plans 16–18 | ✗ NOT WIRED | Required producer artifacts are absent. |
+| --- | --- | --- | --- |
+| `src/init/run-init.ts` | `src/filesystem/contained-fs.ts` | `openContainedFilesystem()` | ✓ WIRED | Direct import at line 6 and invocation at line 73. |
+| `src/filesystem/transaction.ts` / recovery | Node capability facade | `DirectoryCapability` / `RootCapability` | ✓ WIRED | Transaction and recovery operate through capability objects; the pre-journal ordering still breaks recovery. |
+| `package.json` | `dist/cli/main.js` | declared `bin` and package allow-list | ✓ WIRED | `bin.exspecso` points to the emitted CLI, and the dry-run candidate includes it. |
+| `ci.yml` | `package.json` | Node 22/24 matrix and lockfile commands | ✓ WIRED | Each row invokes `npm ci`, build, test, and pack. |
+| `installed-cli.test.ts` | `package-fixture.ts` | `packAndInstall` / `runInstalledCli` | ✓ WIRED | Direct imports and executions at lines 4, 53, 80, and 89. |
+| `package-fixture.ts` | declared compiled bin | package `bin` → `cliPath` → `process.execPath` | ✓ WIRED | The helper deliberately reads `package.json` dynamically instead of containing a `dist/cli/main.js` literal; the named test executes that resolved path. |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| Adapter plan | `selectedAgents` | CLI flags or prompt result | Selected IDs map to registry-relative native targets | ✓ FLOWING |
-| Canonical validation | scan definitions/diagnostics | Opened-root `BoundReader` | JSON/Markdown bytes flow to diagnostics before plan construction | ✓ FLOWING |
-| Transaction promotion | staged bytes | repository-local journal/stage | Capability-relative replacement in normal commit path | ✓ FLOWING |
-| Recovery restoration | journal backup | reconstructed target path | Post-validation path can be substituted | ✗ DISCONNECTED/UNSAFE |
-| Evidence decision | evidence record fields | arbitrary JSON files | Manifest/provenance/provider/report bytes are not authenticated | ⚠️ STATIC/SELF-ATTESTED |
+| Adapter plan | `selectedAgents` | repeatable flags or Inquirer prompt → registry | Selected IDs determine actual written adapter paths | ✓ FLOWING |
+| Canonical validation | scanned definitions/diagnostics | bound reader over repository Markdown/JSON | Diagnostics reach `runInit()` before transaction mutation | ✓ FLOWING |
+| Installed CLI | `packageJson.bin` → `cliPath` | packed tarball's own `package.json` | Resolved path is actually executed outside checkout | ✓ FLOWING |
+| Transaction recovery | stage/journal state | staging directory and `journal.json` | ✗ DISCONNECTED at the pre-journal boundary: stage exists with no recoverable state | ✗ FAILED |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Full current test suite | `npm test -- --run` | 117 passed, 6 failed, 123 total | ✗ FAIL |
-| Root/nested packed-init cases | Same single full run | The five named failures are fixture-provider/tracer cases; the remaining seven packed-tracer cases passed | ✓ PASS |
-| Invalid JSON direct-edit cases | Same single full run | Nine of ten validation-error tests passed, including all invalid-declaration cases | ✓ PASS |
-| Installed provider/tracer boundaries | Same single full run | Five named tests fail before assertions: `EXSPECSO_NODE_HEADERS` defaults to `missing-approved-headers` | ⚠️ UNVERIFIED |
+| Build and full active suite | `npm run build && npm test -- --run` | 9 files, 79 tests passed | ✓ PASS |
+| Published `npx` availability | `npm view exspecso@0.1.0` | npm E404; package absent/unavailable | ✗ FAIL |
+| Native-free package candidate | `npm pack --dry-run --json` plus allow-list assertion | 43 entries; no native/scripts/tests/support-matrix output, CLI present | ✓ PASS |
 
 ### Probe Execution
 
-Step 7c: SKIPPED. No declared or conventional `scripts/**/tests/probe-*.sh` probe exists.
+Step 7c: SKIPPED — no declared or conventional `scripts/**/tests/probe-*.sh` probe applies to the revised TypeScript/Node closure.
 
 ### Requirements Coverage
 
 | Requirement | Source Plans | Status | Evidence |
 | --- | --- | --- | --- |
-| SETUP-01 | 02, 09–12, 16–20 | ✓ SATISFIED | Passing packed root-init case; later release proof remains blocked. |
-| SETUP-02 | 02, 09–12, 16–20 | ✓ SATISFIED | Passing deep/nested Git-root cases. |
-| SETUP-03 | 01, 03, 09, 17, 18, 20 | ? NEEDS HUMAN | Flags and injected selection pass; real TTY selection remains untested. |
-| SETUP-04 | 03, 17, 18, 20 | ? NEEDS HUMAN | Detection is not passed as selected state in code; visual initial state needs TTY confirmation. |
-| SETUP-05 | 02, 03, 05, 17, 18, 20 | ✓ SATISFIED | Registry/planning restrict writes to selected IDs. |
-| SETUP-06 | 02, 06, 08, 10, 12–20 | ✓ SATISFIED | Passing minimal-tree/no-op paths; containment completion remains blocked separately. |
-| SETUP-07 | 05, 12–14, 17–20 | ✓ SATISFIED | Passing rerun, conflict, and scoped-replacement cases. |
-| SETUP-08 | 02, 03, 17, 18, 20 | ✓ SATISFIED | Completion formats canonical operation first and native invocation per selection. |
-| ART-01 | 02, 04, 06, 08, 10, 12–20 | ✓ SATISFIED | Canonical Markdown/JSON artifacts are direct repository files. |
-| ART-02 | 02, 04, 06, 09, 13, 15–20 | ✓ SATISFIED | No database/cloud/duplicate projection is wired. |
-| ART-03 | 04, 07, 12, 20 | ✓ SATISFIED | Exact D-20 parser/resolution and invalid declaration tests pass. |
-| ART-04 | 04, 12, 20 | ✓ SATISFIED | Identity derives from stable ID and explicit parent, not title/slug. |
-| ART-05 | 04, 12, 20 | ✓ SATISFIED | Minimal-artifacts test passes. |
-| ART-06 | 04, 07, 12, 20 | ✓ SATISFIED | Resolver covers IDs/sections and read-only resolution. |
-| ART-07 | 06, 08–11, 13–20 | ✗ BLOCKED | Unsafe recovery, unauthenticated evidence, and incomplete final matrix/prebuilt plans. |
-| ART-08 | 01, 04, 06–9, 12–15, 17–20 | ✓ SATISFIED | Direct invalid JSON/config/relationship cases return actionable diagnostics before mutation. |
-| ART-09 | 04, 06, 08, 12–15, 17–20 | ✓ SATISFIED | Minimal-tree and reserved-roadmap tests prevent extra Roadmap state. |
+| SETUP-01 | 02, 09-12, 16-20 | ✗ BLOCKED (deferred Phase 6) | Root functionality works from local tarball, but required registry `npx exspecso init` is unavailable now. |
+| SETUP-02 | 02, 09-12, 16-20 | ✓ SATISFIED | Installed test runs a nested-directory invocation against the containing Git root. |
+| SETUP-03 | 01, 03, 09, 17, 18, 20 | ? NEEDS HUMAN | Flags/all subsets pass; real interactive terminal behavior is not exercised. |
+| SETUP-04 | 03, 17, 18, 20 | ? NEEDS HUMAN | Injected prompt proves detected entries are unchecked labels, but not terminal presentation. |
+| SETUP-05 | 02, 03, 05, 17, 18, 20 | ✓ SATISFIED | All seven installed subsets write only corresponding adapters. |
+| SETUP-06 | 02, 03, 05, 17, 18, 20 | ✓ SATISFIED | Installed and artifact tests prove only config, constitution, and selected adapters are materialized. |
+| SETUP-07 | 05, 12-14, 17-20 | ✓ SATISFIED | Installed additive-rerun test preserves identity and unselected adapter bytes. |
+| SETUP-08 | 02, 03, 17, 18, 20 | ✓ SATISFIED | Installed test checks `/exspecso-start` first and runtime-native invocation text. |
+| ART-01 | 02, 04, 06, 08, 10, 12-20 | ✓ SATISFIED | Canonical files are ordinary package-created Markdown/JSON in the repository. |
+| ART-02 | 02, 04, 06, 09, 13, 15-20 | ✓ SATISFIED | No DB/cloud service or packaged duplicate projection is wired; source and package scans agree. |
+| ART-03 | 04, 07, 12, 20 | ✓ SATISFIED | Active artifact tests cover all exact stable-ID families and diagnostics. |
+| ART-04 | 04, 12, 20 | ✓ SATISFIED | Active resolver test proves title changes/declaration reordering retain identity. |
+| ART-05 | 04, 12, 20 | ✓ SATISFIED | Active lazy-artifact test proves unresolved deeper artifacts are not materialized. |
+| ART-06 | 04, 07, 12, 20 | ✓ SATISFIED | Active tests resolve ROADMAP and per-section TASK IDs. |
+| ART-07 | 06, 08-11, 13-20 | ✗ BLOCKED | Pre-journal crashes permanently block recovery; concurrent truncation can hang a protected read. |
+| ART-08 | 01, 04, 06-9, 12-15, 17-20 | ✓ SATISFIED | Invalid declaration diagnostics and no-mutation behavior run in the active suite. |
+| ART-09 | 04, 06, 08, 12-15, 17-20 | ✓ SATISFIED | Reserved, lazy `.exspecso/roadmap.md` behavior is covered by active artifacts tests. |
 
-All 17 Phase 1 requirement IDs are declared by one or more plan; none is orphaned. The Phase 2–6 roadmap does not explicitly defer these containment/package obligations, so no failed item is deferred.
+All 17 Phase 1 requirement IDs are declared by one or more plan. None is orphaned.
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
-| --- | --- | --- | --- | --- |
-| `src/filesystem/recovery.ts` | 81–95 | Check-then-pathname restore | 🛑 BLOCKER | A substituted target/ancestor can redirect recovery outside the repository. |
-| `scripts/write-containment-evidence.mjs` | 46 | Hard-coded `evidenceMode: "release"` | 🛑 BLOCKER | Test providers can be labelled release evidence. |
-| `scripts/containment-evidence.mjs` | 28–30, 51–87 | Self-attesting evidence receipt | 🛑 BLOCKER | Aggregate accepts forged hashes/observations rather than authenticating artifacts. |
-| `scripts/run-local-containment-gate.mjs` | 22, 42–43, 65–66 | HEAD-only provenance and root-output mutation | 🛑 BLOCKER | Dirty sources can claim HEAD; exploratory runs overwrite checkout output. |
-| `tests/helpers/containment-fixture.ts` | 74 | Missing header path default | 🛑 BLOCKER | Default full suite cannot build its native test package. |
+| --- | --- | --- | --- |
+| `src/filesystem/transaction.ts` | 216-250 | Mutates stage/destination-parent state before durable journal | 🛑 BLOCKER | Crash creates permanent ambiguous recovery evidence. |
+| `src/filesystem/recovery.ts` | 150-152 | No-journal stage treated as indefinitely unreadable | 🛑 BLOCKER | Cannot repair the reachable pre-journal failure state. |
+| `src/filesystem/contained-fs.ts` | 141-145 | Read loop ignores zero-byte reads | 🛑 BLOCKER | Concurrent truncation can spin the CLI forever. |
+| `README.md` | 14, 70 | Public `npx` command conflicts with private/unpublished package | ⚠️ WARNING | Current user cannot follow documented installation command; Phase 6 explicitly owns published package delivery. |
+| `dist/native/**`, `dist/filesystem/support-matrix.*` | local ignored output | Stale historical build output remains after `npm run build` | ℹ️ INFO | It is not invoked or packed by the explicit allow-list, but a clean build does not remove it. |
 
-No unreferenced `TBD`, `FIXME`, or `XXX` debt marker was found in the phase implementation files. The five unique judgment-tier prohibitions remain explicitly flagged, not silently passed; security enforcement is also not counted as passed because the security report is absent.
+No unreferenced `TBD`, `FIXME`, or `XXX` marker was found in the revised implementation files.
 
-### Human Verification Required After Gap Closure
+### Human Verification After Gap Closure
 
 1. **Real TTY runtime selection**
 
-   **Test:** Run packed `npx exspecso init` in a temporary Git repository with a detected runtime signal; submit empty once, select a subset once, and cancel once.
+   **Test:** Run a packed/local tarball initializer in a temporary Git repository with a detected-runtime signal. Try empty selection, a subset, and cancellation.
 
-   **Expected:** All options start unchecked; detection only changes labels; no file is written for empty/cancelled selection; exactly the selected adapters are written.
+   **Expected:** Choices start unchecked; detection affects only labels; no write happens for empty/cancelled selections; only selected adapters are written.
 
-   **Why human:** Terminal rendering and interactive cancellation are not covered by injected-prompt tests.
-
-2. **Judgment-tier prohibition acknowledgement**
-
-   **Test:** Review the five prohibition statements in Plans 02, 03, 05, 06, 09, and 20 after the technical gaps are closed.
-
-   **Expected:** A maintainer explicitly accepts or rejects each scope/safety judgment.
-
-   **Why human:** These are judgment-tier controls and cannot silently become a green automated result.
+   **Why human:** Injected prompt tests prove logic but not terminal rendering/cancellation.
 
 ### Gaps Summary
 
-The initial verifier findings were genuinely repaired: invalid JSON declarations now become diagnostics, the writer/recovery ownership race is closed, and normal promotion is capability-relative. Phase 01 is nevertheless not achieved. The current recovery path reopens the substitution risk, the evidence system can attest to artifacts it never validates, retained evidence does not bind to current HEAD, the live test suite fails, and Plans 01-13 through 01-18 are still incomplete. No later phase explicitly owns these Phase 01 obligations.
+The D-21/D-22 cutover is genuinely wired: the active build, tarball, installed CLI, CI matrix, adapter subsets, stable-artifact handling, and historical-native isolation have direct evidence. The phase goal nevertheless is not achieved. The current Node transaction can leave an unrecoverable pre-journal stage, and an adversarial concurrent truncate can hang a file read; both invalidate ART-07's required interruption/recovery guarantee. The README's registry `npx` instruction is not currently deliverable; that packaging availability is clearly scheduled for Phase 6 and is recorded as deferred, not as a closure plan for these safety blockers.
 
 ---
 
-_Verified: 2026-08-28T11:40:15Z_
+_Verified: 2026-08-29T09:16:34Z_
 _Verifier: the agent (gsd-verifier)_
