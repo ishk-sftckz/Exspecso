@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { fork, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { link, mkdir, readFile, readdir, realpath, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -45,18 +45,6 @@ function output(): { stream: Writable; read: () => string } {
   };
 }
 
-async function waitForFile(path: string): Promise<void> {
-  for (let attempt = 0; attempt < 100; attempt += 1) {
-    try {
-      await readFile(path, "utf8");
-      return;
-    } catch {
-      await new Promise((resolveWait) => setTimeout(resolveWait, 10));
-    }
-  }
-  throw new Error("timed out waiting for transaction synchronization signal");
-}
-
 async function waitForChildExit(child: ReturnType<typeof spawn>): Promise<{ code: number | null; signal: NodeJS.Signals | null }> {
   return new Promise((resolveExit, rejectExit) => {
     child.once("error", rejectExit);
@@ -64,19 +52,39 @@ async function waitForChildExit(child: ReturnType<typeof spawn>): Promise<{ code
   });
 }
 
+async function waitForChildMessage(child: ReturnType<typeof fork>): Promise<{ point: string; pid: number }> {
+  return new Promise((resolveMessage, rejectMessage) => {
+    const timeout = setTimeout(() => rejectMessage(new Error("timed out waiting for killed-process IPC")), 5_000);
+    child.once("error", rejectMessage);
+    child.once("message", (message) => {
+      clearTimeout(timeout);
+      if (typeof message !== "object" || message === null || typeof message.point !== "string" || typeof message.pid !== "number") {
+        rejectMessage(new Error("killed-process IPC message is malformed"));
+        return;
+      }
+      resolveMessage(message);
+    });
+  });
+}
+
 async function killAtPromotion(root: string, point: PromotionFaultPoint): Promise<void> {
-  const signal = join(root, "transaction-sync.json");
-  const child = spawn(process.execPath, [join(packageRoot, "dist", "cli", "main.js"), "init", "--agent", "codex"], {
-    cwd: root,
-    env: { ...process.env, EXSPECSO_TEST_SYNC_FILE: signal, EXSPECSO_TEST_WAIT_FOR_KILL: "1", EXSPECSO_TEST_FAULT_POINT: point },
-    stdio: "ignore",
+  const child = fork(join(packageRoot, "tests", "helpers", "killed-transaction-child.mjs"), ["transaction-promotion", root, point], {
+    execArgv: [],
+    stdio: ["ignore", "ignore", "ignore", "ipc"],
   });
   const exited = waitForChildExit(child);
-  await waitForFile(signal);
-  const recorded = JSON.parse(await readFile(signal, "utf8")) as { point: string };
+  try {
+    const recorded = await waitForChildMessage(child);
+    expect(recorded.pid).toBe(child.pid);
   expect(recorded.point).toBe(point);
-  child.kill("SIGKILL");
-  await expect(exited).resolves.toEqual({ code: null, signal: "SIGKILL" });
+    child.kill("SIGKILL");
+    await expect(exited).resolves.toEqual({ code: null, signal: "SIGKILL" });
+  } finally {
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill("SIGKILL");
+      await exited;
+    }
+  }
 }
 
 async function writeOwnershipRecord(root: string, container: string, pid: number, token = randomUUID()): Promise<string> {
@@ -95,18 +103,15 @@ async function writeDeadOwnershipRecord(root: string): Promise<void> {
 }
 
 async function killAfterOwnershipPublication(root: string): Promise<void> {
-  const signal = join(root, "ownership-sync.json");
-  const child = spawn(process.execPath, [join(packageRoot, "dist", "cli", "main.js"), "init", "--agent", "codex"], {
-    cwd: root,
-    env: { ...process.env, EXSPECSO_TEST_OWNERSHIP_SYNC_FILE: signal, EXSPECSO_TEST_WAIT_FOR_OWNERSHIP_KILL: "1" },
-    stdio: "ignore",
+  const child = fork(join(packageRoot, "tests", "helpers", "killed-transaction-child.mjs"), ["ownership-publication", root], {
+    execArgv: [],
+    stdio: ["ignore", "ignore", "ignore", "ipc"],
   });
   const exited = waitForChildExit(child);
   try {
-    await waitForFile(signal);
-    const recorded = JSON.parse(await readFile(signal, "utf8")) as { point: string; pid: number };
+    const recorded = await waitForChildMessage(child);
     expect(recorded.point).toBe("after-ownership-publication");
-    expect(recorded.pid).toBeGreaterThan(0);
+    expect(recorded.pid).toBe(child.pid);
     child.kill("SIGKILL");
     await expect(exited).resolves.toEqual({ code: null, signal: "SIGKILL" });
   } finally {

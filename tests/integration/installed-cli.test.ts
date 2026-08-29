@@ -1,3 +1,4 @@
+import { spawn } from "node:child_process";
 import { readFile, readdir, rm } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -30,7 +31,46 @@ async function projectFiles(root: string, directory = root): Promise<string[]> {
   return result.sort();
 }
 
+async function runInstalledCliWithTimeout(cliPath: string, cwd: string, env: NodeJS.ProcessEnv, timeoutMs = 2_000): Promise<{ exitCode: number | null; timedOut: boolean; stdout: string; stderr: string }> {
+  return new Promise((resolveRun, rejectRun) => {
+    const child = spawn(process.execPath, [cliPath, "init", "--agent", "codex"], { cwd, env, stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "";
+    let stderr = "";
+    let timedOut = false;
+    const timeout = setTimeout(() => { timedOut = true; child.kill("SIGKILL"); }, timeoutMs);
+    child.stdout.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
+    child.stderr.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
+    child.once("error", (error) => { clearTimeout(timeout); rejectRun(error); });
+    child.once("close", (exitCode) => { clearTimeout(timeout); resolveRun({ exitCode, timedOut, stdout, stderr }); });
+  });
+}
+
 describe("installed package initializer", () => {
+  it("ignores the complete legacy EXSPECSO_TEST environment family", async () => {
+    const installation = await packAndInstall();
+    const installationRoot = dirname(dirname(dirname(installation.packageDirectory)));
+    installationRoots.push(installationRoot);
+    const repository = await fixture();
+    const transactionSignal = join(installationRoot, "caller-selected-transaction-signal.json");
+    const ownershipSignal = join(installationRoot, "caller-selected-ownership-signal.json");
+
+    const result = await runInstalledCliWithTimeout(installation.cliPath, repository.root, {
+      ...process.env,
+      EXSPECSO_TEST_SYNC_FILE: transactionSignal,
+      EXSPECSO_TEST_FAULT_POINT: "after-promotion:.exspecso/exspecso.config.json",
+      EXSPECSO_TEST_FAULT_MODE: "interrupt",
+      EXSPECSO_TEST_WAIT_FOR_KILL: "1",
+      EXSPECSO_TEST_OWNERSHIP_SYNC_FILE: ownershipSignal,
+      EXSPECSO_TEST_WAIT_FOR_OWNERSHIP_KILL: "1",
+    });
+
+    expect(result.timedOut, result.stderr).toBe(false);
+    expect(result.exitCode, result.stderr).toBe(0);
+    await expect(readFile(transactionSignal, "utf8")).rejects.toThrow();
+    await expect(readFile(ownershipSignal, "utf8")).rejects.toThrow();
+    expect(installation.inventory).not.toContain("tests/helpers/killed-transaction-child.mjs");
+  }, 10_000);
+
   it("declares only the four representative D-22 compatibility rows", async () => {
     const workflow = await readFile(join(packageRoot, ".github", "workflows", "ci.yml"), "utf8");
 
