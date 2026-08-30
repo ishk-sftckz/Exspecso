@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
 status: executing
-stopped_at: Completed 01-22-PLAN.md; independent Phase 1 verification next
-last_updated: "2026-08-30T07:28:15.110Z"
-last_activity: 2026-08-29
-last_activity_desc: Plan 01-22 completed; independent Phase 1 verification next
+stopped_at: Completed 01-23-PLAN.md; independent Phase 1 verification next
+last_updated: "2026-08-30T07:40:38.044Z"
+last_activity: 2026-08-30
+last_activity_desc: Plan 01-23 completed; independent Phase 1 verification next
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 25
-  completed_plans: 22
+  completed_plans: 23
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 ## Current Position
 
 Phase: 01 (initialize-canonical-projects) — EXECUTING
-Plan: 22 of 22
+Plan: 23 of 23
 Status: Awaiting independent phase verification
-Last activity: 2026-08-29 — Plan 01-22 completed; independent Phase 1 verification next
+Last activity: 2026-08-30 — Plan 01-23 completed; independent Phase 1 verification next
 
-Plan execution: 22 plans are implementation-complete (22 total). Plan 01-22 closes the Windows journal, packaged control, and zero-progress-write verifier gaps; independent Phase 1 verification remains the next gate before Phase completion.
+Plan execution: 23 plans are implementation-complete (23 total). Plan 01-23 restores portable child-component validation across the active pure-TypeScript/Node filesystem boundary; independent Phase 1 verification remains the next gate before Phase completion.
 
 ### Active Execution — Pure TypeScript/Node architecture correction
 
@@ -132,6 +132,7 @@ The records below preserve the investigation history. Their native-provider, exh
 | Phase 01 P18 | 10min | 2 tasks | 4 files |
 | Phase 01-initialize-canonical-projects P21 | 17min | 2 tasks | 6 files |
 | Phase 01 P22 | 5min | 3 tasks | 8 files |
+| Phase 01 P23 | 7min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -189,6 +190,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Killed-process coordination is test-only IPC; shipped modules ignore legacy EXSPECSO_TEST controls.
 - [Phase ?]: TransactionJournalEntry.backupPath is slash-form serialized data; host path joins remain filesystem-only.
 - [Phase ?]: Non-positive synchronous writes fail closed with EXSPECSO_CONTAINMENT_CHANGED before retrying.
+- [Phase ?]: Keep portable-name validation in the existing private component()/components() seam without platform branches or a new export.
+- [Phase ?]: Use an invalid later reader component behind a symlink sentinel to prove complete validation precedes traversal.
 
 ### Pending Todos
 
@@ -220,6 +223,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-29T13:54:17.962Z
-Stopped at: Completed 01-22-PLAN.md; independent Phase 1 verification next
+Last session: 2026-08-30T07:40:38.030Z
+Stopped at: Completed 01-23-PLAN.md; independent Phase 1 verification next
 Resume file: None
