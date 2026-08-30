@@ -69,6 +69,36 @@ describe("root-scoped Node filesystem", () => {
     }
   });
 
+  it("rejects non-portable child components before creation", async () => {
+    const repository = await fixture();
+    const filesystem = openContainedFilesystem(repository.root);
+    const invalidComponents = [
+      "ordinary:secret", "tail.", "tail ",
+      "less<than", "greater>than", "quote\"mark", "slash/name", "back\\slash", "pipe|name", "question?mark", "star*name",
+      ...Array.from({ length: 0x20 }, (_, codePoint) => `control${String.fromCharCode(codePoint)}name`),
+      "cOn", "CON.txt", "PRN", "PRN.txt", "AUX", "AUX.txt", "NUL", "NUL.txt",
+      ...["COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"].flatMap((device) => [device, `${device}.txt`]),
+      ...["COM¹", "COM²", "COM³", "LPT¹", "LPT²", "LPT³"].flatMap((device) => [device, `${device}.txt`]),
+      "é".repeat(128),
+    ];
+
+    try {
+      const inventory = filesystem.root.list();
+      for (const name of invalidComponents) {
+        expect(() => filesystem.root.createFile(name)).toThrow(/EXSPECSO_CONTAINMENT_INVALID/);
+        expect(filesystem.root.list()).toEqual(inventory);
+      }
+
+      for (const name of ["ordinary name", "café", "a".repeat(255)]) {
+        const file = filesystem.root.createFile(name);
+        file.close();
+      }
+      expect(filesystem.root.list()).toEqual(expect.arrayContaining(["ordinary name", "café", "a".repeat(255)]));
+    } finally {
+      filesystem.close();
+    }
+  });
+
   it("rejects stable symlink segments before access", async () => {
     const repository = await fixture();
     const outside = await fixture();
