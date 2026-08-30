@@ -28,8 +28,14 @@ function containment(message: string): never {
 }
 
 function component(name: string): void {
-  if (typeof name !== "string" || !name || name === "." || name === ".." || name.includes("/") || name.includes("\\") || name.includes("\0")) {
-    containment("INVALID: every path segment must be one non-empty relative component");
+  if (typeof name !== "string") containment("INVALID: every path segment must be one non-empty relative component");
+  const device = name.split(".", 1)[0]?.toUpperCase();
+  const reserved = /^(?:CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³])$/u;
+  if (
+    !name || name === "." || name === ".." || Buffer.byteLength(name, "utf8") > 255 ||
+    /[\\/:<>"|?*\x00-\x1f]/u.test(name) || name.endsWith(".") || name.endsWith(" ") || reserved.test(device ?? "")
+  ) {
+    containment("INVALID: every path segment must be a portable file-name component");
   }
 }
 
