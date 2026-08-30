@@ -99,6 +99,66 @@ describe("root-scoped Node filesystem", () => {
     }
   });
 
+  it("applies portable component validation to every child-name entry point", async () => {
+    const repository = await fixture();
+    const outside = await fixture();
+    await mkdir(join(repository.root, "source-directory"));
+    await writeFile(join(repository.root, "source-directory", "sentinel.txt"), "directory source\n");
+    await writeFile(join(repository.root, "source-file.txt"), "file source\n");
+    await writeFile(join(repository.root, "destination.txt"), "destination bytes\n");
+    await mkdir(join(repository.root, "removable-directory"));
+    await writeFile(join(repository.root, "removable-directory", "sentinel.txt"), "remove sentinel\n");
+    await writeFile(join(outside.root, "reader-sentinel.txt"), "outside reader sentinel\n");
+    await symlink(outside.root, join(repository.root, "reader-link"), "dir");
+
+    const filesystem = openContainedFilesystem(repository.root);
+    try {
+      const inventory = filesystem.root.list();
+      const sourceFile = filesystem.root.openFile("source-file.txt");
+      const sourceDirectory = filesystem.root.openDirectory("source-directory");
+      const expectInvalid = (operation: () => unknown) => expect(operation).toThrow(/EXSPECSO_CONTAINMENT_INVALID/);
+      const expectInventory = () => expect(filesystem.root.list()).toEqual(inventory);
+
+      expectInvalid(() => filesystem.root.openDirectory("open:directory"));
+      expectInventory();
+      expectInvalid(() => filesystem.root.createDirectory("create:directory"));
+      expectInventory();
+      expectInvalid(() => filesystem.root.openFile("open:file"));
+      expectInventory();
+      expectInvalid(() => filesystem.root.createFile("create:file"));
+      expectInventory();
+
+      expectInvalid(() => filesystem.root.replace(sourceFile, "destination:stream"));
+      expect(sourceFile.read()).toEqual(Buffer.from("file source\n"));
+      await expect(readFile(join(repository.root, "destination.txt"))).resolves.toEqual(Buffer.from("destination bytes\n"));
+      expectInventory();
+
+      expectInvalid(() => filesystem.root.publishDirectory(sourceDirectory, "published:directory"));
+      expect(sourceDirectory.list()).toEqual(["sentinel.txt"]);
+      await expect(readFile(join(repository.root, "source-directory", "sentinel.txt"))).resolves.toEqual(Buffer.from("directory source\n"));
+      expectInventory();
+
+      expectInvalid(() => filesystem.root.unlink("source:file"));
+      await expect(readFile(join(repository.root, "source-file.txt"))).resolves.toEqual(Buffer.from("file source\n"));
+      expectInventory();
+      expectInvalid(() => filesystem.root.removeDirectory("removable:directory"));
+      await expect(readFile(join(repository.root, "removable-directory", "sentinel.txt"))).resolves.toEqual(Buffer.from("remove sentinel\n"));
+      expectInventory();
+
+      for (const operation of [
+        () => filesystem.reader.list(["reader-link", "later:invalid"]),
+        () => filesystem.reader.metadata(["reader-link", "later:invalid"]),
+        () => filesystem.reader.read(["reader-link", "later:invalid"]),
+      ]) {
+        expectInvalid(operation);
+        await expect(readFile(join(outside.root, "reader-sentinel.txt"))).resolves.toEqual(Buffer.from("outside reader sentinel\n"));
+        expectInventory();
+      }
+    } finally {
+      filesystem.close();
+    }
+  });
+
   it("rejects stable symlink segments before access", async () => {
     const repository = await fixture();
     const outside = await fixture();
