@@ -119,8 +119,9 @@ The outer loop:
 3. Runs that Spec through one internal bounded Spec Delivery Loop.
 4. Recomputes Spec readiness after the selected Spec becomes done.
 5. Continues until every required Spec is done, a deliberate step boundary is reached, or a typed terminal condition stops progress.
-6. Runs any declared Phase-level integration or closure verification after all required Specs are done.
-7. Marks the Phase done only after all required Specs and Phase-level closure obligations pass.
+6. Runs Phase Closure Verification after all required Specs are done, reusing sufficient Task and Spec evidence rather than duplicating it.
+7. Runs Human Phase Acceptance only when a residual human-facing check remains after executable, system, browser, visual, and external Phase evidence has run.
+8. Marks the Phase done only after all required Specs, all Phase Closure Verification evidence, required Human Phase Acceptance, and the no-blocking-plan-gap gate pass.
 
 At Phase level, one Spec Delivery Loop runs at a time by default. Multiple READY Specs are scheduling opportunities, not permission for automatic multi-Spec parallel execution.
 
@@ -144,6 +145,47 @@ Each selected Spec keeps the v12 safety model strengthened by v13:
 
 Spec and Task boundaries remain canonical even though the user invokes planning and delivery at Phase scope.
 
+## Verification Hierarchy and Phase Closure Contract
+
+Verification is one hierarchy:
+
+```text
+Task Verification → optional Spec Closure Verification → Phase Closure Verification
+```
+
+Task Verification proves bounded Task acceptance criteria. Optional Spec Closure Verification proves declared cross-Task or Spec outcomes after its Tasks pass. Phase Closure Verification proves declared integration and Phase outcomes after every required Spec is done. Evidence with sufficient strength at Task or Spec scope is reused; Phase Closure Verification must not repeat it merely because the Phase is closing.
+
+Phase Closure Verification first runs all applicable executable, system, browser, visual, and external evidence. **Human Phase Acceptance** is only its residual human-facing portion: the checks whose expected outcome cannot be sufficiently proven by that evidence. It is not a separate or fourth verification layer.
+
+### Durable Human Phase Acceptance State
+
+When residual human checks exist, the deterministic layer lazily creates:
+
+```text
+.exspecso/phases/phase-NNN-slug/acceptance.md
+```
+
+The artifact is durable canonical state, not a planning artifact. It records the Phase identifier, current Phase revision/context, and stable `PAC-NNN` checks. Each check records its expected outcome or user instruction, status, result, and concise user-facing failure evidence. The only check statuses are:
+
+```text
+pending | passed | failed | needs-retest
+```
+
+While acceptance is incomplete, Phase status records `stage: phase-acceptance`. A fresh `/exspecso-implement PHASE-NNN` reconstructs the Phase from canonical artifacts and its `acceptance.md`; it resumes only checks in `pending` or `needs-retest`, preserving passed checks whose evidence remains current. It batches actionable checks by default. Sequential execution is required only where a check depends on another, shares mutable state, has a safety constraint, or needs diagnostic isolation.
+
+### Phase Acceptance Failure Routes
+
+Phase Closure Verification must keep these routes distinct:
+
+1. **Failure within approved intent:** reopen the smallest affected Spec or Task, run the bounded Correction Loop using the approved evidence contract, rerun affected Task/Spec verification and Phase Closure Verification evidence, invalidate only `PAC-NNN` checks made stale by that correction, then return to Phase Acceptance.
+2. **Missing or changed intent:** create an unresolved `blocking-plan-gap`, keep the Phase incomplete, return `needs-plan-revision`, and route the work through `/exspecso-plan PHASE-NNN`. The implementation loop cannot silently reinterpret the missing intent or weaken evidence to continue.
+
+The earlier spec-level revision terminal is obsolete and must not be emitted by a v13 Phase Delivery Loop.
+
+### Phase Completion Gate
+
+A Phase becomes done only when all required Specs are done, every required Phase Closure Verification item has passed (including all required Human Phase Acceptance checks), and no unresolved `blocking-plan-gap` remains. A completed Phase rerun returns `completed` only while those conditions remain true.
+
 ## Execution Modes and Results
 
 `execution.mode` supports:
@@ -158,7 +200,7 @@ completed
 paused
 blocked
 needs-human
-needs-spec-revision
+needs-plan-revision
 correction-exhausted
 interrupted
 ```
@@ -167,9 +209,28 @@ Results must project the outer Phase state and, when relevant, the selected inne
 
 ## Verify, Review, and Status
 
-- `verify PHASE-NNN` validates the Phase brief plus every detailed Spec, Plan, Task, dependency, coverage link, and verification-intent/evidence contract. It does not modify application source.
-- Automatic final review still occurs per Spec inside delivery. `review PHASE-NNN` is an explicit review-only aggregate that reads each Spec's canonical review report and Phase-level closure evidence without duplicating Spec review state or unexpectedly changing code.
-- `status` remains read-only and computes Roadmap, Phase, Spec, Task, blocker, evidence, checkpoint, correction, review, and last loop-result state from artifacts. It recommends one concrete next operation without silently repairing project truth.
+- `verify PHASE-NNN` validates the Phase brief plus every detailed Spec, Plan, Task, dependency, coverage link, verification-intent/evidence contract, and the consistency of declared Phase Closure Verification. It does not modify application source.
+- Automatic final review still occurs per Spec inside delivery. `review PHASE-NNN` is an explicit review-only aggregate that reads each Spec's canonical review report and Phase Closure Verification evidence without duplicating Spec review state or unexpectedly changing code.
+- `status` remains read-only and computes Roadmap, Phase, Spec, Task, blocker, evidence, checkpoint, correction, review, Phase acceptance state, and last loop-result state from artifacts. It recommends `/exspecso-implement PHASE-NNN` when `stage: phase-acceptance` has pending or needs-retest work, without silently repairing project truth.
+
+## Deterministic Helper Surface
+
+The following are internal deterministic helper operations, not new public slash commands:
+
+- `phase-closure-check` resolves and evaluates declared Phase Closure Verification evidence, including what may be reused from Task or Spec scope.
+- `phase-acceptance-status` reads and validates lazy `acceptance.md` state, including `PAC-NNN` statuses and resumability.
+- `phase-acceptance-record` records an acceptance result with concise user failure evidence and updates only the affected durable check state.
+
+These helpers preserve the separation between canonical artifacts, deterministic bookkeeping, and runtime orchestration. They do not authorize a builder to weaken, delete, skip, or reinterpret approved verification.
+
+## Conformance Obligations
+
+The conformance fixture suite must prove:
+
+- **no-human closure:** a Phase with no residual human checks can pass Phase Closure Verification and complete without creating `acceptance.md`;
+- **batched/resumable acceptance:** actionable `PAC-NNN` checks batch by default and a fresh session resumes only pending or needs-retest checks from durable state;
+- **selective retest:** a bounded approved-intent correction invalidates only acceptance checks made stale and preserves unrelated passed evidence;
+- **plan-gap routing:** missing or changed intent records `blocking-plan-gap`, keeps the Phase incomplete, returns `needs-plan-revision`, and routes to `/exspecso-plan PHASE-NNN`.
 
 ## Required Planning-Document Changes
 
@@ -181,6 +242,11 @@ The existing GSD artifacts must be updated so that:
 - public planning targets a Phase and deep-plans all its Specs;
 - public implementation targets a Phase and preserves internal Spec/Task boundaries;
 - Phase readiness, one-READY-Spec selection, Phase-level WIP, Spec-boundary step mode, Phase closure, completion, rerun, and aggregate review are explicitly required;
+- Task Verification, optional Spec Closure Verification, and Phase Closure Verification form one hierarchy; Human Phase Acceptance is only the residual human-facing portion of Phase Closure Verification;
+- lazy durable acceptance state, `PAC-NNN` checks, `stage: phase-acceptance`, pending/needs-retest resume, default batching, and required sequential exceptions are explicit;
+- approved-intent failures use bounded correction and selective stale-evidence invalidation, while missing or changed intent becomes `blocking-plan-gap` and returns `needs-plan-revision` through Phase planning;
+- Phase completion requires all Specs done, all closure evidence and required acceptance passed, and no unresolved blocking plan gap;
+- deterministic helper operations and fixtures cover phase-closure-check, phase-acceptance-status, phase-acceptance-record, no-human closure, batched/resumable acceptance, selective retest, and plan-gap routing;
 - Spec-scoped delivery remains an internal loop rather than the user-facing command boundary;
 - automatic sequential multi-Spec orchestration inside one approved Phase is V1 scope, while automatic parallel multi-Spec or multi-Phase execution remains deferred;
 - the six-phase build roadmap is retained unless requirement coverage proves a different phase boundary necessary;
