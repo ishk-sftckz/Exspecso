@@ -2,7 +2,7 @@
 
 ## Overview
 
-Exspecso reaches V1 through a contract-led vertical spine: initialize an inspectable repository-native project, make its state deterministic, turn approved direction into a lightweight Phase/Spec Roadmap and one completely planned Phase, deliver that Phase through bounded internal Spec loops and evidence gates, prove recovery and traceability, then ship the same workflow across Claude Code, Codex, and OpenCode. Canonical public command notation remains `/exspecso-<operation>`; every adapter preserves the portable `exspecso-<operation>` skill ID and changes only a host-owned sigil when unavoidable.
+Exspecso reaches V1 through a contract-led vertical spine: initialize an inspectable repository-native project, make its state deterministic, turn approved direction into a lightweight Phase/Spec Roadmap and one completely planned Phase, deliver that Phase through bounded internal Spec loops and an explicit Task → optional Spec → Phase verification hierarchy, prove resumable Phase Closure Verification and recovery, then ship the same workflow across Claude Code, Codex, and OpenCode. Human Phase Acceptance is only the residual human-facing part of Phase Closure Verification when integrated outcomes cannot otherwise be proven. Canonical public command notation remains `/exspecso-<operation>`; every adapter preserves the portable `exspecso-<operation>` skill ID and changes only a host-owned sigil when unavoidable.
 
 ## Phases
 
@@ -31,10 +31,10 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   1. A user can run `npx exspecso init` from either a repository root or nested directory and have the containing Git repository initialized correctly.
   2. A user can choose detected Claude Code, OpenAI Codex, and/or OpenCode integrations and receives only the native adapter files for those selections.
   3. A user can rerun initialization to add or refresh adapters without replacing confirmed canonical project artifacts.
-  4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
+  4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs—including canonical `FIND-NNN` findings and `PAC-NNN` Phase Acceptance Checks—in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 23/23 plans executed are implementation-complete; independent Phase 1 verification remains pending under the pure TypeScript/Node architecture correction
+**Plans**: 23/23 plans executed are implementation-complete; the current real-TTY UAT remains valid and in progress. Before Phase 1 can close, targeted gap planning must align the stable-ID foundation with canonical `FIND-NNN` and `PAC-NNN`; unaffected implementation and UAT evidence remains valid.
 
 Plans:
 
@@ -121,20 +121,21 @@ Plans:
 
 - [x] 01-18-PLAN.md — Verify representative compatibility and installed-package behavior, document the safety boundary, and hand off phase verification
 
-**Cross-cutting constraints:** Preserve all completed initializer, canonical-artifact, recovery, packaging, and three-adapter contracts while shipping one pure TypeScript/Node package. Repository-root scoping, deterministic component and symlink validation, preimage checks, journaled atomic writes, conservative recovery, and Git checkpoints remain required. Claude Code, Codex, and OpenCode host permissions and sandboxes are the OS-level security boundary; Exspecso does not claim kernel-level, race-proof, hostile same-user, or universal filesystem containment. Routine CI covers a small representative set of supported OS families and Node boundary/LTS versions. Exact runner, compiler, libc, and package versions remain provenance rather than runtime compatibility requirements. Historical native containment and certification evidence is retained, but native providers, exhaustive cross-products, and an 80-job certification run are outside Phase 1/V1. No publishing or Phase 2 advancement before independent closure.
+**Cross-cutting constraints:** Preserve all completed initializer, canonical-artifact, recovery, packaging, and three-adapter contracts while shipping one pure TypeScript/Node package. Repository-root scoping, deterministic component and symlink validation, preimage checks, journaled atomic writes, conservative recovery, and Git checkpoints remain required. Claude Code, Codex, and OpenCode host permissions and sandboxes are the OS-level security boundary; Exspecso does not claim kernel-level, race-proof, hostile same-user, or universal filesystem containment. Routine CI covers a small representative set of supported OS families and Node boundary/LTS versions. Exact runner, compiler, libc, and package versions remain provenance rather than runtime compatibility requirements. Historical native containment and certification evidence is retained, but native providers, exhaustive cross-products, and an 80-job certification run are outside Phase 1/V1. The 2026-08-31 v13 ingest adds only the narrow canonical stable-ID gap to Phase 1; it does not invalidate the active real-TTY UAT or reopen unrelated verified work. No publishing or Phase 2 advancement before independent closure.
 
 ### Phase 2: Build the Project Truth Engine
 
 **Goal**: Users can build and prove a deterministic engine that resolves canonical artifacts, validates relationships and dependencies, calculates readiness and status, selects operation context, and reconstructs the next correct action without chat memory.
 **Mode:** mvp
 **Depends on**: Phase 1
-**Requirements**: CTRL-01, CTRL-02, CTRL-03, CTRL-04, CTRL-05, CTRL-06, CTRL-07, CTRL-08, CTRL-11, CTRL-12, CTRL-13, CTRL-14, CTRL-15
+**Requirements**: ART-10, CTRL-01, CTRL-02, CTRL-03, CTRL-04, CTRL-05, CTRL-06, CTRL-07, CTRL-08, CTRL-11, CTRL-12, CTRL-13, CTRL-14, CTRL-15, CTRL-16
 **Success Criteria** (what must be TRUE):
 
   1. Before Phase 3 begins, a maintainer can run hand-authored fixture projects based on Phase 1's frozen Roadmap, Phase, Spec, Task, status, dependency, and Decision contracts and receive deterministic canonical-reference resolution and relationship-validation results.
   2. On the same fixture project, a user in a cold session receives operation-specific, smallest-sufficient context, can request structured context escalation, and can reconstruct the next correct Phase, Spec, or Task action from computed readiness and status.
   3. A user receives explicit fixture-backed errors for unknown or cyclic Phase, Spec, and Task dependencies; incomplete dependencies block delivery but not planning, declared order remains only a preference among equally ready work, and default activation allows one Spec loop per Phase plus one Task per selected Spec.
   4. A user can create and supersede meaningful `DEC-NNN` records with linked rationale, and the engine selects only relevant durable Decision sections instead of routine activity or naming details.
+  5. The engine validates lazy Phase `acceptance.md`, computes `stage: phase-acceptance`, resolves stable `PAC-NNN` state, and exposes deterministic Phase closure/acceptance status and record operations without relying on chat memory.
 
 **Plans**: TBD
 
@@ -150,7 +151,7 @@ Plans:
   2. After confirmation, a user receives a Brief, applicable Standards, and one stable `ROADMAP` at `.exspecso/roadmap.md` containing the smallest complete Phase map and a lightweight Spec map for every Phase, while no Phase or detailed Spec artifacts are created.
   3. A user can resume interrupted orientation from persisted state and later run `/exspecso-plan PHASE-NNN` only for a Roadmap-declared Phase.
   4. Phase planning validates or refines the Roadmap Spec map, materializes the Phase, and deeply plans every declared Spec into its own bounded Spec, Plan, Task, and status family.
-  5. The Phase becomes implementation-ready only after complete parent-to-child coverage, verification intent for every Acceptance Criterion, explicit dependency validation, and user confirmation of the Phase brief and all detailed Spec families; planning changes no application source.
+  5. The Phase becomes implementation-ready only after complete parent-to-child coverage, verification intent for every Acceptance Criterion, explicit dependency validation, and user confirmation of the Phase brief and all detailed Spec families; any declared Phase Closure Verification targets integrated cross-Spec outcomes, reuses sufficiently strong lower-level evidence, and identifies human checks only for outcomes that genuinely require the user. Planning changes no application source.
 
 **Plans**: TBD
 
@@ -159,14 +160,16 @@ Plans:
 **Goal**: Users can execute one approved Phase as a finite outer Delivery Loop that serially selects READY Specs and preserves each Spec's bounded Task, evidence, correction, checkpoint, closure, and review contracts.
 **Mode:** mvp
 **Depends on**: Phase 3
-**Requirements**: CTRL-09, CTRL-10, DELV-01, DELV-02, DELV-03, DELV-04, DELV-05, DELV-06, DELV-07, DELV-08, DELV-09, DELV-10, DELV-11, DELV-12, DELV-13, DELV-14, DELV-15, DELV-16, DELV-17, DELV-18, DELV-19, DELV-21, DELV-22, DELV-23, DELV-24
+**Requirements**: CTRL-09, CTRL-10, DELV-01, DELV-02, DELV-03, DELV-04, DELV-05, DELV-06, DELV-07, DELV-08, DELV-09, DELV-10, DELV-11, DELV-12, DELV-13, DELV-14, DELV-15, DELV-16, DELV-17, DELV-18, DELV-19, DELV-21, DELV-22, DELV-23, DELV-24, DELV-25, DELV-26
 **Success Criteria** (what must be TRUE):
 
   1. A user can start `/exspecso-implement PHASE-NNN` only for an approved, fully planned, dependency-ready Phase and receives an explicit blocked result naming unmet readiness conditions otherwise.
   2. The Phase Loop deterministically selects one READY incomplete Spec, runs one bounded internal Spec Delivery Loop, and recomputes readiness after each completed Spec; continuous mode proceeds while step mode pauses at a completed Spec boundary.
   3. Within the selected Spec, only one sequential Task is active by default, implementation remains inside approved scope and evidence, and out-of-scope discoveries are deferred or escalated rather than silently implemented.
   4. Every Task receives fitting evidence and a verified durable checkpoint; each Spec receives required closure verification and independent review before becoming done.
-  5. After all Specs are done, required Phase integration or closure evidence controls Phase completion, and re-invoking an already complete Phase returns one explainable `completed` result without repeating accepted work.
+  5. After all Specs are done, Phase Closure Verification reuses sufficiently strong Task/Spec proof, runs executable/system/browser/visual/external evidence first, and creates Human Phase Acceptance only for the remaining integrated outcomes that require user judgment or real-world confirmation.
+  6. Pending human checks are persisted in lazy `acceptance.md`, presented as one actionable batch by default, and keep the Phase `in-progress` at `stage: phase-acceptance`; the Phase becomes `done` only after all closure evidence passes and no unresolved `blocking-plan-gap` remains.
+  7. Re-invoking an already complete Phase returns one explainable `completed` result without repeating accepted work.
 
 **Plans**: TBD
 
@@ -175,14 +178,15 @@ Plans:
 **Goal**: Users can recover correctable failures and interruptions without losing scope or proof, then trace, review, and inspect the resulting truthful completion state.
 **Mode:** mvp
 **Depends on**: Phase 4
-**Requirements**: DELV-20, REC-01, REC-02, REC-03, REC-04, REC-05, REC-06, CONT-01, CONT-02, CONT-03, CONT-04, CONT-05, CONT-06, CONT-07, TRACE-01, TRACE-02, TRACE-03, TRACE-04, TRACE-05, TRACE-06, TRACE-07, TRACE-08
+**Requirements**: DELV-20, REC-01, REC-02, REC-03, REC-04, REC-05, REC-06, REC-07, REC-08, CONT-01, CONT-02, CONT-03, CONT-04, CONT-05, CONT-06, CONT-07, CONT-08, TRACE-01, TRACE-02, TRACE-03, TRACE-04, TRACE-05, TRACE-06, TRACE-07, TRACE-08
 **Success Criteria** (what must be TRUE):
 
   1. A user receives a bounded Assess → Learn → Patch → Reverify Correction Loop that reruns the original evidence contract, records its episode, and visibly stops or escalates at defined limits.
   2. A correctable review finding reopens only the smallest affected Task and Acceptance Criteria, refreshes its verified checkpoint and trace, then reruns affected closure verification and review.
-  3. A user can interrupt incomplete work, retain lightweight validated resume state, and resume the first incomplete Task without falsely marking it complete or rerunning accepted checkpoints.
+  3. A user can interrupt incomplete work, retain lightweight validated resume state, and resume the first incomplete Task without falsely marking it complete or rerunning accepted checkpoints; a fresh `/exspecso-implement PHASE-NNN` also resumes durable Phase Acceptance with only `pending` or `needs-retest` checks.
   4. A user can trace every implemented Requirement through criterion, Task, changed files, evidence, checkpoint, and final status; missing links produce a trace failure.
-  5. A user can run `/exspecso-status` to see artifact-derived delivery state and one concrete next command, or run `/exspecso-review PHASE-NNN` for a review-only aggregate that preserves each Spec's canonical review state.
+  5. A failed human check within approved intent reopens only the smallest affected work, selectively invalidates stale closure/acceptance evidence, and returns to Phase Acceptance; a failure exposing missing or changed intent creates `blocking-plan-gap` and returns `needs-plan-revision` through Phase planning.
+  6. A user can run `/exspecso-status` to see artifact-derived delivery and acceptance progress plus one concrete next command, or run `/exspecso-review PHASE-NNN` for a review-only aggregate that preserves each Spec's canonical review state.
 
 **Plans**: TBD
 
@@ -198,7 +202,7 @@ Plans:
   2. A user can switch among supported runtimes or refresh an adapter through `init` without migrating or recreating canonical project state, IDs, relationships, statuses, or lifecycle semantics.
   3. A user can revise approved artifacts through `/exspecso-update` and add a validated, confirmed `PHASE-NNN` plus its lightweight Spec map through `/exspecso-new-phase`, while direction-changing work is routed to update first and no second Roadmap is created.
   4. A user receives safe, explainable rerun behavior for malformed state, interrupted writes, dirty working trees, and external Git drift, without duplicate artifacts or corrupted confirmed state.
-  5. A user can install one documented npm package, follow greenfield and brownfield examples, and rely on shared conformance fixtures that cover all runtimes, recovery paths, cross-runtime continuation, and measured resume cost.
+  5. A user can install one documented npm package, follow greenfield and brownfield examples, and rely on shared conformance fixtures that cover all runtimes, no-human Phase closure, batched and resumable Human Phase Acceptance, selective retest, plan-gap routing, recovery paths, cross-runtime continuation, and measured resume cost.
 
 **Plans**: TBD
 

@@ -5,10 +5,10 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
 status: executing
-stopped_at: Completed 01-23-PLAN.md; independent Phase 1 verification next
-last_updated: "2026-08-30T14:16:35.686Z"
-last_activity: 2026-08-30
-last_activity_desc: "Completed quick task 260830-tjt: synchronized local Documentation v13 Phase Closure Verification and Human Phase Acceptance sources"
+stopped_at: "Phase 1 real-TTY UAT remains in progress; targeted FIND-NNN/PAC-NNN gap planning is required before Phase closure"
+last_updated: "2026-08-31T11:52:35Z"
+last_activity: 2026-08-31
+last_activity_desc: "Merged Documentation v13 Phase Closure Verification and Human Phase Acceptance into project requirements and roadmap"
 progress:
   total_phases: 1
   completed_phases: 0
@@ -20,7 +20,7 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-08-26)
+See: .planning/PROJECT.md (updated 2026-08-31)
 
 **Core value:** Approved specs must survive context limits, implementation, failure, verification, runtime changes, and session boundaries without losing intent or allowing unproven work to count as complete.
 **Current focus:** Phase 01 — initialize-canonical-projects
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-08-26)
 
 Phase: 01 (initialize-canonical-projects) — EXECUTING
 Plan: 23 of 23
-Status: Awaiting independent phase verification
-Last activity: 2026-08-30 — Completed quick task 260830-tjt: synchronized local Documentation v13 Phase Closure Verification and Human Phase Acceptance sources
+Status: Real-TTY UAT in progress; canonical stable-ID gap queued before closure
+Last activity: 2026-08-31 — Merged Documentation v13 Phase Closure Verification and Human Phase Acceptance into project requirements and roadmap
 
-Plan execution: 23 plans are implementation-complete (23 total). Plan 01-23 restores portable child-component validation across the active pure-TypeScript/Node filesystem boundary; independent Phase 1 verification remains the next gate before Phase completion.
+Plan execution: 23 plans are implementation-complete (23 total). Plan 01-23 restores portable child-component validation across the active pure-TypeScript/Node filesystem boundary. The existing real-TTY UAT remains valid and in progress. The 2026-08-31 canonical ingest adds a narrow `FIND-NNN` / `PAC-NNN` stable-ID gap that requires targeted planning before Phase completion; it does not reopen unaffected work or require the UAT to restart.
 
 ### Active Execution — Pure TypeScript/Node architecture correction
 
@@ -204,6 +204,7 @@ None yet.
 - Pathname-based promotion can follow a post-validation symlink swap outside the repository (ART-07); evidence is a reproduced copy primitive plus reachable code path, not a full CLI race.
 - Plans 01-09 and 01-10 are complete. Phase 1 remains incomplete.
 - All Phase 1 plans are implementation-complete. Hand the resulting pure TypeScript/Node package to independent Phase 1 verification before any Phase completion claim; completed Plans 01-19/01-20 and their summaries remain immutable historical evidence and are not TypeScript-path proof.
+- Documentation v13 now requires canonical `FIND-NNN` and `PAC-NNN` stable IDs. Preserve the active real-TTY UAT result, then create the smallest targeted Phase 1 gap plan for the artifact-ID foundation before claiming Phase completion. Durable `acceptance.md` lifecycle mechanics remain assigned to Phase 2 and later.
 - Reports: `01-REVIEW.md` and `01-VERIFICATION.md` in `.planning/phases/01-initialize-canonical-projects/`.
 
 ### Quick Tasks Completed
@@ -224,6 +225,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-30T07:40:38.030Z
-Stopped at: Completed 01-23-PLAN.md; independent Phase 1 verification next
+Last session: 2026-08-31T11:52:35Z
+Stopped at: Phase 1 real-TTY UAT remains in progress; targeted `FIND-NNN` / `PAC-NNN` gap planning is required before Phase closure
 Resume file: None
