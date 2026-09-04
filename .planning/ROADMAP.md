@@ -29,7 +29,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
 **Success Criteria** (what must be TRUE):
 
   1. A user can run `npx exspecso init` from either a repository root or nested directory and have the containing Git repository initialized correctly.
-  2. A user can choose detected Claude Code, OpenAI Codex, and/or OpenCode integrations and receives only the native adapter files for those selections.
+  2. A user can choose from the offered Claude Code, OpenAI Codex, and OpenCode integrations, each presented equally and unchecked without installed-agent detection or suggestions, and receives only the native adapter files for those selections.
   3. A user can rerun initialization to add or refresh adapters without replacing confirmed canonical project artifacts.
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs—including canonical `FIND-NNN` findings and `PAC-NNN` Phase Acceptance Checks—in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.

@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { realpathSync } from "node:fs";
 import { parseInitArguments } from "./arguments.js";
 import { runInit } from "../init/run-init.js";
-import { detectAgents, resolveSelectedAgents } from "../init/runtime-selection.js";
+import { resolveSelectedAgents } from "../init/runtime-selection.js";
 
 export async function main(argv: string[] = process.argv.slice(2)): Promise<number> {
   if (argv[0] !== "init") {
@@ -25,7 +25,6 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<numb
           argvAgents: parsedArguments.replaceAgents,
           isInputTTY: false,
           isOutputTTY: false,
-          detectedAgents: [],
         });
     if (replacementSelection.kind === "invalid") {
       process.stderr.write(`${replacementSelection.code}: ${replacementSelection.message}\n`);
@@ -40,7 +39,6 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<numb
       argvAgents: parsedArguments.agents,
       isInputTTY: process.stdin.isTTY === true,
       isOutputTTY: process.stdout.isTTY === true,
-      detectedAgents: detectAgents(),
     });
     if (selection.kind === "invalid") {
       process.stderr.write(`${selection.code}: ${selection.message}\n`);

@@ -25,7 +25,6 @@ export type AgentPromptResult = readonly string[] | { cancelled: true };
 export type AgentPrompt = (choices: readonly AgentChoice[]) => Promise<AgentPromptResult>;
 
 export interface InteractiveSelectionInput {
-  detectedAgents: readonly AgentId[];
   prompt: AgentPrompt;
   onEmptySelection?: (message: string) => void;
 }
@@ -34,7 +33,6 @@ export interface ResolveSelectedAgentsInput {
   argvAgents: readonly string[];
   isInputTTY: boolean;
   isOutputTTY: boolean;
-  detectedAgents: readonly AgentId[];
   prompt?: AgentPrompt;
   onEmptySelection?: (message: string) => void;
 }
@@ -45,11 +43,10 @@ function isAgentId(value: string): value is AgentId {
   return SUPPORTED_AGENTS.includes(value as AgentId);
 }
 
-function choicesFor(detectedAgents: readonly AgentId[]): AgentChoice[] {
-  const detected = new Set(detectedAgents);
+function choicesFor(): AgentChoice[] {
   return SUPPORTED_AGENTS.map((agent) => ({
     value: agent,
-    name: `${agentNames[agent]}${detected.has(agent) ? " (detected)" : ""}`,
+    name: agentNames[agent],
     checked: false,
   }));
 }
@@ -80,20 +77,6 @@ function normalizeSubmittedAgents(agents: readonly string[]): SelectionResult {
   return { kind: "selected", agents: selected };
 }
 
-export function detectAgents(environment: NodeJS.ProcessEnv = process.env): AgentId[] {
-  const detected: AgentId[] = [];
-  if (environment.CLAUDECODE !== undefined || environment.CLAUDE_CODE !== undefined) {
-    detected.push("claude");
-  }
-  if (environment.CODEX_HOME !== undefined || environment.CODEX !== undefined) {
-    detected.push("codex");
-  }
-  if (environment.OPENCODE !== undefined) {
-    detected.push("opencode");
-  }
-  return detected;
-}
-
 export async function promptForAgents(choices: readonly AgentChoice[]): Promise<AgentPromptResult> {
   try {
     return await checkbox({
@@ -111,7 +94,7 @@ export async function promptForAgents(choices: readonly AgentChoice[]): Promise<
 }
 
 export async function chooseAgentsInteractively(input: InteractiveSelectionInput): Promise<SelectionResult> {
-  const choices = choicesFor(input.detectedAgents);
+  const choices = choicesFor();
   while (true) {
     const submitted = await input.prompt(choices);
     if (typeof submitted === "object" && "cancelled" in submitted) {
@@ -131,7 +114,6 @@ export async function resolveSelectedAgents(input: ResolveSelectedAgentsInput): 
   }
 
   return chooseAgentsInteractively({
-    detectedAgents: input.detectedAgents,
     prompt: input.prompt ?? promptForAgents,
     onEmptySelection: input.onEmptySelection,
   });

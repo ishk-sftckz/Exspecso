@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   SUPPORTED_AGENTS,
   chooseAgentsInteractively,
-  detectAgents,
   resolveSelectedAgents,
   type AgentChoice,
 } from "../../src/init/runtime-selection.js";
@@ -11,7 +10,6 @@ describe("runtime selection", () => {
   it("presents every runtime in stable order and unchecked without detection metadata", async () => {
     const promptCalls: AgentChoice[][] = [];
     const result = await chooseAgentsInteractively({
-      detectedAgents: ["codex"],
       prompt: async (choices) => {
         promptCalls.push(choices);
         return ["claude", "opencode"];
@@ -34,7 +32,6 @@ describe("runtime selection", () => {
     const submissions: Array<readonly string[] | { cancelled: true }> = [[], { cancelled: true }];
 
     const result = await chooseAgentsInteractively({
-      detectedAgents: [],
       prompt: async () => submissions.shift() ?? { cancelled: true },
       onEmptySelection: (message) => notices.push(message),
     });
@@ -52,7 +49,6 @@ describe("runtime selection", () => {
       argvAgents: ["claude", "codex", "opencode"],
       isInputTTY: false,
       isOutputTTY: false,
-      detectedAgents: ["codex"],
       prompt,
     });
 
@@ -65,7 +61,6 @@ describe("runtime selection", () => {
         argvAgents: [],
         isInputTTY: false,
         isOutputTTY: false,
-        detectedAgents: [],
       }),
     ).resolves.toEqual({
       kind: "invalid",
@@ -78,7 +73,6 @@ describe("runtime selection", () => {
         argvAgents: ["codex", "unknown", "claude"],
         isInputTTY: false,
         isOutputTTY: false,
-        detectedAgents: [],
       }),
     ).resolves.toEqual({
       kind: "invalid",
@@ -96,11 +90,4 @@ describe("runtime selection", () => {
     ).resolves.toEqual({ kind: "selected", agents: ["codex", "claude"] });
   });
 
-  it("detects only runtime availability labels", () => {
-    expect(detectAgents({ CLAUDECODE: "1", CODEX_HOME: "/tmp/codex", OPENCODE: "1" })).toEqual([
-      "claude",
-      "codex",
-      "opencode",
-    ]);
-  });
 });

@@ -20,7 +20,7 @@ Phase 1 delivers the repository-local foundation for Exspecso: one idempotent np
 - **D-04:** Project identity is an opaque globally unique ID. The human-readable project title is separate and editable. — **Reversibility:** costly — changing an issued project ID would require updating persisted references and could break continuity across repository copies or runtime handoffs.
 
 ### Runtime selection experience
-- **D-05:** Interactive init always shows Claude Code, OpenAI Codex, and OpenCode. Every option starts unchecked; detection is an informational label only and never selects on the user's behalf.
+- **D-05:** Interactive init always shows Claude Code, OpenAI Codex, and OpenCode in that stable order. Every option starts unchecked; G-01-1 supersedes the former informational installed-agent-detection label clause, so no environment detection or suggestions appear and only the user's submitted selection has authority.
 - **D-06:** At least one runtime is required. Submitting an empty selection keeps the selector open with an explanation and permits explicit cancellation.
 - **D-07:** Non-interactive terminals and scripts use repeatable --agent flags. Interactive terminals retain the checkbox selector.
 - **D-08:** Successful init shows /exspecso-start as the canonical next operation, then shows only the exact native invocation for each selected runtime, such as $exspecso-start for Codex.
