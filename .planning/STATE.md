@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
 status: executing
-stopped_at: Phase 1 real-TTY UAT remains in progress; targeted FIND-NNN/PAC-NNN gap planning is required before Phase closure
-last_updated: "2026-09-04T14:39:28.637Z"
-last_activity: 2026-08-31
-last_activity_desc: Merged Documentation v13 Phase Closure Verification and Human Phase Acceptance into project requirements and roadmap
+stopped_at: Completed 01-24-PLAN.md
+last_updated: "2026-09-04T16:19:04.727Z"
+last_activity: 2026-09-04
+last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 27
-  completed_plans: 23
+  completed_plans: 24
 ---
 
 # Project State
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-08-31)
 ## Current Position
 
 Phase: 01 (initialize-canonical-projects) — EXECUTING
-Plan: 23 of 23
-Status: Real-TTY UAT in progress; canonical stable-ID gap queued before closure
-Last activity: 2026-08-31 — Merged Documentation v13 Phase Closure Verification and Human Phase Acceptance into project requirements and roadmap
+Plan: 2 of 25
+Status: Ready to execute
+Last activity: 2026-09-04 — Phase 01 execution started
 
 Plan execution: 23 plans are implementation-complete (23 total). Plan 01-23 restores portable child-component validation across the active pure-TypeScript/Node filesystem boundary. The existing real-TTY UAT remains valid and in progress. The 2026-08-31 canonical ingest adds a narrow `FIND-NNN` / `PAC-NNN` stable-ID gap that requires targeted planning before Phase completion; it does not reopen unaffected work or require the UAT to restart.
 
@@ -133,6 +133,7 @@ The records below preserve the investigation history. Their native-provider, exh
 | Phase 01-initialize-canonical-projects P21 | 17min | 2 tasks | 6 files |
 | Phase 01 P22 | 5min | 3 tasks | 8 files |
 | Phase 01 P23 | 7min | 2 tasks | 2 files |
+| Phase 01-initialize-canonical-projects P24 | 268s | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -192,6 +193,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Non-positive synchronous writes fail closed with EXSPECSO_CONTAINMENT_CHANGED before retrying.
 - [Phase ?]: Keep portable-name validation in the existing private component()/components() seam without platform branches or a new export.
 - [Phase ?]: Use an invalid later reader component behind a symlink sentinel to prove complete validation precedes traversal.
+- [Phase ?]: G-01-1 removes D-05 runtime detection labels while preserving stable unchecked explicit selection.
+- [Phase ?]: Ambient agent variables have no runtime-selection or adapter-write authority.
 
 ### Pending Todos
 
@@ -225,6 +228,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-08-31T11:52:35Z
-Stopped at: Phase 1 real-TTY UAT remains in progress; targeted `FIND-NNN` / `PAC-NNN` gap planning is required before Phase closure
+Last session: 2026-09-04T16:19:04.712Z
+Stopped at: Completed 01-24-PLAN.md
 Resume file: None
