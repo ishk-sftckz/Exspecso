@@ -120,7 +120,7 @@ function invalidDeclarationDiagnostic(path: string, section: "id" | "parent", va
     section,
     expected: "ROADMAP or one exact D-20 ID family",
     actual: rawDeclarationValue(value),
-    hint: "Use ROADMAP, PHASE-NNN, SPEC-NNN, REQ-NNN, AC-NNN, PLAN-NNN, TASK-NNN, DEC-NNN, or FINDING-NNN exactly.",
+    hint: "Use ROADMAP, PHASE-NNN, SPEC-NNN, REQ-NNN, AC-NNN, PLAN-NNN, TASK-NNN, DEC-NNN, FIND-NNN, or PAC-NNN exactly.",
   };
 }
 
@@ -253,7 +253,7 @@ function invalidIdDiagnostic(id: string): Diagnostic {
   return {
     code: "EXSPECSO_ARTIFACT_INVALID_ID",
     path: ".",
-    expected: "ROADMAP or one of PHASE-NNN, SPEC-NNN, REQ-NNN, AC-NNN, PLAN-NNN, TASK-NNN, DEC-NNN, FINDING-NNN",
+    expected: "ROADMAP or one of PHASE-NNN, SPEC-NNN, REQ-NNN, AC-NNN, PLAN-NNN, TASK-NNN, DEC-NNN, FIND-NNN, PAC-NNN",
     actual: id || "blank",
     hint: "Use one exact D-20 stable ID family; aliases are not supported.",
   };

@@ -124,8 +124,8 @@ describe("canonical artifact contracts", () => {
       expect.objectContaining({ id: "FIND-001", artifactKind: "FIND" }),
       expect.objectContaining({ id: "PAC-001", artifactKind: "PAC" }),
     ]));
-    expect(results[8]).toMatchObject({ location: { kind: "section", path: ".exspecso/definitions.md", heading: "## FIND-001 A hand-authored finding", startLine: 10, endLine: 12 } });
-    expect(results[9]).toMatchObject({ location: { kind: "section", path: ".exspecso/definitions.md", heading: "## PAC-001 A hand-authored Phase Acceptance Check", startLine: 13, endLine: 14 } });
+    expect(results[8]).toMatchObject({ location: { kind: "section", path: ".exspecso/definitions.md", heading: "## FIND-001 A hand-authored finding", startLine: 9, endLine: 11 } });
+    expect(results[9]).toMatchObject({ location: { kind: "section", path: ".exspecso/definitions.md", heading: "## PAC-001 A hand-authored Phase Acceptance Check", startLine: 12, endLine: 13 } });
   });
 
   it("keeps identity stable across title changes and declaration reordering, but fails closed for duplicates", async () => {
