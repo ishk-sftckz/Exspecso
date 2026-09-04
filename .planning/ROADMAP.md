@@ -34,9 +34,11 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
   4. A user can inspect, address, rename, and resolve canonical artifacts through stable IDs—including canonical `FIND-NNN` findings and `PAC-NNN` Phase Acceptance Checks—in ordinary repository Markdown and JSON files, with no database or hidden duplicate projection required.
   5. An interrupted atomic write preserves the previous valid artifact set, and direct invalid artifact edits produce explicit validation errors.
 
-**Plans**: 23/24 plans executed; Plan 01-24 is ready to close the detection-label UAT gap. Before Phase 1 can close, targeted gap planning must also align the stable-ID foundation with canonical `FIND-NNN` and `PAC-NNN`; unaffected implementation evidence remains valid.
+**Plans**: 23/25 plans executed; Plan 01-24 closes the detection-label UAT gap and Plan 01-25 aligns the stable-ID foundation with canonical `FIND-NNN` and `PAC-NNN`; unaffected implementation evidence remains valid.
 
 Plans:
+
+- [ ] 01-25-PLAN.md — Align the closed stable-ID registry and resolver with canonical FIND-NNN findings and PAC-NNN Phase Acceptance Checks
 
 - [ ] 01-24-PLAN.md — Remove installed-agent detection from runtime selection while preserving explicit subset-only adapter installation
 
@@ -215,7 +217,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Initialize Canonical Projects | 23/23 | In Progress|  |
+| 1. Initialize Canonical Projects | 23/25 | In Progress|  |
 | 2. Build the Project Truth Engine | 0/TBD | Not started | - |
 | 3. Orient and Plan One Approved Phase | 0/TBD | Not started | - |
 | 4. Deliver One Approved Phase | 0/TBD | Not started | - |
