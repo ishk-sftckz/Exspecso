@@ -3,7 +3,7 @@ status: diagnosed
 phase: 01-initialize-canonical-projects
 source: [01-VERIFICATION.md]
 started: 2026-08-30T08:08:17Z
-updated: 2026-09-04T14:01:19Z
+updated: 2026-09-04T14:02:40Z
 ---
 
 ## Current Test
@@ -14,7 +14,7 @@ updated: 2026-09-04T14:01:19Z
 
 ### 1. Real TTY runtime selection
 
-expected: Run the packed initializer in a real TTY with detection enabled and confirm that choices start unchecked, detection affects labels only, empty or cancelled input writes nothing, and a submitted subset writes only its selected native adapter files.
+expected: Run the packed initializer in a real TTY and confirm that Claude Code, OpenAI Codex, and OpenCode appear as equal unchecked choices without installed-agent detection or labels; empty or cancelled input writes nothing; and a submitted subset writes only its selected native adapter files.
 result: issue
 reported: "Okay it works, but after tested, i think, we should not detect the installed ai agents, we just provide options and let user chooose what ai agent to install."
 severity: minor
