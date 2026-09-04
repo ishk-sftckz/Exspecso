@@ -51,7 +51,7 @@ describe("canonical artifact contracts", () => {
     expect(renderConstitution()).toBe(`# Exspecso Constitution\n\n## Artifact truth\nRepository files are the inspectable source of project truth.\n\n## Human control\nPeople approve intent, scope, and meaningful tradeoffs.\n\n## Evidence integrity\nCompletion claims require evidence that matches the behavior claimed.\n\n## Bounded scope\nWork stays within approved requirements and explicit recovery limits.\n\n## Runtime portability\nSupported coding runtimes share one portable Exspecso artifact model.\n`);
   });
 
-  it("recognizes exactly the nine D-20 public ID families and rejects aliases", async () => {
+  it("recognizes exactly the ten D-20 public ID families and rejects aliases", async () => {
     expect(Object.keys(ARTIFACT_ID_PATTERNS)).toEqual([
       "ROADMAP",
       "PHASE",
@@ -61,11 +61,12 @@ describe("canonical artifact contracts", () => {
       "PLAN",
       "TASK",
       "DEC",
-      "FINDING",
+      "FIND",
+      "PAC",
     ]);
 
     const root = await fixture();
-    await write(root, "ids.md", "# ROADMAP\n# PHASE-001\n# SPEC-001\n# REQ-001\n# AC-001\n# PLAN-001\n# TASK-001\n# DEC-001\n# FINDING-001\n# REQUIREMENT-001\n");
+    await write(root, "ids.md", "# ROADMAP\n# PHASE-001\n# SPEC-001\n# REQ-001\n# AC-001\n# PLAN-001\n# TASK-001\n# DEC-001\n# FIND-001\n# PAC-001\n# FINDING-001\n# REQUIREMENT-001\n");
     const definitions = await scanArtifactDefinitions(root);
 
     expect(definitions.map((definition) => definition.id)).toEqual([
@@ -77,9 +78,14 @@ describe("canonical artifact contracts", () => {
       "PLAN-001",
       "TASK-001",
       "DEC-001",
-      "FINDING-001",
+      "FIND-001",
+      "PAC-001",
     ]);
     await expect(resolveArtifact(root, "REQUIREMENT-001")).resolves.toMatchObject({
+      kind: "not-found",
+      diagnostics: [{ code: "EXSPECSO_ARTIFACT_INVALID_ID" }],
+    });
+    await expect(resolveArtifact(root, "FINDING-001")).resolves.toMatchObject({
       kind: "not-found",
       diagnostics: [{ code: "EXSPECSO_ARTIFACT_INVALID_ID" }],
     });
@@ -103,16 +109,23 @@ describe("canonical artifact contracts", () => {
     expect(secondTask).toMatchObject({ kind: "resolved", location: { kind: "section", path: "specs/SPEC-001/tasks.md", heading: "## TASK-002 Second task", startLine: 6, endLine: 7 } });
   });
 
-  it("resolves every exact D-20 family to a canonical location", async () => {
+  it("resolves every exact D-20 family to a canonical location, including FIND and PAC sections", async () => {
     const root = await fixture();
     await write(root, ".exspecso/roadmap.md", "# ROADMAP\n");
-    await write(root, ".exspecso/definitions.md", "# PHASE-001\n# SPEC-001\n# REQ-001\n# AC-001\n# PLAN-001\n# TASK-001\n# DEC-001\n# FINDING-001\n");
+    await write(root, ".exspecso/definitions.md", "# PHASE-001\n# SPEC-001\n# REQ-001\n# AC-001\n# PLAN-001\n# TASK-001\n# DEC-001\n\n## FIND-001 A hand-authored finding\nFinding body.\n\n## PAC-001 A hand-authored Phase Acceptance Check\nPAC body.\n");
 
     const results = await Promise.all([
-      "ROADMAP", "PHASE-001", "SPEC-001", "REQ-001", "AC-001", "PLAN-001", "TASK-001", "DEC-001", "FINDING-001",
+      "ROADMAP", "PHASE-001", "SPEC-001", "REQ-001", "AC-001", "PLAN-001", "TASK-001", "DEC-001", "FIND-001", "PAC-001",
     ].map((id) => resolveArtifact(root, id)));
+    const definitions = await scanArtifactDefinitions(root);
 
-    expect(results.map((result) => result.kind)).toEqual(Array(9).fill("resolved"));
+    expect(results.map((result) => result.kind)).toEqual(Array(10).fill("resolved"));
+    expect(definitions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "FIND-001", artifactKind: "FIND" }),
+      expect.objectContaining({ id: "PAC-001", artifactKind: "PAC" }),
+    ]));
+    expect(results[8]).toMatchObject({ location: { kind: "section", path: ".exspecso/definitions.md", heading: "## FIND-001 A hand-authored finding", startLine: 10, endLine: 12 } });
+    expect(results[9]).toMatchObject({ location: { kind: "section", path: ".exspecso/definitions.md", heading: "## PAC-001 A hand-authored Phase Acceptance Check", startLine: 13, endLine: 14 } });
   });
 
   it("keeps identity stable across title changes and declaration reordering, but fails closed for duplicates", async () => {
