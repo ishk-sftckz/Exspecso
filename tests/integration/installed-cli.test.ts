@@ -71,6 +71,41 @@ describe("installed package initializer", () => {
     expect(installation.inventory).not.toContain("tests/helpers/killed-transaction-child.mjs");
   }, 10_000);
 
+  it("keeps explicit selection outputs identical when ambient agent variables are populated", async () => {
+    const installation = await packAndInstall();
+    installationRoots.push(dirname(dirname(dirname(installation.packageDirectory))));
+    const cleanRepository = await fixture();
+    const ambientRepository = await fixture();
+    const cleanEnvironment = { ...process.env };
+    for (const name of ["CLAUDECODE", "CLAUDE_CODE", "CODEX_HOME", "CODEX", "OPENCODE"]) delete cleanEnvironment[name];
+
+    const clean = await runInstalledCliWithTimeout(installation.cliPath, cleanRepository.root, cleanEnvironment);
+    const ambient = await runInstalledCliWithTimeout(installation.cliPath, ambientRepository.root, {
+      ...cleanEnvironment,
+      CLAUDECODE: "1",
+      CLAUDE_CODE: "1",
+      CODEX_HOME: "/tmp/codex",
+      CODEX: "1",
+      OPENCODE: "1",
+    });
+
+    expect(clean.timedOut, clean.stderr).toBe(false);
+    expect(ambient.timedOut, ambient.stderr).toBe(false);
+    expect(clean.exitCode, clean.stderr).toBe(0);
+    expect(ambient.exitCode, ambient.stderr).toBe(0);
+    expect(ambient.stdout).toBe(clean.stdout);
+    await expect(readFile(join(cleanRepository.root, ".exspecso", "exspecso.config.json"), "utf8")).resolves.toEqual(
+      expect.stringContaining('"selectedAgents": [\n    "codex"\n  ]'),
+    );
+    await expect(readFile(join(ambientRepository.root, ".exspecso", "exspecso.config.json"), "utf8")).resolves.toEqual(
+      expect.stringContaining('"selectedAgents": [\n    "codex"\n  ]'),
+    );
+    await expect(projectFiles(ambientRepository.root)).resolves.toEqual(await projectFiles(cleanRepository.root));
+    await expect(readFile(join(ambientRepository.root, ".agents", "skills", "exspecso-start", "SKILL.md"), "utf8")).resolves.toEqual(
+      await readFile(join(cleanRepository.root, ".agents", "skills", "exspecso-start", "SKILL.md"), "utf8"),
+    );
+  }, 20_000);
+
   it("declares only the four representative D-22 compatibility rows", async () => {
     const workflow = await readFile(join(packageRoot, ".github", "workflows", "ci.yml"), "utf8");
 
