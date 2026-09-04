@@ -8,7 +8,7 @@ import {
 } from "../../src/init/runtime-selection.js";
 
 describe("runtime selection", () => {
-  it("presents every runtime in stable order, unchecked, with detection only as metadata", async () => {
+  it("presents every runtime in stable order and unchecked without detection metadata", async () => {
     const promptCalls: AgentChoice[][] = [];
     const result = await chooseAgentsInteractively({
       detectedAgents: ["codex"],
@@ -22,7 +22,7 @@ describe("runtime selection", () => {
     expect(promptCalls).toEqual([
       [
         { value: "claude", name: "Claude Code", checked: false },
-        { value: "codex", name: "OpenAI Codex (detected)", checked: false },
+        { value: "codex", name: "OpenAI Codex", checked: false },
         { value: "opencode", name: "OpenCode", checked: false },
       ],
     ]);
