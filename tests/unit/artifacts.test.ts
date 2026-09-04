@@ -144,6 +144,46 @@ describe("canonical artifact contracts", () => {
     });
   });
 
+  it("keeps adjacent FIND and PAC sections exact across rename, reorder, duplicates, and concurrent resolution", async () => {
+    const root = await fixture();
+    const path = "phases/PHASE-001/review.md";
+    const content = "---\nparent: PHASE-001\n---\n# Review notes\n\n## PAC-001 Renamed Phase Acceptance Check\nPAC body.\n\n## FIND-001 Renamed finding\nFinding body.\n\n";
+    await write(root, path, content);
+    await write(root, "phases/PHASE-001/parent.md", "# PHASE-001\n");
+    const before = await readFile(join(root, path), "utf8");
+
+    await expect(resolveArtifact(root, "PAC-001")).resolves.toEqual({
+      kind: "resolved",
+      id: "PAC-001",
+      location: { kind: "section", path, heading: "## PAC-001 Renamed Phase Acceptance Check", startLine: 6, endLine: 8 },
+    });
+    const results = await Promise.all(Array.from({ length: 12 }, () => resolveArtifact(root, "FIND-001")));
+    expect(results).toEqual(Array.from({ length: 12 }, () => results[0]));
+    await expect(readFile(join(root, path), "utf8")).resolves.toBe(before);
+
+    await write(root, "phases/PHASE-001/duplicate-finding.md", "# FIND-001 Duplicate finding\n");
+    await expect(resolveArtifact(root, "FIND-001")).resolves.toMatchObject({
+      kind: "ambiguous",
+      definitions: [{ path: "phases/PHASE-001/duplicate-finding.md" }, { path }],
+      diagnostics: [{ code: "EXSPECSO_ARTIFACT_DUPLICATE_ID" }],
+    });
+  });
+
+  it("rejects blank, malformed, legacy, and unknown FIND/PAC lookups with the canonical vocabulary", async () => {
+    const root = await fixture();
+
+    for (const id of ["", "FIND-01", "FINDING-001", "FIND-0010", "PAC-XYZ", "UNKNOWN-001"]) {
+      await expect(resolveArtifact(root, id)).resolves.toMatchObject({
+        kind: "not-found",
+        diagnostics: [{
+          code: "EXSPECSO_ARTIFACT_INVALID_ID",
+          expected: expect.stringContaining("FIND-NNN"),
+          hint: expect.not.stringContaining("FINDING-NNN"),
+        }],
+      });
+    }
+  });
+
   it("retains every explicitly declared invalid JSON id and parent shape as a diagnostic", async () => {
     const root = await fixture();
     const cases: readonly [string, unknown, string][] = [
@@ -280,7 +320,7 @@ describe("canonical artifact contracts", () => {
     await expect(readFile(join(root, ".exspecso/exspecso.config.json"), "utf8")).resolves.toContain("unclassified");
     await expect(readFile(join(root, ".exspecso/constitution.md"), "utf8")).resolves.toContain("Artifact truth");
     await expect(readFile(join(root, ".agents/skills/exspecso-start/SKILL.md"), "utf8")).resolves.toContain("exspecso-start");
-    for (const deferredPath of ["roadmap.md", "phases", "specs", "requirements", "plans", "tasks", "decisions", "findings", "trace", "research", "reports", "reviews"]) {
+    for (const deferredPath of ["roadmap.md", "phases", "specs", "requirements", "plans", "tasks", "decisions", "findings", "phase-acceptance", "acceptance.md", "trace", "research", "reports", "reviews"]) {
       await expect(readFile(join(root, ".exspecso", deferredPath), "utf8")).rejects.toThrow();
     }
   });

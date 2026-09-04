@@ -166,6 +166,37 @@ describe("direct-edit validation", () => {
     ]);
   });
 
+  it("aggregates legacy FINDING, duplicate FIND, and a PAC unknown parent before init without mutation", async () => {
+    const fixture = await useFixture();
+    await write(fixture.root, ".exspecso/legacy.json", JSON.stringify({ id: "FINDING-001" }));
+    await write(fixture.root, ".exspecso/findings/first.md", "# FIND-001 First finding\n");
+    await write(fixture.root, ".exspecso/findings/second.md", "# FIND-001 Second finding\n");
+    await write(fixture.root, ".exspecso/acceptance/pac.md", "---\nid: PAC-001\nparent: PHASE-404\n---\n# Phase acceptance\n");
+    const before = await snapshot(fixture.root);
+    const stderr = capturedOutput();
+
+    const diagnostics = await validateProject(fixture.root);
+    expect(diagnostics.filter((diagnostic) => diagnostic.code === "EXSPECSO_ARTIFACT_INVALID_ID")).toEqual([
+      expect.objectContaining({ path: ".exspecso/legacy.json", section: "id", actual: "FINDING-001" }),
+    ]);
+    expect(diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "EXSPECSO_ARTIFACT_DUPLICATE_ID", actual: "2 definitions" }),
+      expect.objectContaining({ code: "EXSPECSO_ARTIFACT_UNKNOWN_PARENT", path: ".exspecso/acceptance/pac.md", actual: "PHASE-404" }),
+    ]));
+
+    await expect(runInit({
+      selectedAgents: ["codex"],
+      cwd: fixture.root,
+      stdin: new PassThrough(),
+      stdout: memoryOutput(),
+      stderr: stderr.output,
+    })).resolves.not.toBe(0);
+    expect(stderr.read().match(/EXSPECSO_ARTIFACT_INVALID_ID/g)).toHaveLength(1);
+    expect(stderr.read().match(/EXSPECSO_ARTIFACT_DUPLICATE_ID/g)).toHaveLength(1);
+    expect(stderr.read().match(/EXSPECSO_ARTIFACT_UNKNOWN_PARENT/g)).toHaveLength(1);
+    await expect(snapshot(fixture.root)).resolves.toEqual(before);
+  });
+
   it("reports malformed canonical JSON separately from the project configuration parser", async () => {
     const fixture = await useFixture();
     await write(fixture.root, ".exspecso/definition.json", "{ malformed");
