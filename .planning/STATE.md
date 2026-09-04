@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
 status: executing
-stopped_at: Completed 01-24-PLAN.md
-last_updated: "2026-09-04T16:19:04.727Z"
+stopped_at: Completed 01-25-PLAN.md
+last_updated: "2026-09-04T17:26:46.260Z"
 last_activity: 2026-09-04
 last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 27
-  completed_plans: 24
+  completed_plans: 25
 ---
 
 # Project State
@@ -134,6 +134,7 @@ The records below preserve the investigation history. Their native-provider, exh
 | Phase 01 P22 | 5min | 3 tasks | 8 files |
 | Phase 01 P23 | 7min | 2 tasks | 2 files |
 | Phase 01-initialize-canonical-projects P24 | 268s | 2 tasks | 7 files |
+| Phase 01 P25 | 5 min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -195,6 +196,7 @@ Recent decisions affecting current work:
 - [Phase ?]: Use an invalid later reader component behind a symlink sentinel to prove complete validation precedes traversal.
 - [Phase ?]: G-01-1 removes D-05 runtime detection labels while preserving stable unchecked explicit selection.
 - [Phase ?]: Ambient agent variables have no runtime-selection or adapter-write authority.
+- [Phase ?]: D-20 superseded only to make FIND-NNN canonical, reject FINDING-NNN aliases, and add PAC-NNN as the tenth stable-ID family.
 
 ### Pending Todos
 
@@ -228,6 +230,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-09-04T16:19:04.712Z
-Stopped at: Completed 01-24-PLAN.md
+Last session: 2026-09-04T17:26:46.248Z
+Stopped at: Completed 01-25-PLAN.md
 Resume file: None
