@@ -18,8 +18,9 @@ Select one or more of `claude`, `codex`, and `opencode` with repeatable
 `--agent` flags. The command creates only the minimal canonical foundation and
 the selected runtime adapters. Re-running it is additive: selected adapters are
 added or refreshed, while unselected installed adapters remain untouched.
-Successful output names `/exspecso-start` first, followed by the exact
-runtime-native invocation for each selected adapter.
+For both a newly committed initialization and a no-op rerun, successful stdout
+is exactly `Exspecso initialized successfully.` followed by one newline. The
+generated adapters retain their runtime-native invocation metadata.
 
 ## Filesystem and recovery boundary
 

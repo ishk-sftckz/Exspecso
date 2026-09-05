@@ -8,6 +8,12 @@ import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 const fixtures: GitFixture[] = [];
 const installationRoots: string[] = [];
 const packageRoot = resolve(import.meta.dirname, "../..");
+const successfulInitialization = "Exspecso initialized successfully.\n";
+const adapterPaths = {
+  claude: ".claude/skills/exspecso-start/SKILL.md",
+  codex: ".agents/skills/exspecso-start/SKILL.md",
+  opencode: ".opencode/commands/exspecso-start.md",
+} as const;
 
 afterEach(async () => {
   await Promise.all(fixtures.splice(0).map((fixture) => fixture.dispose()));
@@ -93,6 +99,7 @@ describe("installed package initializer", () => {
     expect(ambient.timedOut, ambient.stderr).toBe(false);
     expect(clean.exitCode, clean.stderr).toBe(0);
     expect(ambient.exitCode, ambient.stderr).toBe(0);
+    expect(clean.stdout).toBe(successfulInitialization);
     expect(ambient.stdout).toBe(clean.stdout);
     await expect(readFile(join(cleanRepository.root, ".exspecso", "exspecso.config.json"), "utf8")).resolves.toEqual(
       expect.stringContaining('"selectedAgents": [\n    "codex"\n  ]'),
@@ -154,8 +161,7 @@ describe("installed package initializer", () => {
 
       const first = await runInstalledCli(installation, repository.root, argumentsFor(agents));
       expect(first.exitCode, first.stderr).toBe(0);
-      expect(first.stdout).toContain("/exspecso-start");
-      for (const agent of agents) expect(first.stdout).toContain(agent === "codex" ? "$exspecso-start" : "/exspecso-start");
+      expect(first.stdout).toBe(successfulInitialization);
 
       const configPath = join(repository.root, ".exspecso", "exspecso.config.json");
       const initialConfig = JSON.parse(await readFile(configPath, "utf8")) as { project: { id: string }; selectedAgents: string[] };
@@ -163,11 +169,13 @@ describe("installed package initializer", () => {
 
       const repeated = await runInstalledCli(installation, nested, argumentsFor(agents));
       expect(repeated.exitCode, repeated.stderr).toBe(0);
+      expect(repeated.stdout).toBe(successfulInitialization);
       await expect(readFile(configPath, "utf8")).resolves.toContain(initialConfig.project.id);
-      await expect(projectFiles(repository.root)).resolves.toEqual(expect.arrayContaining([
+      await expect(projectFiles(repository.root)).resolves.toEqual([
+        ...agents.map((agent) => adapterPaths[agent]),
         ".exspecso/constitution.md",
         ".exspecso/exspecso.config.json",
-      ]));
+      ].sort());
       await expect(readFile(join(repository.root, ".exspecso", "roadmap.md"), "utf8")).rejects.toThrow();
     }
   }, 30_000);
@@ -179,6 +187,7 @@ describe("installed package initializer", () => {
 
     const first = await runInstalledCli(installation, repository.root, ["init", "--agent", "codex"]);
     expect(first.exitCode, first.stderr).toBe(0);
+    expect(first.stdout).toBe(successfulInitialization);
     const configPath = join(repository.root, ".exspecso", "exspecso.config.json");
     const codexPath = join(repository.root, ".agents", "skills", "exspecso-start", "SKILL.md");
     const initialConfig = JSON.parse(await readFile(configPath, "utf8")) as { project: { id: string } };
@@ -186,6 +195,7 @@ describe("installed package initializer", () => {
 
     const repeated = await runInstalledCli(installation, repository.root, ["init", "--agent", "claude"]);
     expect(repeated.exitCode, repeated.stderr).toBe(0);
+    expect(repeated.stdout).toBe(successfulInitialization);
     expect(JSON.parse(await readFile(configPath, "utf8"))).toMatchObject({
       project: initialConfig.project,
       selectedAgents: ["codex", "claude"],
