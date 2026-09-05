@@ -1,10 +1,8 @@
-import { access, readdir, readFile } from "node:fs/promises";
-import type { Dirent } from "node:fs";
-import { join, relative, sep } from "node:path";
 import { type ZodIssue } from "zod";
-import { type ArtifactDefinition, scanArtifactDefinitions } from "./resolve.js";
-import { parseArtifactId, projectConfigSchema } from "./schema.js";
+import { type ArtifactDefinition, scanArtifacts } from "./resolve.js";
+import { projectConfigSchema } from "./schema.js";
 import type { Diagnostic } from "../errors/diagnostic.js";
+import { openContainedFilesystem, type BoundReader } from "../filesystem/contained-fs.js";
 
 const canonicalDirectory = ".exspecso";
 const configPath = ".exspecso/exspecso.config.json";
@@ -44,58 +42,6 @@ export function validateProjectConfig(path: string, text: string): readonly Diag
   }
   const result = projectConfigSchema.safeParse(parsed);
   return result.success ? [] : result.error.issues.map((issue) => schemaDiagnostic(path, issue));
-}
-
-async function canonicalFiles(root: string, directory = join(root, canonicalDirectory)): Promise<string[]> {
-  let entries: Dirent<string>[];
-  try {
-    entries = await readdir(directory, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const files: string[] = [];
-  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...(await canonicalFiles(root, path)));
-    } else if (entry.isFile() && (entry.name.endsWith(".md") || entry.name.endsWith(".json"))) {
-      files.push(path);
-    }
-  }
-  return files;
-}
-
-function relativePath(root: string, path: string): string {
-  return relative(root, path).split(sep).join("/");
-}
-
-async function validateRawArtifactIds(root: string): Promise<Diagnostic[]> {
-  const diagnostics: Diagnostic[] = [];
-  for (const file of await canonicalFiles(root)) {
-    if (!file.endsWith(".md")) {
-      continue;
-    }
-    const path = relativePath(root, file);
-    const text = await readFile(file, "utf8");
-    const lines = text.split(/\r?\n/);
-    for (const [index, line] of lines.entries()) {
-      const frontmatter = /^(id|parent):\s*(\S+)\s*$/.exec(line);
-      const heading = /^(#{1,6})\s+(\S+)/.exec(line);
-      const candidate = frontmatter?.[2] ?? heading?.[2];
-      if (candidate === undefined || !/^[A-Z]+(?:-[0-9]+)?$/.test(candidate) || parseArtifactId(candidate) !== null) {
-        continue;
-      }
-      diagnostics.push({
-        code: "EXSPECSO_ARTIFACT_INVALID_ID",
-        path,
-        section: `line ${index + 1}`,
-        expected: "ROADMAP or one exact D-20 ID family",
-        actual: candidate,
-        hint: "Use ROADMAP, PHASE-NNN, SPEC-NNN, REQ-NNN, AC-NNN, PLAN-NNN, TASK-NNN, DEC-NNN, or FINDING-NNN exactly.",
-      });
-    }
-  }
-  return diagnostics;
 }
 
 function definitionLabel(definition: ArtifactDefinition): string {
@@ -149,13 +95,12 @@ function validateDefinitions(definitions: readonly ArtifactDefinition[]): Diagno
   return diagnostics;
 }
 
-export async function validateProject(root: string): Promise<readonly Diagnostic[]> {
+async function validateWithReader(root: string, reader: BoundReader): Promise<readonly Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
-  const absoluteConfigPath = join(root, configPath);
   try {
-    diagnostics.push(...validateProjectConfig(configPath, await readFile(absoluteConfigPath, "utf8")));
+    diagnostics.push(...validateProjectConfig(configPath, reader.read(configPath.split("/")).toString("utf8")));
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+    if (!(error instanceof Error && error.message.includes("EXSPECSO_CONTAINMENT_ENOENT"))) {
       diagnostics.push({
         code: "EXSPECSO_CONFIG_PARSE",
         path: configPath,
@@ -165,11 +110,13 @@ export async function validateProject(root: string): Promise<readonly Diagnostic
       });
     }
   }
-  const definitions = (await scanArtifactDefinitions(root)).filter((definition) => definition.path === canonicalDirectory || definition.path.startsWith(`${canonicalDirectory}/`));
-  diagnostics.push(...(await validateRawArtifactIds(root)));
+  const scanResult = await scanArtifacts(root, reader);
+  const definitions = scanResult.definitions.filter((definition) => definition.path === canonicalDirectory || definition.path.startsWith(`${canonicalDirectory}/`));
+  diagnostics.push(...scanResult.diagnostics.filter((diagnostic) => diagnostic.path === canonicalDirectory || diagnostic.path.startsWith(`${canonicalDirectory}/`)));
   diagnostics.push(...validateDefinitions(definitions));
   try {
-    await access(join(root, roadmapPath));
+    const roadmap = reader.metadata(roadmapPath.split("/"));
+    if (roadmap !== "file") throw new Error("EXSPECSO_CONTAINMENT_INVALID: roadmap is not a regular file");
     if (!definitions.some((definition) => definition.id === "ROADMAP" && definition.path === roadmapPath)) {
       diagnostics.push({
         code: "EXSPECSO_ROADMAP_RESERVED_PATH",
@@ -179,8 +126,26 @@ export async function validateProject(root: string): Promise<readonly Diagnostic
         hint: "Add the exact ROADMAP identity to .exspecso/roadmap.md.",
       });
     }
-  } catch {
-    // ROADMAP is intentionally lazy and is absent until the start workflow creates it.
+  } catch (error) {
+    if (!(error instanceof Error && error.message.includes("EXSPECSO_CONTAINMENT_ENOENT"))) {
+      diagnostics.push({
+        code: "EXSPECSO_ARTIFACT_UNSAFE_READ",
+        path: roadmapPath,
+        expected: "a contained regular roadmap file",
+        actual: error instanceof Error ? error.message : "unreadable file",
+        hint: "Replace the roadmap with a contained regular file or remove it until the start workflow creates it.",
+      });
+    }
   }
   return diagnostics;
+}
+
+export async function validateProject(root: string, reader?: BoundReader): Promise<readonly Diagnostic[]> {
+  if (reader !== undefined) return validateWithReader(root, reader);
+  const capability = openContainedFilesystem(root);
+  try {
+    return await validateWithReader(root, capability.reader);
+  } finally {
+    capability.close();
+  }
 }

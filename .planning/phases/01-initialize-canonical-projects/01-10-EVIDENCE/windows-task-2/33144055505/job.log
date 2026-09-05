@@ -1,0 +1,691 @@
+windows	Set up job	﻿2026-08-28T05:12:24.8665851Z Current runner version: '2.336.0'
+windows	Set up job	2026-08-28T05:12:24.8737504Z ##[group]Runner Image Provisioner
+windows	Set up job	2026-08-28T05:12:24.8738665Z Hosted Compute Agent
+windows	Set up job	2026-08-28T05:12:24.8739555Z Version: 20260729.566
+windows	Set up job	2026-08-28T05:12:24.8740457Z Commit: cf7153fe6e25b664e8693c24944bf2b00355d109
+windows	Set up job	2026-08-28T05:12:24.8741225Z Build Date: 2026-07-29T19:17:02Z
+windows	Set up job	2026-08-28T05:12:24.8741883Z Worker ID: {5d02df27-0b73-4810-94d4-0859b8765c6b}
+windows	Set up job	2026-08-28T05:12:24.8742574Z Azure Region: northcentralus
+windows	Set up job	2026-08-28T05:12:24.8743244Z ##[endgroup]
+windows	Set up job	2026-08-28T05:12:24.8744566Z ##[group]Operating System
+windows	Set up job	2026-08-28T05:12:24.8745197Z Microsoft Windows Server 2025
+windows	Set up job	2026-08-28T05:12:24.8745779Z 10.0.26100
+windows	Set up job	2026-08-28T05:12:24.8746264Z Datacenter
+windows	Set up job	2026-08-28T05:12:24.8746830Z ##[endgroup]
+windows	Set up job	2026-08-28T05:12:24.8747347Z ##[group]Runner Image
+windows	Set up job	2026-08-28T05:12:24.8747927Z Image: windows-2025-vs2026
+windows	Set up job	2026-08-28T05:12:24.8748511Z Version: 20260818.207.1
+windows	Set up job	2026-08-28T05:12:24.8749958Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20260818.207/images/windows/Windows2025-VS2026-Readme.md
+windows	Set up job	2026-08-28T05:12:24.8751966Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20260818.207
+windows	Set up job	2026-08-28T05:12:24.8752937Z ##[endgroup]
+windows	Set up job	2026-08-28T05:12:24.8753920Z ##[group]GITHUB_TOKEN Permissions
+windows	Set up job	2026-08-28T05:12:24.8756446Z Metadata: read
+windows	Set up job	2026-08-28T05:12:24.8757064Z ##[endgroup]
+windows	Set up job	2026-08-28T05:12:24.8759222Z Secret source: Actions
+windows	Set up job	2026-08-28T05:12:24.8760339Z Prepare workflow directory
+windows	Set up job	2026-08-28T05:12:24.9143007Z Prepare all required actions
+windows	Set up job	2026-08-28T05:12:24.9191570Z Getting action download info
+windows	Set up job	2026-08-28T05:12:25.1038384Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+windows	Set up job	2026-08-28T05:12:25.4260600Z Complete job name: windows
+windows	Fetch this exact public task snapshot	﻿2026-08-28T05:12:25.5718664Z ##[group]Run git init .
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:25.5719392Z [36;1mgit init .[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:25.5719936Z [36;1mif ($LASTEXITCODE) { throw 'git init failed' }[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:25.5720798Z [36;1mgit remote add origin https://github.com/ishk-sftckz/exspecso.git[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:25.5721609Z [36;1mgit fetch --depth=1 origin $env:GITHUB_SHA[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:25.5722277Z [36;1mif ($LASTEXITCODE) { throw 'git fetch failed' }[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:25.5722899Z [36;1mgit checkout --detach FETCH_HEAD[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:25.5723534Z [36;1mif ($LASTEXITCODE) { throw 'git checkout failed' }[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:25.5870783Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:25.5871804Z ##[endgroup]
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:26.1435067Z Initialized empty Git repository in D:/a/exspecso/exspecso/.git/
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:27.2710830Z From https://github.com/ishk-sftckz/exspecso
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:27.2712003Z  * branch            b946ad5d369e2a68b6902f6732c009055a26f89c -> FETCH_HEAD
+windows	Fetch this exact public task snapshot	2026-08-28T05:12:27.3771675Z HEAD is now at b946ad5 feat(01-10): exercise NTFS handle-relative provider on native Windows
+windows	Inspect the pinned native Windows SDK and toolchain	﻿2026-08-28T05:12:27.5367668Z ##[group]Run ./native/windows-preflight.ps1
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:27.5368261Z [36;1m./native/windows-preflight.ps1[0m
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:27.5467422Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:27.5467884Z ##[endgroup]
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2320779Z {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2321533Z   "imageVersion": "20260818.207.1",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2321921Z   "imageOS": "win25-vs2026",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2322185Z   "architecture": "X64",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2322497Z   "caption": "Microsoft Windows Server 2025 Datacenter",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2322812Z   "version": "10.0.26100",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2323020Z   "build": "26100",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2323258Z   "ubr": 33296,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2323464Z   "displayVersion": "24H2",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2323762Z   "filesystem": "NTFS",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2323992Z   "visualStudio": [
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2324203Z     {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2324427Z       "installationVersion": "18.9.12112.369",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2324859Z       "installationPath": "C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise"
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2327906Z     }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2328386Z   ],
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2328574Z   "sdkVersion": "10.0.26100.0",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2328863Z   "msvcVersion": "14.44.35207"
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.2329095Z }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5786302Z --- um/winternl.h line 213 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5787148Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5788405Z typedef struct _OBJECT_ATTRIBUTES {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5790041Z     ULONG Length;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5791964Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5794685Z     PUNICODE_STRING ObjectName;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5796486Z     ULONG Attributes;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5798365Z     PVOID SecurityDescriptor;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5800165Z     PVOID SecurityQualityOfService;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5801552Z } OBJECT_ATTRIBUTES;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5803512Z typedef OBJECT_ATTRIBUTES *POBJECT_ATTRIBUTES;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5804817Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5806819Z typedef struct _IO_STATUS_BLOCK {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5808304Z #pragma warning(push)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5810407Z #pragma warning(disable: 4201) // we'll always use the Microsoft compiler
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5811902Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5813624Z         NTSTATUS Status;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5815297Z         PVOID Pointer;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5817162Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5818844Z #pragma warning(pop)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5820311Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5822240Z     ULONG_PTR Information;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5823732Z } IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5825214Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5826873Z typedef
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5828672Z VOID
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5831059Z (NTAPI *PIO_APC_ROUTINE) (
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5832766Z     IN PVOID ApcContext,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5834645Z     IN PIO_STATUS_BLOCK IoStatusBlock,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5837081Z     IN ULONG Reserved
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5838733Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5840210Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5842151Z --- um/winternl.h line 475 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5843750Z NTAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5845410Z NtCreateFile (
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5847104Z     OUT PHANDLE FileHandle,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5848803Z     IN ACCESS_MASK DesiredAccess,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5850384Z     IN POBJECT_ATTRIBUTES ObjectAttributes,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5852127Z     OUT PIO_STATUS_BLOCK IoStatusBlock,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5853671Z     IN PLARGE_INTEGER AllocationSize OPTIONAL,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5855366Z     IN ULONG FileAttributes,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5857008Z     IN ULONG ShareAccess,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5858684Z     IN ULONG CreateDisposition,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5860415Z     IN ULONG CreateOptions,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5862039Z     IN PVOID EaBuffer OPTIONAL,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5863615Z     IN ULONG EaLength
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5865203Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5866720Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5868653Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5869849Z // use the Win32 API instead
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5871254Z //     CreateFile
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5872713Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5876904Z __kernel_entry NTSTATUS
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5877346Z NTAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5877764Z NtOpenFile (
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5879189Z     OUT PHANDLE FileHandle,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5880526Z     IN ACCESS_MASK DesiredAccess,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5882216Z     IN POBJECT_ATTRIBUTES ObjectAttributes,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5884006Z     OUT PIO_STATUS_BLOCK IoStatusBlock,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5885658Z     IN ULONG ShareAccess,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5887416Z     IN ULONG OpenOptions
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5889026Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5890360Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5891689Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5893446Z --- um/winternl.h line 992 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5895321Z #define FILE_CREATE                     0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5897316Z #define FILE_OPEN_IF                    0x00000003
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5899077Z #define FILE_OVERWRITE                  0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5900693Z #define FILE_OVERWRITE_IF               0x00000005
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5902429Z #define FILE_MAXIMUM_DISPOSITION        0x00000005
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5903565Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5905036Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5906588Z // Define the create/open option flags
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5908354Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5909655Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5911454Z #define FILE_DIRECTORY_FILE                     0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5913664Z #define FILE_WRITE_THROUGH                      0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5915892Z #define FILE_SEQUENTIAL_ONLY                    0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5917604Z #define FILE_NO_INTERMEDIATE_BUFFERING          0x00000008
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5918985Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5920888Z #define FILE_SYNCHRONOUS_IO_ALERT               0x00000010
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5922796Z #define FILE_SYNCHRONOUS_IO_NONALERT            0x00000020
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5924366Z #define FILE_NON_DIRECTORY_FILE                 0x00000040
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5925576Z #define FILE_CREATE_TREE_CONNECTION             0x00000080
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5926564Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5928295Z #define FILE_COMPLETE_IF_OPLOCKED               0x00000100
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5929587Z #define FILE_NO_EA_KNOWLEDGE                    0x00000200
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5931101Z #define FILE_OPEN_REMOTE_INSTANCE               0x00000400
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5932718Z #define FILE_RANDOM_ACCESS                      0x00000800
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5933292Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5935206Z #define FILE_DELETE_ON_CLOSE                    0x00001000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5937159Z #define FILE_OPEN_BY_FILE_ID                    0x00002000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5938581Z #define FILE_OPEN_FOR_BACKUP_INTENT             0x00004000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5940029Z #define FILE_NO_COMPRESSION                     0x00008000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5941350Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5943062Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN7)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5944413Z --- um/winternl.h line 1007 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5945771Z #define FILE_SYNCHRONOUS_IO_ALERT               0x00000010
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5947144Z #define FILE_SYNCHRONOUS_IO_NONALERT            0x00000020
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5948892Z #define FILE_NON_DIRECTORY_FILE                 0x00000040
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5950394Z #define FILE_CREATE_TREE_CONNECTION             0x00000080
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5951494Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5953381Z #define FILE_COMPLETE_IF_OPLOCKED               0x00000100
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5954972Z #define FILE_NO_EA_KNOWLEDGE                    0x00000200
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5955989Z #define FILE_OPEN_REMOTE_INSTANCE               0x00000400
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5957708Z #define FILE_RANDOM_ACCESS                      0x00000800
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5959147Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5960915Z #define FILE_DELETE_ON_CLOSE                    0x00001000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5962220Z #define FILE_OPEN_BY_FILE_ID                    0x00002000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5963865Z #define FILE_OPEN_FOR_BACKUP_INTENT             0x00004000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5965309Z #define FILE_NO_COMPRESSION                     0x00008000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5966720Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5968117Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN7)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5969574Z #define FILE_OPEN_REQUIRING_OPLOCK              0x00010000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5970841Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5972393Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5974617Z #define FILE_RESERVE_OPFILTER                   0x00100000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5976090Z #define FILE_OPEN_REPARSE_POINT                 0x00200000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5977440Z #define FILE_OPEN_NO_RECALL                     0x00400000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5979030Z #define FILE_OPEN_FOR_FREE_SPACE_QUERY          0x00800000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5979929Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5981498Z #define FILE_VALID_OPTION_FLAGS                 0x00ffffff
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5983538Z #define FILE_VALID_PIPE_OPTION_FLAGS            0x00000032
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5984983Z #define FILE_VALID_MAILSLOT_OPTION_FLAGS        0x00000032
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5986481Z #define FILE_VALID_SET_FLAGS                    0x00000036
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5987549Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5989303Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5990986Z // Define the I/O status information return values for NtCreateFile/NtOpenFile
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5992518Z --- um/winternl.h line 1026 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5993717Z #define FILE_RESERVE_OPFILTER                   0x00100000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5995414Z #define FILE_OPEN_REPARSE_POINT                 0x00200000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5996860Z #define FILE_OPEN_NO_RECALL                     0x00400000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5998101Z #define FILE_OPEN_FOR_FREE_SPACE_QUERY          0x00800000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.5999463Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6001227Z #define FILE_VALID_OPTION_FLAGS                 0x00ffffff
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6002657Z #define FILE_VALID_PIPE_OPTION_FLAGS            0x00000032
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6004034Z #define FILE_VALID_MAILSLOT_OPTION_FLAGS        0x00000032
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6005394Z #define FILE_VALID_SET_FLAGS                    0x00000036
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6006738Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6008348Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6010222Z // Define the I/O status information return values for NtCreateFile/NtOpenFile
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6011514Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6013019Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6014533Z #define FILE_SUPERSEDED                 0x00000000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6016389Z #define FILE_OPENED                     0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6017834Z #define FILE_CREATED                    0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6019672Z #define FILE_OVERWRITTEN                0x00000003
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6021121Z #define FILE_EXISTS                     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6022756Z #define FILE_DOES_NOT_EXIST             0x00000005
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6024138Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6025777Z #ifndef __os_arm64x_get_x64_information
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6027466Z #define __os_arm64x_get_x64_information __os_arm64x_rdtsc
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6029342Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6030658Z #ifndef __os_arm64x_set_x64_information
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6032548Z #define __os_arm64x_set_x64_information __os_arm64x_cpuidex
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6034004Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6035642Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6037374Z #ifdef __cplusplus
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6038950Z }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6040884Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6042098Z --- um/winternl.h line 1036 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6043730Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6045616Z // Define the I/O status information return values for NtCreateFile/NtOpenFile
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6046870Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6048143Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6049587Z #define FILE_SUPERSEDED                 0x00000000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6050955Z #define FILE_OPENED                     0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6052651Z #define FILE_CREATED                    0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6054603Z #define FILE_OVERWRITTEN                0x00000003
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6056332Z #define FILE_EXISTS                     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6058013Z #define FILE_DOES_NOT_EXIST             0x00000005
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6059177Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6060810Z #ifndef __os_arm64x_get_x64_information
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6062030Z #define __os_arm64x_get_x64_information __os_arm64x_rdtsc
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6063698Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6065275Z #ifndef __os_arm64x_set_x64_information
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6066698Z #define __os_arm64x_set_x64_information __os_arm64x_cpuidex
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6068297Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6069697Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6071614Z #ifdef __cplusplus
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6073542Z }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6074391Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6075649Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6077263Z #endif // (_WIN32_WINNT >= 0x0500)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6078577Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6080052Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6081793Z #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6082816Z #pragma endregion
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6084092Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6085550Z #endif // _WINTERNL_
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6087248Z --- um/WinBase.h line 9104 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6089000Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6090670Z #define FILE_RENAME_FLAG_REPLACE_IF_EXISTS                  0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6092820Z #define FILE_RENAME_FLAG_POSIX_SEMANTICS                    0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6094184Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6095635Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6097464Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS3)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6098901Z #define FILE_RENAME_FLAG_SUPPRESS_PIN_STATE_INHERITANCE     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6100337Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6101849Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6103567Z typedef struct _FILE_RENAME_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6104958Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6106343Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6108073Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6109485Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6111349Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6112606Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6114190Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6115921Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6117480Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6119097Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6120788Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6122331Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6123738Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6125398Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6126988Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6128549Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6129897Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6131696Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6133465Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6135139Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6136592Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6138229Z --- um/WinBase.h line 9105 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6139897Z #define FILE_RENAME_FLAG_REPLACE_IF_EXISTS                  0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6141563Z #define FILE_RENAME_FLAG_POSIX_SEMANTICS                    0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6143170Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6144490Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6146015Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS3)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6259822Z #define FILE_RENAME_FLAG_SUPPRESS_PIN_STATE_INHERITANCE     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6260741Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6262663Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6263980Z typedef struct _FILE_RENAME_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6265449Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6266647Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6267986Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6269721Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6271426Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6272980Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6274392Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6275928Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6277452Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6279031Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6280699Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6282259Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6283541Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6285154Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6286743Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6288345Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6289896Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6291795Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6293516Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6295184Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6296539Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6298106Z typedef struct _FILE_STREAM_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6299685Z --- um/WinBase.h line 9109 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6301299Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS3)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6302986Z #define FILE_RENAME_FLAG_SUPPRESS_PIN_STATE_INHERITANCE     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6304268Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6305530Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6306884Z typedef struct _FILE_RENAME_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6308658Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6309746Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6311185Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6313113Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6314668Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6316029Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6317603Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6319209Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6320586Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6322158Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6323740Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6325121Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6326434Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6328043Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6329565Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6331179Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6332733Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6334410Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6335907Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6337225Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6338116Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6339625Z typedef struct _FILE_STREAM_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6341189Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6342627Z     DWORD StreamNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6344205Z     LARGE_INTEGER StreamSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6345848Z     LARGE_INTEGER StreamAllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6347376Z --- um/WinBase.h line 9112 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6348783Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6350471Z typedef struct _FILE_RENAME_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6352089Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6353606Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6355118Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6356274Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6358031Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6359448Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6360852Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6362268Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6363699Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6365262Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6366826Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6368218Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6369510Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6371334Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6372875Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6374716Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6375692Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6377261Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6378596Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6379764Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6381071Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6382666Z typedef struct _FILE_STREAM_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6384179Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6385756Z     DWORD StreamNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6387495Z     LARGE_INTEGER StreamSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6389276Z     LARGE_INTEGER StreamAllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6391027Z     WCHAR StreamName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6392548Z } FILE_STREAM_INFO, *PFILE_STREAM_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6393756Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6395392Z --- um/WinBase.h line 9116 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6396966Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6398581Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6400127Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6401679Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6403084Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6404578Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6406024Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6407498Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6409061Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6410777Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6412005Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6413497Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6414927Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6416433Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6417834Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6419393Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6420893Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6422561Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6423920Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6425458Z typedef struct _FILE_STREAM_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6426976Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6428752Z     DWORD StreamNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6430451Z     LARGE_INTEGER StreamSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6431592Z     LARGE_INTEGER StreamAllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6433099Z     WCHAR StreamName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6434712Z } FILE_STREAM_INFO, *PFILE_STREAM_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6435756Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6437207Z typedef struct _FILE_COMPRESSION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6438703Z     LARGE_INTEGER CompressedFileSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6440290Z     WORD CompressionFormat;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6441872Z     UCHAR CompressionUnitShift;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6443443Z --- um/WinBase.h line 9156 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6444815Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6446368Z typedef struct _FILE_DISPOSITION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6448114Z     BOOLEAN DeleteFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6449447Z } FILE_DISPOSITION_INFO, *PFILE_DISPOSITION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6450675Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6452259Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6453986Z #define FILE_DISPOSITION_FLAG_DO_NOT_DELETE              0x00000000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6455604Z #define FILE_DISPOSITION_FLAG_DELETE                     0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6457259Z #define FILE_DISPOSITION_FLAG_POSIX_SEMANTICS            0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6458890Z #define FILE_DISPOSITION_FLAG_FORCE_IMAGE_SECTION_CHECK  0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6460287Z #define FILE_DISPOSITION_FLAG_ON_CLOSE                   0x00000008
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6461569Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS5)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6463189Z #define FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE  0x00000010
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6464660Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6465915Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6467304Z typedef struct _FILE_DISPOSITION_INFO_EX {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6469067Z     DWORD Flags;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6470755Z } FILE_DISPOSITION_INFO_EX, *PFILE_DISPOSITION_INFO_EX;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6471885Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6473221Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6474767Z typedef struct _FILE_ID_BOTH_DIR_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6476280Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6477854Z     DWORD FileIndex;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6479427Z     LARGE_INTEGER CreationTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6480995Z     LARGE_INTEGER LastAccessTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6482596Z     LARGE_INTEGER LastWriteTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6484145Z     LARGE_INTEGER ChangeTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6485705Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6487272Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6489433Z     DWORD FileAttributes;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6491073Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6492514Z --- um/WinBase.h line 9170 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6493962Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6495497Z typedef struct _FILE_DISPOSITION_INFO_EX {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6496983Z     DWORD Flags;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6498604Z } FILE_DISPOSITION_INFO_EX, *PFILE_DISPOSITION_INFO_EX;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6499863Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6501098Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6502679Z typedef struct _FILE_ID_BOTH_DIR_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6504193Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6505767Z     DWORD FileIndex;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6507352Z     LARGE_INTEGER CreationTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6508923Z     LARGE_INTEGER LastAccessTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6510538Z     LARGE_INTEGER LastWriteTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6511898Z     LARGE_INTEGER ChangeTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6513430Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6514931Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6516408Z     DWORD FileAttributes;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6517841Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6519363Z     DWORD EaSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6595874Z     CCHAR ShortNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6596330Z     WCHAR ShortName[12];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6596703Z     LARGE_INTEGER FileId;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6597060Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6597485Z } FILE_ID_BOTH_DIR_INFO, *PFILE_ID_BOTH_DIR_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6597855Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6598023Z typedef struct _FILE_FULL_DIR_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6598452Z     ULONG NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6598820Z     ULONG FileIndex;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6599190Z     LARGE_INTEGER CreationTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6599589Z     LARGE_INTEGER LastAccessTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6600025Z     LARGE_INTEGER LastWriteTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6600431Z     LARGE_INTEGER ChangeTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6600848Z --- um/WinBase.h line 9259 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6601269Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6601578Z typedef struct _FILE_ID_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6601984Z     ULONGLONG VolumeSerialNumber;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6602389Z     FILE_ID_128 FileId;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6602722Z } FILE_ID_INFO, *PFILE_ID_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6602987Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6603093Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6603441Z //  Structure definition for FileIdExtdDirectoryInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6603918Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6604220Z typedef struct _FILE_ID_EXTD_DIR_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6604646Z     ULONG NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6604993Z     ULONG FileIndex;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6605475Z     LARGE_INTEGER CreationTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6605865Z     LARGE_INTEGER LastAccessTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6606273Z     LARGE_INTEGER LastWriteTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6606679Z     LARGE_INTEGER ChangeTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6607365Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6607749Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6608175Z     ULONG FileAttributes;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6608600Z     ULONG FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6608930Z     ULONG EaSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6609244Z     ULONG ReparsePointTag;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6609596Z     FILE_ID_128 FileId;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6609931Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6610363Z } FILE_ID_EXTD_DIR_INFO, *PFILE_ID_EXTD_DIR_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6610739Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6610849Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6611011Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6611114Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6611476Z // File Remote protocol info (FileRemoteProtocolInfo)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6611974Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6612266Z --- um/fileapi.h line 889 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6612565Z WINAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6612835Z GetVolumeInformationByHandleW(
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6613159Z     _In_ HANDLE hFile,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6613565Z     _Out_writes_opt_(nVolumeNameSize) LPWSTR lpVolumeNameBuffer,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6614053Z     _In_ DWORD nVolumeNameSize,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6614440Z     _Out_opt_ LPDWORD lpVolumeSerialNumber,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6615228Z     _Out_opt_ LPDWORD lpMaximumComponentLength,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6615653Z     _Out_opt_ LPDWORD lpFileSystemFlags,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6616177Z     _Out_writes_opt_(nFileSystemNameSize) LPWSTR lpFileSystemNameBuffer,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6616713Z     _In_ DWORD nFileSystemNameSize
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6617037Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6617164Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6617301Z #endif /* _WIN32_WINNT >=  0x0600 */
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6617528Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6617636Z WINBASEAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6617863Z BOOL
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6618072Z WINAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6618338Z GetVolumeInformationW(
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6618669Z     _In_opt_ LPCWSTR lpRootPathName,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6619129Z     _Out_writes_opt_(nVolumeNameSize) LPWSTR lpVolumeNameBuffer,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6619602Z     _In_ DWORD nVolumeNameSize,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6619982Z     _Out_opt_ LPDWORD lpVolumeSerialNumber,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6620429Z     _Out_opt_ LPDWORD lpMaximumComponentLength,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6621232Z     _Out_opt_ LPDWORD lpFileSystemFlags,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6621796Z     _Out_writes_opt_(nFileSystemNameSize) LPWSTR lpFileSystemNameBuffer,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6622370Z     _In_ DWORD nFileSystemNameSize
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6622768Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6622918Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6623025Z #ifdef UNICODE
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6623394Z #define GetVolumeInformation  GetVolumeInformationW
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:12:31.6623857Z #endif
+windows	Fetch checksum-verified native Node inputs	﻿2026-08-28T05:12:31.7673635Z ##[group]Run @'
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7674025Z [36;1m@'[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7674270Z [36;1mimport { createHash } from 'node:crypto';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7674661Z [36;1mimport { writeFileSync, appendFileSync } from 'node:fs';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7675057Z [36;1mimport { execFileSync } from 'node:child_process';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7675406Z [36;1mimport { join, basename } from 'node:path';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7675856Z [36;1mif (process.arch !== 'x64') throw new Error('Native x64 Node bootstrap required');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7676379Z [36;1mconst base = 'https://nodejs.org/dist/v20.19.0/';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7676786Z [36;1mconst sumsResponse = await fetch(base + 'SHASUMS256.txt');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7677665Z [36;1mif (!sumsResponse.ok) throw new Error('Cannot fetch checksums');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7678420Z [36;1mconst sums = await sumsResponse.text();[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7678913Z [36;1mfor (const name of ['node-v20.19.0-win-x64.zip', 'node-v20.19.0-headers.tar.gz', 'win-x64/node.lib']) {[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7679473Z [36;1m  const response = await fetch(base + name);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7679840Z [36;1m  if (!response.ok) throw new Error('Cannot fetch ' + name);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7680247Z [36;1m  const bytes = Buffer.from(await response.arrayBuffer());[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7680670Z [36;1m  const sha256 = createHash('sha256').update(bytes).digest('hex');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7681231Z [36;1m  const expected = sums.split('\n').map(line => line.trim().split(/\s+/)).find(parts => parts[1] === name)?.[0];[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7681805Z [36;1m  if (sha256 !== expected) throw new Error('Checksum mismatch: ' + name);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7682302Z [36;1m  writeFileSync(join(process.env.RUNNER_TEMP, basename(name)), bytes);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7682715Z [36;1m  console.log(JSON.stringify({name, sha256}));[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7682994Z [36;1m}[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7683441Z [36;1mexecFileSync('tar', ['-xf', join(process.env.RUNNER_TEMP, 'node-v20.19.0-win-x64.zip'), '-C', process.env.RUNNER_TEMP]);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7684186Z [36;1mappendFileSync(process.env.GITHUB_PATH, join(process.env.RUNNER_TEMP, 'node-v20.19.0-win-x64') + '\n');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7684983Z [36;1mappendFileSync(process.env.GITHUB_ENV, 'EXSPECSO_NODE_HEADERS=' + join(process.env.RUNNER_TEMP, 'node-v20.19.0-headers.tar.gz') + '\n');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7685809Z [36;1mappendFileSync(process.env.GITHUB_ENV, 'EXSPECSO_NODE_LIB=' + join(process.env.RUNNER_TEMP, 'node.lib') + '\n');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7686322Z [36;1m'@ | node --input-type=module[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7686663Z [36;1mif ($LASTEXITCODE) { throw 'Node input verification failed' }[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7783470Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:31.7783889Z ##[endgroup]
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:36.2728207Z {"name":"node-v20.19.0-win-x64.zip","sha256":"be72284c7bc62de07d5a9fd0ae196879842c085f11f7f2b60bf8864c0c9d6a4f"}
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:36.4023929Z {"name":"node-v20.19.0-headers.tar.gz","sha256":"800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb"}
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:12:36.5110570Z {"name":"win-x64/node.lib","sha256":"72f7ca3b33f0991e93e25521f7e78c8adf187df7d5223bf0efcb5e005420f327"}
+windows	Install locked development dependencies without lifecycle scripts	﻿2026-08-28T05:12:37.4092225Z ##[group]Run npm ci --ignore-scripts
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:37.4092678Z [36;1mnpm ci --ignore-scripts[0m
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:37.4092978Z [36;1mif ($LASTEXITCODE) { throw 'npm ci failed' }[0m
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:37.4190467Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:37.4190853Z env:
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:37.4191120Z   EXSPECSO_NODE_HEADERS: D:\a\_temp\node-v20.19.0-headers.tar.gz
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:37.4191472Z   EXSPECSO_NODE_LIB: D:\a\_temp\node.lib
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:37.4191723Z ##[endgroup]
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:41.0070312Z 
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:41.0071694Z added 74 packages, and audited 75 packages in 3s
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:41.0072088Z 
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:41.0072229Z 20 packages are looking for funding
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:41.0072633Z   run `npm fund` for details
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:41.0083011Z 
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:12:41.0083365Z found 0 vulnerabilities
+windows	Build the native Windows release provider and TypeScript	﻿2026-08-28T05:12:41.1526063Z ##[group]Run node native/build.mjs --variant release --target win32-x64 --out . --headers "$env:EXSPECSO_NODE_HEADERS" --node-lib "$env:EXSPECSO_NODE_LIB"
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:41.1527240Z [36;1mnode native/build.mjs --variant release --target win32-x64 --out . --headers "$env:EXSPECSO_NODE_HEADERS" --node-lib "$env:EXSPECSO_NODE_LIB"[0m
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:41.1527928Z [36;1mif ($LASTEXITCODE) { throw 'Native build failed' }[0m
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:41.1528246Z [36;1mnpm run build[0m
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:41.1528526Z [36;1mif ($LASTEXITCODE) { throw 'TypeScript build failed' }[0m
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:41.1620463Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:41.1620839Z env:
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:41.1621122Z   EXSPECSO_NODE_HEADERS: D:\a\_temp\node-v20.19.0-headers.tar.gz
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:41.1621466Z   EXSPECSO_NODE_LIB: D:\a\_temp\node.lib
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:41.1621722Z ##[endgroup]
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5259822Z {
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5261071Z     "imageVersion":  "20260818.207.1",
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5261612Z     "imageOS":  "win25-vs2026",
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5261954Z     "architecture":  "X64",
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5262360Z     "caption":  "Microsoft Windows Server 2025 Datacenter",
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5262870Z     "version":  "10.0.26100",
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5263209Z     "build":  "26100",
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5263498Z     "ubr":  33296,
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5263838Z     "displayVersion":  "24H2",
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5264177Z     "filesystem":  "NTFS",
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5264494Z     "visualStudio":  [
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5264781Z                          {
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5265141Z                              "installationVersion":  null,
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5265610Z                              "installationPath":  null
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5266024Z                          }
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5266322Z                      ],
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5266644Z     "sdkVersion":  "10.0.26100.0",
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5267022Z     "msvcVersion":  "14.44.35207"
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.5267366Z }
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6276140Z Get-FileHash : The term 'Get-FileHash' is not recognized as the name of a cmdlet, function, script file, or operable 
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6277447Z program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6278454Z At D:\a\exspecso\exspecso\native\windows-preflight.ps1:26 char:29
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6279189Z + $metadata.compilerSHA256 = (Get-FileHash $compiler -Algorithm SHA256) ...
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6279745Z +                             ~~~~~~~~~~~~
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6280414Z     + CategoryInfo          : ObjectNotFound: (Get-FileHash:String) [], ParentContainsErrorRecordException
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6281203Z     + FullyQualifiedErrorId : CommandNotFoundException
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6281654Z  
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6635557Z node:internal/errors:984
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6636285Z   const err = new Error(message);
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6637205Z               ^
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6637443Z 
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6639363Z Error: Command failed: powershell.exe -NoProfile -NonInteractive -File D:\a\exspecso\exspecso\native\windows-preflight.ps1
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6640307Z     at genericNodeError (node:internal/errors:984:15)
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6640795Z     at wrappedFn (node:internal/errors:538:14)
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6641759Z     at checkExecSyncError (node:child_process:891:11)
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6642269Z     at execFileSync (node:child_process:927:15)
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6642655Z     at file:///D:/a/exspecso/exspecso/native/build.mjs:40:3
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6643067Z     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6643894Z     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6644409Z     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6644799Z   status: 1,
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6644972Z   signal: null,
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6645169Z   output: [ null, null, null ],
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6647937Z   pid: 3200,
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6648128Z   stdout: null,
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6648315Z   stderr: null
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6648494Z }
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6648583Z 
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.6648665Z Node.js v20.19.0
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.9384996Z [31;1mException: [0mD:\a\_temp\7b217a37-6d55-48ee-9e68-2dc267e5a9d9.ps1:3[0m
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.9385862Z [31;1m[0m[36;1mLine |[0m
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.9386439Z [31;1m[0m[36;1m[36;1m   3 | [0m if ($LASTEXITCODE) { [36;1mthrow 'Native build failed'[0m }[0m
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.9387052Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.9387612Z [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mNative build failed[0m
+windows	Build the native Windows release provider and TypeScript	2026-08-28T05:12:44.9936157Z ##[error]Process completed with exit code 1.
+windows	Preserve actual Windows observations	﻿2026-08-28T05:12:45.0339797Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0352097Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0352560Z with:
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0352833Z   name: containment-windows-parity
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0354367Z   path: windows-preflight/
+windows	Preserve actual Windows observations	windows-provider-results.json
+windows	Preserve actual Windows observations	dist/native/
+windows	Preserve actual Windows observations	
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0354775Z   if-no-files-found: error
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0355008Z   retention-days: 7
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0355675Z   compression-level: 6
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0356242Z   overwrite: false
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0356463Z   include-hidden-files: false
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0356684Z env:
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0356946Z   EXSPECSO_NODE_HEADERS: D:\a\_temp\node-v20.19.0-headers.tar.gz
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0357732Z   EXSPECSO_NODE_LIB: D:\a\_temp\node.lib
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.0358311Z ##[endgroup]
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.2706808Z (node:6284) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.2707570Z (Use `node --trace-deprecation ...` to show where the warning was created)
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.2782259Z Multiple search paths detected. Calculating the least common ancestor of all paths
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.2785619Z The least common ancestor is D:\a\exspecso\exspecso. This will be the root directory of the artifact
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.2786553Z With the provided path, there will be 2 files uploaded
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.2791341Z Artifact name is valid!
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.2793178Z Root directory input is valid!
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.5535386Z Beginning upload of artifact content to blob storage
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.5778136Z (node:6284) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.6769135Z Uploaded bytes 3145
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.7098924Z Finished uploading artifact content to blob storage!
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.7099862Z SHA256 digest of uploaded artifact zip is b657e939ec1269ee39cd91e5cdfc515575b70df67f375df1635d79f76c5d261c
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.7102908Z Finalizing artifact upload
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.9135778Z Artifact containment-windows-parity.zip successfully finalized. Artifact ID 9675071721
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.9137154Z Artifact containment-windows-parity has been successfully uploaded! Final size is 3145 bytes. Artifact ID is 9675071721
+windows	Preserve actual Windows observations	2026-08-28T05:12:45.9150068Z Artifact download URL: https://github.com/ishk-sftckz/exspecso/actions/runs/33144055505/artifacts/9675071721
+windows	Complete job	﻿2026-08-28T05:12:45.9401420Z Cleaning up orphan processes
+windows	Complete job	2026-08-28T05:12:45.9695105Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

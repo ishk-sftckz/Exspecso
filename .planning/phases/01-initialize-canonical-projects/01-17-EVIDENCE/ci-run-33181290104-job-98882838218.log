@@ -1,0 +1,190 @@
+﻿2026-08-28T14:39:49.2966880Z Current runner version: '2.336.0'
+2026-08-28T14:39:49.3006520Z ##[group]Runner Image Provisioner
+2026-08-28T14:39:49.3007160Z Hosted Compute Agent
+2026-08-28T14:39:49.3007680Z Version: 20260707.563
+2026-08-28T14:39:49.3008190Z Commit: 02667638d2b423fbc733a8e32a88b44996a3ba6e
+2026-08-28T14:39:49.3008800Z Build Date: 2026-07-07T19:33:50Z
+2026-08-28T14:39:49.3009300Z Worker ID: {934c6aa2-412b-40dd-9433-ea4b9cb1969f}
+2026-08-28T14:39:49.3009850Z Azure Region: westus
+2026-08-28T14:39:49.3010290Z ##[endgroup]
+2026-08-28T14:39:49.3011360Z ##[group]Operating System
+2026-08-28T14:39:49.3011770Z macOS
+2026-08-28T14:39:49.3012200Z 15.7.7
+2026-08-28T14:39:49.3012610Z 24G720
+2026-08-28T14:39:49.3013000Z ##[endgroup]
+2026-08-28T14:39:49.3013360Z ##[group]Runner Image
+2026-08-28T14:39:49.3013790Z Image: macos-15-arm64
+2026-08-28T14:39:49.3014310Z Version: 20260727.0256.1
+2026-08-28T14:39:49.3015400Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20260727.0256/images/macos/macos-15-arm64-Readme.md
+2026-08-28T14:39:49.3016660Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260727.0256
+2026-08-28T14:39:49.3017630Z ##[endgroup]
+2026-08-28T14:39:49.3018510Z ##[group]GITHUB_TOKEN Permissions
+2026-08-28T14:39:49.3020060Z Metadata: read
+2026-08-28T14:39:49.3020610Z ##[endgroup]
+2026-08-28T14:39:49.3022560Z Secret source: Actions
+2026-08-28T14:39:49.3023490Z Prepare workflow directory
+2026-08-28T14:39:49.3240340Z Prepare all required actions
+2026-08-28T14:39:49.3271850Z Getting action download info
+2026-08-28T14:39:49.4619840Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-08-28T14:39:49.7739730Z Complete job name: ENV-MA / Node 24.0.0
+2026-08-28T14:39:49.8267950Z ##[group]Run git init .
+2026-08-28T14:39:49.8268360Z [36;1mgit init .[0m
+2026-08-28T14:39:49.8268960Z [36;1mgit remote add origin https://github.com/ishk-sftckz/exspecso.git[0m
+2026-08-28T14:39:49.8269550Z [36;1mgit fetch --depth=1 origin "$GITHUB_SHA"[0m
+2026-08-28T14:39:49.8270000Z [36;1mgit checkout --detach FETCH_HEAD[0m
+2026-08-28T14:39:49.8306260Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-28T14:39:49.8306850Z ##[endgroup]
+2026-08-28T14:39:49.9363520Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-08-28T14:39:49.9364500Z Initialized empty Git repository in /Users/runner/work/exspecso/exspecso/.git/
+2026-08-28T14:39:49.9365800Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-08-28T14:39:49.9366770Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-08-28T14:39:49.9367560Z hint: call:
+2026-08-28T14:39:49.9368080Z hint:
+2026-08-28T14:39:49.9368850Z hint: 	git config --global init.defaultBranch <name>
+2026-08-28T14:39:49.9369500Z hint:
+2026-08-28T14:39:49.9370200Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-08-28T14:39:49.9371020Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-08-28T14:39:49.9371810Z hint:
+2026-08-28T14:39:49.9372360Z hint: 	git branch -m <name>
+2026-08-28T14:39:49.9372820Z hint:
+2026-08-28T14:39:49.9373370Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-08-28T14:39:50.9750660Z From https://github.com/ishk-sftckz/exspecso
+2026-08-28T14:39:50.9751330Z  * branch            7c53e13fceb5bfd196220fd1e62a552161ade7a0 -> FETCH_HEAD
+2026-08-28T14:39:51.0619480Z HEAD is now at 7c53e13 fix(01-17): load macOS ASan test runtime
+2026-08-28T14:39:51.0728830Z ##[group]Run set -euo pipefail
+2026-08-28T14:39:51.0729270Z [36;1mset -euo pipefail[0m
+2026-08-28T14:39:51.0729700Z [36;1mruntime_archive="node-v$NODE_LANE-$TARGET.tar.gz"[0m
+2026-08-28T14:39:51.0730250Z [36;1mruntime_base="https://nodejs.org/dist/v$NODE_LANE"[0m
+2026-08-28T14:39:51.0730730Z [36;1mheaders_base=https://nodejs.org/dist/v20.19.0[0m
+2026-08-28T14:39:51.0731420Z [36;1mcurl --fail --silent --show-error "$runtime_base/SHASUMS256.txt" -o runtime-SHASUMS256.txt[0m
+2026-08-28T14:39:51.0732680Z [36;1mcurl --fail --silent --show-error -O "$runtime_base/$runtime_archive" -O "$headers_base/node-v20.19.0-headers.tar.gz"[0m
+2026-08-28T14:39:51.0733420Z [36;1mgrep "  $runtime_archive$" runtime-SHASUMS256.txt | shasum -a 256 -c -[0m
+2026-08-28T14:39:51.0734220Z [36;1mtest "$(shasum -a 256 node-v20.19.0-headers.tar.gz | awk '{print $1}')" = 800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb[0m
+2026-08-28T14:39:51.0735010Z [36;1mtar -xzf "$runtime_archive"[0m
+2026-08-28T14:39:51.0735470Z [36;1mecho "$PWD/node-v$NODE_LANE-$TARGET/bin" >> "$GITHUB_PATH"[0m
+2026-08-28T14:39:51.0736110Z [36;1mecho "EXSPECSO_NODE_HEADERS=$PWD/node-v20.19.0-headers.tar.gz" >> "$GITHUB_ENV"[0m
+2026-08-28T14:39:51.0765590Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-28T14:39:51.0766040Z env:
+2026-08-28T14:39:51.0766330Z   TARGET: darwin-arm64
+2026-08-28T14:39:51.0766720Z   NODE_LANE: 24.0.0
+2026-08-28T14:39:51.0767060Z ##[endgroup]
+2026-08-28T14:39:52.1879550Z node-v24.0.0-darwin-arm64.tar.gz: OK
+2026-08-28T14:39:53.2256290Z ##[group]Run set -euo pipefail
+2026-08-28T14:39:53.2256620Z [36;1mset -euo pipefail[0m
+2026-08-28T14:39:53.2256870Z [36;1mexport EXSPECSO_TEST_TMPDIR="$PWD/.ci-fixtures"[0m
+2026-08-28T14:39:53.2257150Z [36;1mmkdir -p "$EXSPECSO_TEST_TMPDIR"[0m
+2026-08-28T14:39:53.2257390Z [36;1mnpm ci --ignore-scripts[0m
+2026-08-28T14:39:53.2257820Z [36;1mnode native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"[0m
+2026-08-28T14:39:53.2258250Z [36;1mnpm run build[0m
+2026-08-28T14:39:53.2258700Z [36;1mnpm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json[0m
+2026-08-28T14:39:53.2259450Z [36;1mnode native/build.mjs --variant test --diagnostic address --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"[0m
+2026-08-28T14:39:53.2260040Z [36;1mif [ "$FAMILY" = macos ]; then[0m
+2026-08-28T14:39:53.2260390Z [36;1m  asan_runtime="$(clang --print-file-name=libclang_rt.asan_osx_dynamic.dylib)"[0m
+2026-08-28T14:39:53.2260750Z [36;1m  test -f "$asan_runtime"[0m
+2026-08-28T14:39:53.2261010Z [36;1m  export DYLD_INSERT_LIBRARIES="$asan_runtime"[0m
+2026-08-28T14:39:53.2261260Z [36;1mfi[0m
+2026-08-28T14:39:53.2261550Z [36;1mnpm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000[0m
+2026-08-28T14:39:53.2261970Z [36;1munset DYLD_INSERT_LIBRARIES[0m
+2026-08-28T14:39:53.2262430Z [36;1mnode native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"[0m
+2026-08-28T14:39:53.2263290Z [36;1mif [ "$FAMILY" = glibc ]; then node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json; fi[0m
+2026-08-28T14:39:53.2263940Z [36;1mnode scripts/write-containment-evidence.mjs[0m
+2026-08-28T14:39:53.2303580Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-28T14:39:53.2303890Z env:
+2026-08-28T14:39:53.2304200Z   EXSPECSO_NODE_HEADERS: /Users/runner/work/exspecso/exspecso/node-v20.19.0-headers.tar.gz
+2026-08-28T14:39:53.2304590Z   EXSPECSO_CONTAINMENT_ROW: ENV-MA
+2026-08-28T14:39:53.2304810Z   EXSPECSO_OBSERVED_NODE_LANE: 24.0.0
+2026-08-28T14:39:53.2305020Z   TARGET: darwin-arm64
+2026-08-28T14:39:53.2305200Z   FAMILY: macos
+2026-08-28T14:39:53.2305350Z ##[endgroup]
+2026-08-28T14:39:54.7963190Z 
+2026-08-28T14:39:54.7965160Z added 118 packages, and audited 119 packages in 1s
+2026-08-28T14:39:54.7981460Z 
+2026-08-28T14:39:54.7982700Z 30 packages are looking for funding
+2026-08-28T14:39:54.7984240Z   run `npm fund` for details
+2026-08-28T14:39:54.7989510Z 
+2026-08-28T14:39:54.7989920Z found 0 vulnerabilities
+2026-08-28T14:39:59.4834520Z {"variant":"release","supportRowId":"ENV-MA","target":"darwin-arm64","binary":"/Users/runner/work/exspecso/exspecso/dist/native/ENV-MA/darwin-arm64/contained-fs.node","sha256":"037bdf748e3299f95ce17f1347d6b3f7c642d762e64c46e8bfe35a1d160a9ac9","buildCommit":"7c53e13fceb5bfd196220fd1e62a552161ade7a0"}
+2026-08-28T14:39:59.7453300Z 
+2026-08-28T14:39:59.7453870Z > exspecso@0.1.0 build
+2026-08-28T14:39:59.7454220Z > tsc -p tsconfig.json
+2026-08-28T14:39:59.7454330Z 
+2026-08-28T14:39:59.9847140Z 
+2026-08-28T14:39:59.9847630Z > exspecso@0.1.0 test
+2026-08-28T14:39:59.9848170Z > vitest --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+2026-08-28T14:39:59.9848600Z 
+2026-08-28T14:41:11.2222560Z JSON report written to /Users/runner/work/exspecso/exspecso/tracer-results.json
+2026-08-28T14:41:12.7944360Z {"variant":"test","diagnostic":"address","supportRowId":"ENV-MA","target":"darwin-arm64","binary":"/Users/runner/work/exspecso/exspecso/dist/native/ENV-MA/darwin-arm64/contained-fs.node","sha256":"9dfdeb3fc9aa68cfb02d7e595ee3ec0f54a6521dc44e31b3afb72a892a10756a","buildCommit":"7c53e13fceb5bfd196220fd1e62a552161ade7a0"}
+2026-08-28T14:41:14.4695810Z 
+2026-08-28T14:41:14.4696610Z > exspecso@0.1.0 test
+2026-08-28T14:41:14.4698490Z > vitest --run tests/unit/contained-fs.test.ts --testTimeout 60000
+2026-08-28T14:41:14.4699130Z 
+2026-08-28T14:41:14.6881780Z 
+2026-08-28T14:41:14.6884700Z [1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/runner/work/exspecso/exspecso[39m
+2026-08-28T14:41:14.6885930Z 
+2026-08-28T14:41:15.1128680Z ==4409==ERROR: Interceptors are not working. This may be because AddressSanitizer is loaded too late (e.g. via dlopen). Please launch the executable with:
+2026-08-28T14:41:15.1134090Z DYLD_INSERT_LIBRARIES=/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
+2026-08-28T14:41:15.1135770Z "interceptors not installed" && 0
+2026-08-28T14:41:15.1155120Z [31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Errors [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+2026-08-28T14:41:15.1157270Z [31m[1m
+2026-08-28T14:41:15.1157930Z Vitest caught 1 unhandled error during the test run.
+2026-08-28T14:41:15.1159010Z This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+2026-08-28T14:41:15.1178240Z 
+2026-08-28T14:41:15.1179210Z [31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+2026-08-28T14:41:15.1180020Z [31m[1mError[22m: [vitest-pool]: Worker forks emitted error.[39m
+2026-08-28T14:41:15.1180980Z [90m [2m❯[22m EventEmitter.onTaskError node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:[2m3526:21[22m[39m
+2026-08-28T14:41:15.1181820Z [90m [2m❯[22m EventEmitter.emit node:events:[2m507:28[22m[39m
+2026-08-28T14:41:15.1183810Z [90m [2m❯[22m ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:[2m3092:22[22m[39m
+2026-08-28T14:41:15.1184710Z [90m [2m❯[22m ChildProcess.emit node:events:[2m507:28[22m[39m
+2026-08-28T14:41:15.1185560Z [90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+2026-08-28T14:41:15.1186300Z 
+2026-08-28T14:41:15.1188050Z [31m[1mCaused by: Error[22m: Worker exited unexpectedly[39m
+2026-08-28T14:41:15.1190050Z [90m [2m❯[22m ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:[2m3090:33[22m[39m
+2026-08-28T14:41:15.1191690Z [90m [2m❯[22m ChildProcess.emit node:events:[2m507:28[22m[39m
+2026-08-28T14:41:15.1193220Z [90m [2m❯[22m Process.ChildProcess._handle.onexit node:internal/child_process:[2m294:12[22m[39m
+2026-08-28T14:41:15.1194190Z 
+2026-08-28T14:41:15.1194730Z [31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+2026-08-28T14:41:15.1195110Z 
+2026-08-28T14:41:15.1195160Z 
+2026-08-28T14:41:15.1195560Z [2m Test Files [22m [90m (1)[39m
+2026-08-28T14:41:15.1196500Z [2m      Tests [22m [1m[32m1 passed[39m[22m[90m (15)[39m
+2026-08-28T14:41:15.1197600Z [2m     Errors [22m [1m[31m1 error[39m[22m
+2026-08-28T14:41:15.1198650Z [2m   Start at [22m 14:41:14
+2026-08-28T14:41:15.1199660Z [2m   Duration [22m 423ms[2m (transform 44ms, setup 0ms, import 59ms, tests 0ms, environment 0ms)[22m
+2026-08-28T14:41:15.1207240Z 
+2026-08-28T14:41:15.1355710Z ##[error]Process completed with exit code 1.
+2026-08-28T14:41:15.1645440Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-28T14:41:15.1651900Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-08-28T14:41:15.1652460Z with:
+2026-08-28T14:41:15.1652810Z   name: containment-ENV-MA-node-24.0.0
+2026-08-28T14:41:15.1653320Z   path: evidence.json
+filesystem-observation.json
+tracer-results.json
+dist/native/
+windows-preflight/
+
+2026-08-28T14:41:15.1653740Z   if-no-files-found: error
+2026-08-28T14:41:15.1654010Z   retention-days: 7
+2026-08-28T14:41:15.1654510Z   compression-level: 6
+2026-08-28T14:41:15.1654800Z   overwrite: false
+2026-08-28T14:41:15.1655030Z   include-hidden-files: false
+2026-08-28T14:41:15.1655220Z env:
+2026-08-28T14:41:15.1655700Z   EXSPECSO_NODE_HEADERS: /Users/runner/work/exspecso/exspecso/node-v20.19.0-headers.tar.gz
+2026-08-28T14:41:15.1656130Z ##[endgroup]
+2026-08-28T14:41:15.8984060Z (node:4420) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-28T14:41:15.8985590Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-28T14:41:15.9383390Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-08-28T14:41:15.9385530Z The least common ancestor is /Users/runner/work/exspecso/exspecso. This will be the root directory of the artifact
+2026-08-28T14:41:15.9386140Z With the provided path, there will be 5 files uploaded
+2026-08-28T14:41:15.9386610Z Artifact name is valid!
+2026-08-28T14:41:15.9386840Z Root directory input is valid!
+2026-08-28T14:41:16.1791340Z Beginning upload of artifact content to blob storage
+2026-08-28T14:41:16.2773810Z (node:4420) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-08-28T14:41:16.3044930Z Uploaded bytes 65781
+2026-08-28T14:41:16.3187400Z Finished uploading artifact content to blob storage!
+2026-08-28T14:41:16.3187970Z SHA256 digest of uploaded artifact zip is 882bb3036b4027f26c1e9c29609f11ff47a145218a587fe0732370932f776541
+2026-08-28T14:41:16.3188470Z Finalizing artifact upload
+2026-08-28T14:41:16.5266210Z Artifact containment-ENV-MA-node-24.0.0.zip successfully finalized. Artifact ID 9689831142
+2026-08-28T14:41:16.5266900Z Artifact containment-ENV-MA-node-24.0.0 has been successfully uploaded! Final size is 65781 bytes. Artifact ID is 9689831142
+2026-08-28T14:41:16.5377780Z Artifact download URL: https://github.com/ishk-sftckz/exspecso/actions/runs/33181290104/artifacts/9689831142
+2026-08-28T14:41:16.5510590Z Cleaning up orphan processes
+2026-08-28T14:41:17.0320330Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

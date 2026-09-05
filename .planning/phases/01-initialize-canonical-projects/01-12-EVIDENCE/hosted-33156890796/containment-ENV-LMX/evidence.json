@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "matrixRevision": "01-09-approved-2026-08-28",
+  "rowId": "ENV-LMX",
+  "stage": "tracer",
+  "status": "passed",
+  "evidenceMode": "release",
+  "sourceCommit": "c400384a993862e75b29d5c49a1a7374b27f2cc5",
+  "provider": {
+    "sha256": "a724466104c8ae6c316c31a70d7d8ab34143bc88e560c798c78a011bdf9a7d6b",
+    "buildSHA256": "a724466104c8ae6c316c31a70d7d8ab34143bc88e560c798c78a011bdf9a7d6b"
+  },
+  "tracer": {
+    "requiredTestIds": [
+      "installed-native-promotion"
+    ],
+    "reachedTestIds": [
+      "installed-native-promotion"
+    ],
+    "exitCode": 0
+  },
+  "environment": {
+    "native": true,
+    "cpu": "x64",
+    "os": "Alpine 3.24",
+    "kernel": "6.17.0-1022-azure",
+    "filesystem": "ext4",
+    "libc": "musl-1.2.6-r2",
+    "libcObserved": "musl-1.2.6-r2",
+    "node": {
+      "version": "20.19.0",
+      "napi": 8,
+      "runtimeNapi": 9
+    },
+    "compiler": "g++ (Alpine 15.2.0) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+    "toolchain": "Alpine 3.24; gcc/g++/libgcc/libstdc++ 15.2.0-r5; musl/musl-dev 1.2.6-r2; linux-headers 7.0.0-r1",
+    "image": "node:24.20.0-alpine3.24@sha256:4caaaf42195bcd6f6f3559a413b20cb8f8ad089e231ee874cf7701643966689f",
+    "operationRootFilesystem": {
+      "path": "/work/.ci-fixtures",
+      "rawMagicDecimal": "61267",
+      "normalizedMagicDecimal": "61267",
+      "normalizedMagicHex": "0x0000ef53",
+      "mapping": "ext2/ext3",
+      "statText": "ext2/ext3",
+      "mountinfo": [
+        "413 404 8:1 /home/runner/work/exspecso/exspecso /work rw,relatime - ext4 /dev/root rw,discard,errors=remount-ro,commit=30"
+      ]
+    }
+  }
+}

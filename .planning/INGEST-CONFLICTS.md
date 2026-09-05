@@ -8,30 +8,23 @@ None.
 
 None.
 
-### INFO (4)
+### INFO (3)
 
-[INFO] Auto-resolved: v13 implementation authority replaces Documentation v12
-  Found: The accepted ADR declares Documentation v13's Phase-oriented workflow canonical.
+[INFO] Auto-resolved: Phase acceptance refines existing Phase closure requirement
+  Found: The accepted ADR requires Human Phase Acceptance only as the residual human-facing portion of Phase Closure Verification, with reusable lower-scope evidence.
   source: docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md
-  Note: PROJECT.md names Documentation v12 as implementation authority.
-  source: .planning/PROJECT.md
-
-[INFO] Auto-resolved: phase-grooming configuration removed
-  Found: The accepted ADR removes planning.initialPhaseGrooming, progressive, and all-phases from V1 scope.
-  source: docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md
-  Note: existing project context and requirements retain progressive and all-phases as a start-time choice.
-  source: .planning/PROJECT.md
+  Note: Existing requirements and roadmap state Phase closure evidence but do not define the hierarchy, residual-human boundary, or evidence reuse.
   source: .planning/REQUIREMENTS.md
-
-[INFO] Auto-resolved: public planning is Phase-scoped
-  Found: The accepted ADR makes plan PHASE-NNN deeply plan every declared Spec and overrides stale public plan SPEC-NNN statements.
-  source: docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md
-  Note: existing requirements include public plan SPEC-NNN scheduling and one executable Spec folder after deep Spec planning.
-  source: .planning/REQUIREMENTS.md
-
-[INFO] Auto-resolved: implementation is a Phase Delivery Loop with Spec-boundary steps
-  Found: The accepted ADR makes implement PHASE-NNN an outer Phase Delivery Loop with one selected READY Spec at a time, and makes step mode pause at a completed Spec boundary.
-  source: docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md
-  Note: existing roadmap and requirements expose Spec-scoped implementation and Task-boundary step behavior.
   source: .planning/ROADMAP.md
+
+[INFO] Auto-resolved: Phase acceptance state supersedes task-only continuity coverage
+  Found: The accepted ADR defines lazy durable `acceptance.md`, stable `PAC-NNN` checks, `stage: phase-acceptance`, and resume of only pending or needs-retest checks.
+  source: docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md
+  Note: Existing continuity requirements cover interrupted Tasks but do not define Phase acceptance state or resume behavior.
+  source: .planning/REQUIREMENTS.md
+
+[INFO] Auto-resolved: needs-plan-revision supersedes needs-spec-revision for Phase Delivery Loop intent gaps
+  Found: The accepted ADR routes missing or changed intent through unresolved `blocking-plan-gap`, `needs-plan-revision`, and `/exspecso-plan PHASE-NNN`.
+  source: docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md
+  Note: Existing requirements retain `needs-spec-revision` in Phase Delivery Loop and review verdict wording.
   source: .planning/REQUIREMENTS.md

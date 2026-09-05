@@ -1,0 +1,43 @@
+{
+  "supportRowId": "ENV-MA25",
+  "buildCommit": "2fe9a678e9ba9b03c7753f921263afae13c95a84",
+  "variant": "release",
+  "sources": {
+    "native/contained-fs.cc": "f4d3532be4e1df6a561f26c78f02b6b72ac911752952018925fb70f982e6d3bc",
+    "native/contained-fs-posix.cc": "58741597984c7549f195886709c2922b660cc082c27c7f5a6be8354e143dbb59",
+    "native/contained-fs-win.cc": "7842b8a9c79e9e8225de7b601a41dcefabffdb91e5d386e31ef6e741e048b88f",
+    "native/build.mjs": "395f527a8737df1f3386c9bb1be7f6b880815359665aa10ecddfef025a3b14e2",
+    "native/support-matrix.json": "f9ca3f8490a922e86a5b385d8087c116c4999e1d8839384816fec9ae20910d72",
+    "native/windows-preflight.ps1": "ac5d0e940dc0df03fff044803929b0df72714c71b2c5a4f44abe385cc1e9f5d3"
+  },
+  "headerHash": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+  "compiler": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+  "compilerVersion": "Apple clang version 17.0.0 (clang-1700.6.4.2)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin",
+  "developerDirectory": "/Library/Developer/CommandLineTools",
+  "sdk": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+  "sdkVersion": "26.2",
+  "sdkBuild": "25C58",
+  "osVersion": "26.5.1",
+  "osBuild": "25F80",
+  "args": [
+    "-std=c++17",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-fvisibility=hidden",
+    "-bundle",
+    "-undefined",
+    "dynamic_lookup",
+    "-isysroot",
+    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+    "-mmacosx-version-min=26.5.1",
+    "-DNAPI_VERSION=8",
+    "-DNODE_GYP_MODULE_NAME=contained_fs",
+    "-I",
+    "/var/folders/gb/rm0q4rln62b29shqvhmg3d5c0000gn/T/exspecso-native-build-ggG0Yj/node-v20.19.0/include/node",
+    "/Users/ishk.sftckz/Projects/exspecso/native/contained-fs.cc",
+    "-o",
+    "/Users/ishk.sftckz/Projects/exspecso/dist/native/ENV-MA25/darwin-arm64/contained-fs.node"
+  ],
+  "binarySHA256": "dba77dba8c0d15dfe1cf20ee512d86e0b915038b6ccd8666a0296dede07bfc98"
+}

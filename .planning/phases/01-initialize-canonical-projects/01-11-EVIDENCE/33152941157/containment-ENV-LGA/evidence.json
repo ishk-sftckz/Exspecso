@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "matrixRevision": "01-09-approved-2026-08-28",
+  "rowId": "ENV-LGA",
+  "stage": "tracer",
+  "status": "passed",
+  "evidenceMode": "release",
+  "sourceCommit": "587ab446eecb6a5681cf61f651781c3e9c463989",
+  "provider": {
+    "sha256": "847a10f52f8e6e8eacc0b081a9ebe07944ee8a8ce0fa6f5d49f7a3fc344f1bd1",
+    "buildSHA256": "847a10f52f8e6e8eacc0b081a9ebe07944ee8a8ce0fa6f5d49f7a3fc344f1bd1"
+  },
+  "tracer": {
+    "requiredTestIds": [
+      "installed-native-promotion"
+    ],
+    "reachedTestIds": [
+      "installed-native-promotion"
+    ],
+    "exitCode": 0
+  },
+  "environment": {
+    "native": true,
+    "cpu": "arm64",
+    "os": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.17.0-1022-azure",
+    "filesystem": "ext4",
+    "libc": "glibc 2.39",
+    "node": {
+      "version": "20.19.0",
+      "napi": 8,
+      "runtimeNapi": 9
+    },
+    "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+    "toolchain": "GCC/G++ 13.3.0; package 13.3.0-6ubuntu2~24.04.1",
+    "image": "20260823.101.1"
+  }
+}

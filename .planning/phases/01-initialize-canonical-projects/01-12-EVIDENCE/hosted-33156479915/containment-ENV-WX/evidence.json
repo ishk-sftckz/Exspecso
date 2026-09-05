@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "matrixRevision": "01-09-approved-2026-08-28",
+  "rowId": "ENV-WX",
+  "stage": "tracer",
+  "status": "passed",
+  "evidenceMode": "release",
+  "sourceCommit": "6a9d1ba2f50fc1daca80ecb2e636b5a47f02f2c3",
+  "provider": {
+    "sha256": "7ccc818cd645e62187e2eb317df2b6edfe0251c25c1102db0513b5bddc2e44e8",
+    "buildSHA256": "7ccc818cd645e62187e2eb317df2b6edfe0251c25c1102db0513b5bddc2e44e8"
+  },
+  "tracer": {
+    "requiredTestIds": [
+      "installed-native-promotion"
+    ],
+    "reachedTestIds": [
+      "installed-native-promotion"
+    ],
+    "exitCode": 0
+  },
+  "environment": {
+    "native": true,
+    "cpu": "x64",
+    "os": "10.0.26100",
+    "kernel": "26100.33296",
+    "filesystem": "ntfs",
+    "libc": "system",
+    "libcObserved": "system",
+    "node": {
+      "version": "20.19.0",
+      "napi": 8,
+      "runtimeNapi": 9
+    },
+    "compiler": "19.44.35228.0",
+    "toolchain": "VS 2026 18.9.12112.369; MSVC 14.44.35207; Windows SDK 10.0.26100.0",
+    "image": "20260824.214.3"
+  }
+}

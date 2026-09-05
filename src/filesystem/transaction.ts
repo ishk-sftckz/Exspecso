@@ -1,30 +1,20 @@
 import { randomUUID } from "node:crypto";
-import { copyFile, lstat, mkdir, open, readFile, rm, rmdir, unlink, writeFile } from "node:fs/promises";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { lstat, readFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import { sha256 } from "../adapters/managed-file.js";
 import type { PlannedWrite } from "../init/plan.js";
-import { assertSafeTarget, assertSafeTransactionPaths } from "./safe-path.js";
+import { assertSafeTransactionPaths } from "./safe-path.js";
+import { acquireInitOwnership, inspectInitOwnership, releaseInitOwnership, type InitOwnership } from "./ownership.js";
+import { openContainedFilesystem, type DirectoryCapability, type RootCapability } from "./contained-fs.js";
+import {
+  transactionSchemaVersion,
+  type TransactionJournal,
+  type TransactionJournalEntry,
+} from "./journal.js";
 
-export const transactionSchemaVersion = 1;
+export { transactionSchemaVersion, type TransactionJournal, type TransactionJournalEntry } from "./journal.js";
 export const stagingRelativePath = ".exspecso/.staging";
-export const lockRelativePath = ".exspecso/.init.lock";
-
-export interface TransactionJournalEntry {
-  readonly relativePath: string;
-  readonly preimageHash: string | null;
-  readonly stagedHash: string;
-  readonly backupPath: string | null;
-  readonly backupHash: string | null;
-}
-
-export interface TransactionJournal {
-  readonly schemaVersion: typeof transactionSchemaVersion;
-  readonly transactionId: string;
-  readonly repositoryRootFingerprint: string;
-  readonly entries: readonly TransactionJournalEntry[];
-  readonly promotionOrder: readonly string[];
-  readonly completedStep: number;
-}
+export { lockRelativePath } from "./ownership.js";
 
 export type TransactionResult =
   | { readonly kind: "committed"; readonly transactionId: string }
@@ -32,7 +22,7 @@ export type TransactionResult =
   | { readonly kind: "busy" }
   | { readonly kind: "failed"; readonly transactionId: string; readonly error: Error };
 
-export type PromotionFaultPoint = `after-promotion:${string}`;
+export type PromotionFaultPoint = `before-promotion:${string}` | `after-promotion:${string}` | `after-journal:${string}`;
 
 export interface CommitTransactionOptions {
   /** Test-only deterministic seam. It never changes the production state machine. */
@@ -40,13 +30,14 @@ export interface CommitTransactionOptions {
   readonly faultMode?: "throw" | "interrupt";
   readonly onPromotion?: (point: PromotionFaultPoint) => void | Promise<void>;
   readonly onReadyToPromote?: () => void | Promise<void>;
-  readonly validateStaged?: (stageRoot: string) => void | Promise<void>;
+  readonly validateStaged?: (stage: StagedNamespace) => void | Promise<void>;
+  /** Test-only operation boundary. Release providers never expose it. */
+  readonly onBeforeStaging?: (stage: DirectoryCapability) => void | Promise<void>;
+  /** Internal caller-owned lease; nested transaction work never releases it. */
+  readonly ownership?: InitOwnership;
 }
 
-interface LockHandle {
-  readonly path: string;
-  readonly handle: Awaited<ReturnType<typeof open>>;
-}
+export interface StagedNamespace { read(components: readonly string[]): Buffer; }
 
 function faultPoint(relativePath: string): PromotionFaultPoint {
   return `after-promotion:${relativePath}`;
@@ -64,105 +55,109 @@ export function journalPath(stageRoot: string): string {
   return join(stageRoot, "journal.json");
 }
 
-async function writeSynced(path: string, content: string): Promise<void> {
-  await mkdir(dirname(path), { recursive: true });
-  const handle = await open(path, "w");
+function components(path: string): string[] { return path.split("/").filter(Boolean); }
+function withDirectory<T>(root: DirectoryCapability, path: readonly string[], create: boolean, action: (directory: DirectoryCapability) => T): T {
+  let directory = root; const opened: DirectoryCapability[] = [];
   try {
-    await handle.writeFile(content, "utf8");
-    await handle.sync();
-  } finally {
-    await handle.close();
+    for (const component of path) { directory = directory.openDirectory(component, create); opened.push(directory); }
+    return action(directory);
+  } finally { for (const capability of opened.reverse()) capability.close(); }
+}
+function writeBound(root: DirectoryCapability, path: readonly string[], content: string): void {
+  const name = path.at(-1); if (!name) throw new Error("EXSPECSO_TRANSACTION_STAGE_PATH");
+  withDirectory(root, path.slice(0, -1), true, (parent) => {
+    const file = parent.createFile(name);
+    try { file.write(Buffer.from(content, "utf8")); file.sync(); } finally { file.close(); }
+  });
+}
+function replaceBound(root: DirectoryCapability, path: readonly string[], content: string): void {
+  const name = path.at(-1); if (!name) throw new Error("EXSPECSO_TRANSACTION_STAGE_PATH");
+  withDirectory(root, path.slice(0, -1), true, (parent) => {
+    const temporary = parent.createFile(`.exspecso-journal-${randomUUID()}`);
+    try { temporary.write(Buffer.from(content, "utf8")); temporary.sync(); parent.replace(temporary, name); parent.sync(); }
+    finally { temporary.close(); }
+  });
+}
+function readBound(root: DirectoryCapability, path: readonly string[]): Buffer {
+  const name = path.at(-1); if (!name) throw new Error("EXSPECSO_TRANSACTION_STAGE_PATH");
+  return withDirectory(root, path.slice(0, -1), false, (parent) => { const file = parent.openFile(name); try { return file.read(); } finally { file.close(); } });
+}
+function readOptionalBound(root: DirectoryCapability, path: readonly string[]): string | undefined {
+  try { return readBound(root, path).toString("utf8"); } catch (error) { if (error instanceof Error && error.message.includes("EXSPECSO_CONTAINMENT_ENOENT")) return undefined; throw error; }
+}
+function removeBound(root: DirectoryCapability, path: readonly string[]): void {
+  const name = path.at(-1); if (!name) return;
+  try { withDirectory(root, path.slice(0, -1), false, (parent) => parent.unlink(name)); } catch {}
+}
+function removeEmptyDirectories(root: DirectoryCapability, path: readonly string[]): void {
+  for (let length = path.length; length > 0; length -= 1) {
+    try { withDirectory(root, path.slice(0, length - 1), false, (parent) => parent.removeDirectory(path[length - 1]!)); } catch { break; }
   }
 }
-
-async function syncDirectory(path: string): Promise<void> {
-  try {
-    const handle = await open(path, "r");
-    try {
-      await handle.sync();
-    } finally {
-      await handle.close();
+function key(path: readonly string[]): string { return path.join("/"); }
+function knownTransactionEntries(journal: TransactionJournal): Map<string, Set<string>> {
+  const known = new Map<string, Set<string>>();
+  const add = (path: readonly string[]) => {
+    for (let index = 0; index < path.length; index += 1) {
+      const parent = key(path.slice(0, index));
+      const entries = known.get(parent) ?? new Set<string>();
+      entries.add(path[index]!);
+      known.set(parent, entries);
     }
-  } catch {
-    // Directory syncing is unavailable on some supported filesystems. The
-    // journal/recovery contract remains explicitly process-level (D-19).
-  }
-}
-
-async function copySynced(source: string, destination: string): Promise<void> {
-  await mkdir(dirname(destination), { recursive: true });
-  await copyFile(source, destination);
-  const handle = await open(destination, "r");
-  try {
-    await handle.sync();
-  } finally {
-    await handle.close();
-  }
-  await syncDirectory(dirname(destination));
-}
-
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf8");
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
-    throw error;
-  }
-}
-
-async function acquireLock(root: string, transactionId: string): Promise<LockHandle | null> {
-  const lockPath = join(root, lockRelativePath);
-  await mkdir(dirname(lockPath), { recursive: true });
-  try {
-    const handle = await open(lockPath, "wx");
-    await handle.writeFile(JSON.stringify({ transactionId, pid: process.pid }), "utf8");
-    await handle.sync();
-    return { path: lockPath, handle };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "EEXIST") return null;
-    throw error;
-  }
-}
-
-async function releaseLock(lock: LockHandle | undefined): Promise<void> {
-  if (lock === undefined) return;
-  await lock.handle.close();
-  await unlink(lock.path).catch(() => undefined);
-}
-
-async function removeKnownTransaction(stageRoot: string, journal: TransactionJournal): Promise<void> {
+  };
+  add(["journal.json"]);
   for (const entry of journal.entries) {
-    await rm(stageFile(stageRoot, entry.relativePath), { force: true });
-    if (entry.backupPath !== null) await rm(join(stageRoot, entry.backupPath), { force: true });
+    add(["files", ...components(entry.relativePath)]);
+    if (entry.backupPath !== null) add(components(entry.backupPath));
   }
-  await rm(journalPath(stageRoot), { force: true });
-  for (const directory of [join(stageRoot, "files"), join(stageRoot, "backups"), stageRoot]) {
-    await rmdir(directory).catch(() => undefined);
+  return known;
+}
+/** Refuse cleanup before mutation if the stage contains evidence the journal did not identify. */
+function hasOnlyKnownTransactionEntries(directory: DirectoryCapability, path: readonly string[], known: ReadonlyMap<string, ReadonlySet<string>>): boolean {
+  const expected = known.get(key(path)) ?? new Set<string>();
+  const actual = directory.list();
+  if (actual.some((name) => !expected.has(name))) return false;
+  for (const name of actual) {
+    const childPath = [...path, name];
+    if (known.has(key(childPath))) {
+      let child: DirectoryCapability;
+      try { child = directory.openDirectory(name); } catch { return false; }
+      try { if (!hasOnlyKnownTransactionEntries(child, childPath, known)) return false; }
+      finally { child.close(); }
+    } else {
+      try { directory.openFile(name).close(); } catch { return false; }
+    }
   }
-  await rmdir(dirname(stageRoot)).catch(() => undefined);
+  return true;
+}
+function cleanupBoundTransaction(stage: DirectoryCapability, staging: DirectoryCapability, journal: TransactionJournal): void {
+  if (!hasOnlyKnownTransactionEntries(stage, [], knownTransactionEntries(journal))) {
+    throw new Error("EXSPECSO_TRANSACTION_CLEANUP_UNKNOWN_EVIDENCE");
+  }
+  for (const entry of journal.entries) {
+    const staged = ["files", ...components(entry.relativePath)]; removeBound(stage, staged); removeEmptyDirectories(stage, staged.slice(0, -1));
+    if (entry.backupPath !== null) { const backup = components(entry.backupPath); removeBound(stage, backup); removeEmptyDirectories(stage, backup.slice(0, -1)); }
+  }
+  removeBound(stage, ["journal.json"]); stage.close(); staging.removeDirectory(journal.transactionId); staging.close();
 }
 
-async function updateJournal(stageRoot: string, journal: TransactionJournal): Promise<TransactionJournal> {
-  await writeSynced(journalPath(stageRoot), `${JSON.stringify(journal, null, 2)}\n`);
-  await syncDirectory(stageRoot);
+/** Recovery reaches the operational journal through its already-held directory. */
+export function readBoundTransactionJournal(stage: DirectoryCapability): unknown {
+  return JSON.parse(readBound(stage, ["journal.json"]).toString("utf8")) as unknown;
+}
+
+/** Remove only entries named by validated recovery evidence. */
+export function removeRecoveredTransactionBound(root: DirectoryCapability, stage: DirectoryCapability, staging: DirectoryCapability, journal: TransactionJournal): void {
+  cleanupBoundTransaction(stage, staging, journal);
+  for (const entry of journal.entries) {
+    if (entry.preimageHash === null) removeEmptyDirectories(root, components(entry.relativePath).slice(0, -1));
+  }
+}
+
+async function updateJournal(stage: DirectoryCapability, journal: TransactionJournal): Promise<TransactionJournal> {
+  replaceBound(stage, ["journal.json"], `${JSON.stringify(journal, null, 2)}\n`);
+  stage.sync();
   return journal;
-}
-
-async function signalExternalFault(point: PromotionFaultPoint): Promise<void> {
-  const signalPath = process.env.EXSPECSO_TEST_SYNC_FILE;
-  if (signalPath === undefined) return;
-  await writeFile(signalPath, `${JSON.stringify({ point, pid: process.pid })}\n`, "utf8");
-  if (process.env.EXSPECSO_TEST_WAIT_FOR_KILL === "1") {
-    await new Promise<void>(() => undefined);
-  }
-}
-
-function environmentFaultOptions(): CommitTransactionOptions {
-  const point = process.env.EXSPECSO_TEST_FAULT_POINT;
-  if (point !== undefined && point.startsWith("after-promotion:")) {
-    return { faultAt: point as PromotionFaultPoint, faultMode: process.env.EXSPECSO_TEST_FAULT_MODE === "interrupt" ? "interrupt" : "throw" };
-  }
-  return {};
 }
 
 /**
@@ -170,37 +165,49 @@ function environmentFaultOptions(): CommitTransactionOptions {
  * failure intentionally retains the identified journal and byte copies for
  * conservative next-invocation recovery; only a validated success cleans it.
  */
-export async function commitTransaction(plan: { readonly repositoryRoot: string; readonly writes: readonly PlannedWrite[] }, options: CommitTransactionOptions = environmentFaultOptions()): Promise<TransactionResult> {
+export async function commitTransaction(plan: { readonly repositoryRoot: string; readonly writes: readonly PlannedWrite[] }, options: CommitTransactionOptions = {}): Promise<TransactionResult> {
   const root = resolve(plan.repositoryRoot);
   if (plan.writes.length === 0) return { kind: "no-op" };
   const transactionId = randomUUID();
+  let filesystem: RootCapability | undefined;
   try {
+    filesystem = openContainedFilesystem(root);
     await assertSafeTransactionPaths(root, plan.writes);
   } catch (error) {
+    filesystem?.close();
     return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
   }
-  const lock = await acquireLock(root, transactionId);
-  if (lock === null) return { kind: "busy" };
-  const stageRoot = join(root, stagingRelativePath, transactionId);
+  let ownership = options.ownership;
+  let ownsLease = false;
+  if (ownership === undefined) {
+    try {
+      const acquisition = await acquireInitOwnership(root, { rootDirectory: filesystem.root });
+      if (acquisition.kind !== "acquired") { filesystem.close(); return { kind: "busy" }; }
+      ownership = acquisition.ownership;
+      ownsLease = true;
+    } catch (error) {
+      filesystem.close();
+      return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
+    }
+  }
   let journal: TransactionJournal | undefined;
+  let staging: DirectoryCapability | undefined;
+  let stage: DirectoryCapability | undefined;
+  const promotionParents = new Map<string, DirectoryCapability>();
   let committed = false;
   try {
-    await mkdir(dirname(stageRoot), { recursive: true });
-    await mkdir(stageRoot, { recursive: false });
+    staging = ownership.operationalDirectory.openDirectory(".staging", true);
+    stage = staging.createDirectory(transactionId);
+    await options.onBeforeStaging?.(stage);
     const entries: TransactionJournalEntry[] = [];
+    const preimages = new Map<string, string | undefined>();
     for (const write of plan.writes) {
-      const current = await readOptional(write.target);
+      const current = readOptionalBound(filesystem.root, components(write.relativePath));
       if ((current === undefined) !== !write.expectedExists || (current !== undefined && sha256(current) !== write.expectedPreimageHash)) {
         throw new Error(`EXSPECSO_TRANSACTION_STALE_PREIMAGE: ${write.relativePath}`);
       }
-      const staged = stageFile(stageRoot, write.relativePath);
-      await writeSynced(staged, write.content);
-      if (sha256(await readFile(staged, "utf8")) !== sha256(write.content)) throw new Error(`EXSPECSO_TRANSACTION_STAGED_HASH: ${write.relativePath}`);
-      const backupPath = current === undefined ? null : join("backups", write.relativePath);
-      if (current !== undefined && backupPath !== null) {
-        const backup = join(stageRoot, backupPath);
-        await writeSynced(backup, current);
-      }
+      preimages.set(write.relativePath, current);
+      const backupPath = current === undefined ? null : `backups/${write.relativePath}`;
       entries.push({
         relativePath: write.relativePath,
         preimageHash: current === undefined ? null : sha256(current),
@@ -209,41 +216,106 @@ export async function commitTransaction(plan: { readonly repositoryRoot: string;
         backupHash: current === undefined ? null : sha256(current),
       });
     }
-    await syncDirectory(join(stageRoot, "files"));
-    journal = await updateJournal(stageRoot, {
+    journal = await updateJournal(stage, {
       schemaVersion: transactionSchemaVersion,
       transactionId,
       repositoryRootFingerprint: sha256(root),
       entries,
       promotionOrder: entries.map((entry) => entry.relativePath),
+      state: "preparing",
+      inFlight: null,
+      completedPromotions: [],
       completedStep: -1,
     });
-    await options.validateStaged?.(stageRoot);
+    for (const [index, write] of plan.writes.entries()) {
+      const entry = entries[index]!;
+      writeBound(stage, ["files", ...components(write.relativePath)], write.content);
+      if (sha256(readBound(stage, ["files", ...components(write.relativePath)]).toString("utf8")) !== entry.stagedHash) throw new Error(`EXSPECSO_TRANSACTION_STAGED_HASH: ${write.relativePath}`);
+      if (entry.backupPath !== null) {
+        const current = preimages.get(write.relativePath);
+        if (current === undefined) throw new Error(`EXSPECSO_TRANSACTION_PREIMAGE: ${write.relativePath}`);
+        writeBound(stage, components(entry.backupPath), current);
+        if (sha256(readBound(stage, components(entry.backupPath)).toString("utf8")) !== entry.backupHash) throw new Error(`EXSPECSO_TRANSACTION_BACKUP_HASH: ${write.relativePath}`);
+      }
+    }
+    const files = stage.openDirectory("files");
+    try { files.sync(); } finally { files.close(); }
+    journal = await updateJournal(stage, {
+      ...journal,
+      state: "prepared",
+    });
+    // Capture every destination parent before the first native replacement
+    // boundary. Promotion then uses only those held objects, even if a caller
+    // relocates a directory while a test-only replacement barrier is active.
+    for (const write of plan.writes) {
+      const targetComponents = components(write.relativePath);
+      targetComponents.pop();
+      let parent = filesystem.root;
+      for (const component of targetComponents) parent = parent.openDirectory(component, true);
+      promotionParents.set(write.relativePath, parent);
+    }
+    await options.validateStaged?.({ read(path) { return readBound(stage!, path); } });
     await options.onReadyToPromote?.();
 
     for (const [index, relativePath] of journal.promotionOrder.entries()) {
       const write = plan.writes.find((candidate) => candidate.relativePath === relativePath);
       if (write === undefined) throw new Error(`EXSPECSO_TRANSACTION_JOURNAL_TARGET: ${relativePath}`);
-      await assertSafeTarget(root, write);
-      await copySynced(stageFile(stageRoot, relativePath), write.target);
-      if (sha256(await readFile(write.target, "utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_HASH: ${relativePath}`);
-      journal = await updateJournal(stageRoot, { ...journal, completedStep: index });
+      const targetComponents = components(relativePath);
+      const name = targetComponents.pop()!;
+      const parent = promotionParents.get(relativePath);
+      if (parent === undefined) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_PARENT: ${relativePath}`);
+      let existing: string | undefined;
+      try {
+        const file = parent.openFile(name);
+        try { existing = file.read().toString("utf8"); } finally { file.close(); }
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "EXSPECSO_CONTAINMENT_ENOENT") throw error;
+      }
+      if (existing === undefined ? write.expectedExists : !write.expectedExists || sha256(existing) !== write.expectedPreimageHash) {
+        throw new Error(`EXSPECSO_TRANSACTION_STALE_PREIMAGE: ${relativePath}`);
+      }
+      const staged = readBound(stage, ["files", ...components(relativePath)]);
+      if (sha256(staged.toString("utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_STAGED_HASH: ${relativePath}`);
+      journal = await updateJournal(stage, { ...journal, state: "promoting", inFlight: { relativePath, operation: "replace" } });
+      const before = `before-promotion:${relativePath}` as PromotionFaultPoint;
+      if (options.faultAt === before) throw new Error(`EXSPECSO_TRANSACTION_TEST_FAULT: ${before}`);
+      const temporary = parent.createFile(`.exspecso-tmp-${randomUUID()}`);
+      try {
+        temporary.write(staged);
+        temporary.sync();
+        parent.replace(temporary, name, true);
+        if (sha256(temporary.read().toString("utf8")) !== journal.entries[index].stagedHash) throw new Error(`EXSPECSO_TRANSACTION_PROMOTION_HASH: ${relativePath}`);
+        parent.sync();
+      } finally { temporary.close(); }
+      journal = await updateJournal(stage, { ...journal, state: "promoting", inFlight: null, completedPromotions: [...journal.completedPromotions, relativePath], completedStep: index });
+      const afterJournal = `after-journal:${relativePath}` as PromotionFaultPoint;
+      if (options.faultAt === afterJournal) throw new Error(`EXSPECSO_TRANSACTION_TEST_FAULT: ${afterJournal}`);
       const point = faultPoint(relativePath);
       await options.onPromotion?.(point);
-      await signalExternalFault(point);
       if (options.faultAt === point) {
         if (options.faultMode === "interrupt") throw new Error(`EXSPECSO_TRANSACTION_TEST_INTERRUPT: ${point}`);
         throw new Error(`EXSPECSO_TRANSACTION_TEST_FAULT: ${point}`);
       }
     }
+    journal = await updateJournal(stage, { ...journal, state: "cleaning", inFlight: null });
     committed = true;
-    await removeKnownTransaction(stageRoot, journal);
+    cleanupBoundTransaction(stage, staging, journal);
+    stage = undefined; staging = undefined;
     return { kind: "committed", transactionId };
   } catch (error) {
     return { kind: "failed", transactionId, error: error instanceof Error ? error : new Error(String(error)) };
   } finally {
-    await releaseLock(lock);
-    if (committed && journal !== undefined) await rmdir(join(root, ".exspecso", ".staging")).catch(() => undefined);
+    try {
+      if (committed && journal !== undefined) {
+        try { ownership.operationalDirectory.removeDirectory(".staging"); } catch {}
+      }
+    } finally {
+      try { if (ownsLease && ownership !== undefined) await releaseInitOwnership(ownership); }
+      finally {
+        for (const parent of promotionParents.values()) parent.close();
+        filesystem.close();
+      }
+    }
   }
 }
 
@@ -252,28 +324,12 @@ export async function readTransactionJournal(stageRoot: string): Promise<Transac
 }
 
 export async function transactionIsActive(root: string): Promise<boolean> {
-  const lockPath = join(root, lockRelativePath);
-  try {
-    const lock = JSON.parse(await readFile(lockPath, "utf8")) as { pid?: unknown };
-    if (typeof lock.pid !== "number" || !Number.isInteger(lock.pid) || lock.pid <= 0) return false;
-    try {
-      process.kill(lock.pid, 0);
-      return true;
-    } catch (error) {
-      return (error as NodeJS.ErrnoException).code === "EPERM";
-    }
-  } catch {
-    return false;
-  }
+  const inspection = await inspectInitOwnership(root);
+  return inspection.kind !== "none" && inspection.kind !== "stale";
 }
 
 export function transactionStageRoot(root: string, transactionId: string): string {
   return join(root, stagingRelativePath, transactionId);
-}
-
-export async function removeRecoveredTransaction(root: string, stageRoot: string, journal: TransactionJournal): Promise<void> {
-  await removeKnownTransaction(stageRoot, journal);
-  await unlink(join(root, lockRelativePath)).catch(() => undefined);
 }
 
 export async function isRegularFile(path: string): Promise<boolean> {

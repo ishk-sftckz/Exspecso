@@ -13,12 +13,20 @@ export interface ManagedFileInspection {
 const templateVersion = 1;
 const managedHeader = /^<!-- exspecso:managed template-version=(\d+) original-body-sha256=([a-f0-9]{64}) -->\n/;
 
+function frontmatterEnd(content: string): number {
+  // Only the leading LF-delimited block emitted by the skill templates counts.
+  // Never search arbitrary prose for a marker and infer ownership from it.
+  return content.match(/^---\n[\s\S]*?\n---\n/)?.[0].length ?? 0;
+}
+
 export function sha256(content: string): string {
   return createHash("sha256").update(content).digest("hex");
 }
 
 export function renderManagedFile(body: string): string {
-  return `<!-- exspecso:managed template-version=${templateVersion} original-body-sha256=${sha256(body)} -->\n${body}`;
+  const offset = frontmatterEnd(body);
+  const header = `<!-- exspecso:managed template-version=${templateVersion} original-body-sha256=${sha256(body)} -->\n`;
+  return body.slice(0, offset) + header + body.slice(offset);
 }
 
 function renderUnifiedDiff(existing: string, generated: string): string {
@@ -50,17 +58,21 @@ export function inspectManagedFile(existingContent: string | undefined, generate
     return Object.freeze({ state: "absent" });
   }
 
-  const header = existingContent.match(managedHeader);
+  // Version 1 fingerprints exclude only the marker, in both the legacy
+  // marker-first layout and the native frontmatter-first skill layout.
+  const offset = frontmatterEnd(existingContent);
+  const headerContent = existingContent.slice(offset);
+  const header = headerContent.match(managedHeader);
   if (header === null) {
     return Object.freeze({
-      state: existingContent.startsWith("<!-- exspecso:managed") ? "malformed-header" : "unowned",
+      state: headerContent.startsWith("<!-- exspecso:managed") ? "malformed-header" : "unowned",
       existingContent,
       diff: renderUnifiedDiff(existingContent, generatedContent),
     });
   }
 
   const [, version, expectedHash] = header;
-  const body = existingContent.slice(header[0].length);
+  const body = existingContent.slice(0, offset) + existingContent.slice(offset + header[0].length);
   const actualHash = sha256(body);
   if (version !== String(templateVersion)) {
     return Object.freeze({

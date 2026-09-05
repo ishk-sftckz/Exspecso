@@ -28,7 +28,8 @@ export const ARTIFACT_ID_PATTERNS = Object.freeze({
   PLAN: /^PLAN-[0-9]{3}$/,
   TASK: /^TASK-[0-9]{3}$/,
   DEC: /^DEC-[0-9]{3}$/,
-  FINDING: /^FINDING-[0-9]{3}$/,
+  FIND: /^FIND-[0-9]{3}$/,
+  PAC: /^PAC-[0-9]{3}$/,
 });
 
 export type ArtifactKind = keyof typeof ARTIFACT_ID_PATTERNS;

@@ -3,22 +3,22 @@
 ## Source Intake
 
 - Documents synthesized: 2 (ADR: 1; SPEC: 1; PRD: 0; DOC: 0; UNKNOWN: 0)
-- Cycle detection: no cycles found; maximum traversal depth is below 50.
+- Cycle detection: no cycles found; the classified SPEC references the classified ADR and the ADR has no classified return reference. Maximum traversal depth is below 50.
 
 ## Extracted Intel
 
 - Locked decisions: 1
   - docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md
 - Requirements extracted: 0
-- Constraints extracted: 9 (schema: 1; protocol: 8)
+- Constraints extracted: 15 (schema: 2; protocol: 12; nfr: 1)
 - Context topics: 0
 
 ## Conflict Status
 
 - Blockers: 0
 - Competing variants: 0
-- Auto-resolved: 4
-- The accepted ADR has manifest precedence 0 and resolves the listed Documentation v12 workflow differences.
+- Auto-resolved: 3
+- The accepted ADR has manifest precedence 0; the classified SPEC has manifest precedence 10.
 
 ## Outputs
 

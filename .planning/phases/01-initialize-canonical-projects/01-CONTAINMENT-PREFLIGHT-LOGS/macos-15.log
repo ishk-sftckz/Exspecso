@@ -1,0 +1,162 @@
+RUNNER_OS=macOS
+RUNNER_ARCH=ARM64
+ImageOS=macos15
+ImageVersion=20260727.0256.1
+
+METADATA_COMMAND uname -smr
+Darwin 24.6.0 arm64
+METADATA_EXIT 0
+
+METADATA_COMMAND node --input-type=module -e console.log(JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,napi:process.versions.napi,execPath:process.execPath}))
+{"node":"v22.23.1","platform":"darwin","arch":"arm64","napi":"10","execPath":"/opt/homebrew/Cellar/node@22/22.23.1/bin/node"}
+METADATA_EXIT 0
+
+METADATA_COMMAND python3 --version
+Python 3.14.6
+METADATA_EXIT 0
+
+METADATA_COMMAND clang --version
+Apple clang version 17.0.0 (clang-1700.0.13.5)
+Target: arm64-apple-darwin24.6.0
+Thread model: posix
+InstalledDir: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
+METADATA_EXIT 0
+
+METADATA_COMMAND sw_vers
+ProductName:		macOS
+ProductVersion:		15.7.7
+BuildVersion:		24G720
+METADATA_EXIT 0
+
+METADATA_COMMAND xcodebuild -version
+Xcode 16.4
+Build version 16F6
+METADATA_EXIT 0
+
+METADATA_COMMAND xcrun --show-sdk-version
+15.5
+METADATA_EXIT 0
+
+METADATA_COMMAND xcrun --show-sdk-build-version
+24F74
+METADATA_EXIT 0
+
+METADATA_COMMAND xcrun --find clang
+/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+METADATA_EXIT 0
+FILESYSTEM_PATH=/Users/runner/work/exspecso/exspecso
+
+METADATA_COMMAND diskutil info /dev/disk3s5
+Device Identifier:         disk3s5
+Device Node:               /dev/disk3s5
+Whole:                     No
+Part of Whole:             disk3
+
+Volume Name:               Data
+Mounted:                   Yes
+Mount Point:               /System/Volumes/Data
+
+Partition Type:            41504653-0000-11AA-AA11-00306543ECAC
+File System Personality:   APFS
+Type (Bundle):             apfs
+Name (User Visible):       APFS
+Owners:                    Enabled
+
+OS Can Be Installed:       Yes
+Booter Disk:               disk3s2
+Recovery Disk:             disk3s3
+Media Type:                
+Protocol:                  
+SMART Status:              Not Supported
+Volume UUID:               5A9643C0-E2FD-4D1F-975A-93BD12D57767
+Disk / Partition UUID:     5A9643C0-E2FD-4D1F-975A-93BD12D57767
+
+Disk Size:                 343.1 GB (343073095680 Bytes) (exactly 670064640 512-Byte-Units)
+Device Block Size:         4096 Bytes
+
+Volume Used Space:         275.5 GB (275492507648 Bytes) (exactly 538071304 512-Byte-Units)
+Container Total Space:     343.1 GB (343073095680 Bytes) (exactly 670064640 512-Byte-Units)
+Container Free Space:      47.8 GB (47800938496 Bytes) (exactly 93361208 512-Byte-Units)
+Allocation Block Size:     4096 Bytes
+
+Media OS Use Only:         No
+Media Read-Only:           No
+Volume Read-Only:          No
+
+Device Location:           Internal
+Removable Media:           Fixed
+
+Solid State:               Yes
+
+This disk is an APFS Volume.  APFS Information:
+APFS Container:            disk3
+APFS Physical Store:       disk0s2
+Fusion Drive:              No
+APFS Volume Group:         5A9643C0-E2FD-4D1F-975A-93BD12D57767
+Encrypted:                 No
+FileVault:                 No
+Sealed:                    No
+Locked:                    No
+
+METADATA_EXIT 0
+FILESYSTEM_PATH=/Users/runner/work/_temp
+
+METADATA_COMMAND diskutil info /dev/disk3s5
+Device Identifier:         disk3s5
+Device Node:               /dev/disk3s5
+Whole:                     No
+Part of Whole:             disk3
+
+Volume Name:               Data
+Mounted:                   Yes
+Mount Point:               /System/Volumes/Data
+
+Partition Type:            41504653-0000-11AA-AA11-00306543ECAC
+File System Personality:   APFS
+Type (Bundle):             apfs
+Name (User Visible):       APFS
+Owners:                    Enabled
+
+OS Can Be Installed:       Yes
+Booter Disk:               disk3s2
+Recovery Disk:             disk3s3
+Media Type:                
+Protocol:                  
+SMART Status:              Not Supported
+Volume UUID:               5A9643C0-E2FD-4D1F-975A-93BD12D57767
+Disk / Partition UUID:     5A9643C0-E2FD-4D1F-975A-93BD12D57767
+
+Disk Size:                 343.1 GB (343073095680 Bytes) (exactly 670064640 512-Byte-Units)
+Device Block Size:         4096 Bytes
+
+Volume Used Space:         275.5 GB (275492507648 Bytes) (exactly 538071304 512-Byte-Units)
+Container Total Space:     343.1 GB (343073095680 Bytes) (exactly 670064640 512-Byte-Units)
+Container Free Space:      47.8 GB (47800938496 Bytes) (exactly 93361208 512-Byte-Units)
+Allocation Block Size:     4096 Bytes
+
+Media OS Use Only:         No
+Media Read-Only:           No
+Volume Read-Only:          No
+
+Device Location:           Internal
+Removable Media:           Fixed
+
+Solid State:               Yes
+
+This disk is an APFS Volume.  APFS Information:
+APFS Container:            disk3
+APFS Physical Store:       disk0s2
+Fusion Drive:              No
+APFS Volume Group:         5A9643C0-E2FD-4D1F-975A-93BD12D57767
+Encrypted:                 No
+FileVault:                 No
+Sealed:                    No
+Locked:                    No
+
+METADATA_EXIT 0
+PREINSTALLED_NODE_CACHE
+/Users/runner/hostedtoolcache/node
+/Users/runner/hostedtoolcache/node/24.18.0
+/Users/runner/hostedtoolcache/node/24.18.0/arm64
+/Users/runner/hostedtoolcache/node/22.23.1
+/Users/runner/hostedtoolcache/node/22.23.1/arm64

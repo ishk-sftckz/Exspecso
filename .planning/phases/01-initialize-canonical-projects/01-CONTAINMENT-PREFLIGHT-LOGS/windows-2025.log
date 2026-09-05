@@ -1,0 +1,17 @@
+{"RUNNER_OS":"Windows","RUNNER_ARCH":"X64","ImageOS":"win25-vs2026","ImageVersion":"20260818.207.1","OSArchitecture":"X64","ProcessArchitecture":"X64"}
+{"Caption":"Microsoft Windows Server 2025 Datacenter","Version":"10.0.26100","BuildNumber":"26100","OSArchitecture":"64-bit"}
+{"Name":"AMD EPYC 7763 64-Core Processor                ","Architecture":9}
+{"node":"v22.23.2","platform":"win32","arch":"x64","napi":"10","execPath":"C:\\Program Files\\nodejs\\node.exe"}
+{"DriveLetter":"D","FileSystemType":"NTFS","DriveType":"Fixed"}
+{"DriveLetter":"D","FileSystemType":"NTFS","DriveType":"Fixed"}
+{"displayName":"Visual Studio Enterprise 2026","installationVersion":"18.9.12112.369","installationPath":"C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise"}
+[{"Name":"14.29.30133"},{"Name":"14.44.35207"},{"Name":"14.51.36231"}]
+WINDOWS_SDK_INCLUDE_VERSIONS
+{"Name":"10.0.26100.0"}
+clang version 20.1.8
+Target: x86_64-pc-windows-msvc
+Thread model: posix
+InstalledDir: C:\Program Files\LLVM\bin
+Python 3.12.10
+PREINSTALLED_NODE_CACHE
+[{"Name":"22.23.2"},{"Name":"24.19.0"}]

@@ -4,8 +4,9 @@ import { join } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import { renderConstitution, renderProjectConfig } from "../../src/artifacts/templates.js";
-import { resolveArtifact, scanArtifactDefinitions } from "../../src/artifacts/resolve.js";
+import { resolveArtifact, scanArtifactDefinitions, scanArtifacts } from "../../src/artifacts/resolve.js";
 import { ARTIFACT_ID_PATTERNS, projectConfigSchema } from "../../src/artifacts/schema.js";
+import type { BoundReader } from "../../src/filesystem/contained-fs.js";
 import { runInit } from "../../src/init/run-init.js";
 
 const temporaryPaths: string[] = [];
@@ -50,7 +51,7 @@ describe("canonical artifact contracts", () => {
     expect(renderConstitution()).toBe(`# Exspecso Constitution\n\n## Artifact truth\nRepository files are the inspectable source of project truth.\n\n## Human control\nPeople approve intent, scope, and meaningful tradeoffs.\n\n## Evidence integrity\nCompletion claims require evidence that matches the behavior claimed.\n\n## Bounded scope\nWork stays within approved requirements and explicit recovery limits.\n\n## Runtime portability\nSupported coding runtimes share one portable Exspecso artifact model.\n`);
   });
 
-  it("recognizes exactly the nine D-20 public ID families and rejects aliases", async () => {
+  it("recognizes exactly the ten D-20 public ID families and rejects aliases", async () => {
     expect(Object.keys(ARTIFACT_ID_PATTERNS)).toEqual([
       "ROADMAP",
       "PHASE",
@@ -60,11 +61,12 @@ describe("canonical artifact contracts", () => {
       "PLAN",
       "TASK",
       "DEC",
-      "FINDING",
+      "FIND",
+      "PAC",
     ]);
 
     const root = await fixture();
-    await write(root, "ids.md", "# ROADMAP\n# PHASE-001\n# SPEC-001\n# REQ-001\n# AC-001\n# PLAN-001\n# TASK-001\n# DEC-001\n# FINDING-001\n# REQUIREMENT-001\n");
+    await write(root, "ids.md", "# ROADMAP\n# PHASE-001\n# SPEC-001\n# REQ-001\n# AC-001\n# PLAN-001\n# TASK-001\n# DEC-001\n# FIND-001\n# PAC-001\n# FINDING-001\n# REQUIREMENT-001\n");
     const definitions = await scanArtifactDefinitions(root);
 
     expect(definitions.map((definition) => definition.id)).toEqual([
@@ -76,9 +78,14 @@ describe("canonical artifact contracts", () => {
       "PLAN-001",
       "TASK-001",
       "DEC-001",
-      "FINDING-001",
+      "FIND-001",
+      "PAC-001",
     ]);
     await expect(resolveArtifact(root, "REQUIREMENT-001")).resolves.toMatchObject({
+      kind: "not-found",
+      diagnostics: [{ code: "EXSPECSO_ARTIFACT_INVALID_ID" }],
+    });
+    await expect(resolveArtifact(root, "FINDING-001")).resolves.toMatchObject({
       kind: "not-found",
       diagnostics: [{ code: "EXSPECSO_ARTIFACT_INVALID_ID" }],
     });
@@ -102,16 +109,23 @@ describe("canonical artifact contracts", () => {
     expect(secondTask).toMatchObject({ kind: "resolved", location: { kind: "section", path: "specs/SPEC-001/tasks.md", heading: "## TASK-002 Second task", startLine: 6, endLine: 7 } });
   });
 
-  it("resolves every exact D-20 family to a canonical location", async () => {
+  it("resolves every exact D-20 family to a canonical location, including FIND and PAC sections", async () => {
     const root = await fixture();
     await write(root, ".exspecso/roadmap.md", "# ROADMAP\n");
-    await write(root, ".exspecso/definitions.md", "# PHASE-001\n# SPEC-001\n# REQ-001\n# AC-001\n# PLAN-001\n# TASK-001\n# DEC-001\n# FINDING-001\n");
+    await write(root, ".exspecso/definitions.md", "# PHASE-001\n# SPEC-001\n# REQ-001\n# AC-001\n# PLAN-001\n# TASK-001\n# DEC-001\n\n## FIND-001 A hand-authored finding\nFinding body.\n\n## PAC-001 A hand-authored Phase Acceptance Check\nPAC body.\n");
 
     const results = await Promise.all([
-      "ROADMAP", "PHASE-001", "SPEC-001", "REQ-001", "AC-001", "PLAN-001", "TASK-001", "DEC-001", "FINDING-001",
+      "ROADMAP", "PHASE-001", "SPEC-001", "REQ-001", "AC-001", "PLAN-001", "TASK-001", "DEC-001", "FIND-001", "PAC-001",
     ].map((id) => resolveArtifact(root, id)));
+    const definitions = await scanArtifactDefinitions(root);
 
-    expect(results.map((result) => result.kind)).toEqual(Array(9).fill("resolved"));
+    expect(results.map((result) => result.kind)).toEqual(Array(10).fill("resolved"));
+    expect(definitions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "FIND-001", artifactKind: "FIND" }),
+      expect.objectContaining({ id: "PAC-001", artifactKind: "PAC" }),
+    ]));
+    expect(results[8]).toMatchObject({ location: { kind: "section", path: ".exspecso/definitions.md", heading: "## FIND-001 A hand-authored finding", startLine: 9, endLine: 11 } });
+    expect(results[9]).toMatchObject({ location: { kind: "section", path: ".exspecso/definitions.md", heading: "## PAC-001 A hand-authored Phase Acceptance Check", startLine: 12, endLine: 13 } });
   });
 
   it("keeps identity stable across title changes and declaration reordering, but fails closed for duplicates", async () => {
@@ -128,6 +142,138 @@ describe("canonical artifact contracts", () => {
       definitions: [{ path: "duplicate.md" }, { path: "specs.md" }],
       diagnostics: [{ code: "EXSPECSO_ARTIFACT_DUPLICATE_ID" }],
     });
+  });
+
+  it("keeps adjacent FIND and PAC sections exact across rename, reorder, duplicates, and concurrent resolution", async () => {
+    const root = await fixture();
+    const path = "phases/PHASE-001/review.md";
+    const content = "---\nparent: PHASE-001\n---\n# Review notes\n\n## PAC-001 Renamed Phase Acceptance Check\nPAC body.\n\n## FIND-001 Renamed finding\nFinding body.\n\n";
+    await write(root, path, content);
+    await write(root, "phases/PHASE-001/parent.md", "# PHASE-001\n");
+    const before = await readFile(join(root, path), "utf8");
+
+    await expect(resolveArtifact(root, "PAC-001")).resolves.toEqual({
+      kind: "resolved",
+      id: "PAC-001",
+      location: { kind: "section", path, heading: "## PAC-001 Renamed Phase Acceptance Check", startLine: 6, endLine: 8 },
+    });
+    const results = await Promise.all(Array.from({ length: 12 }, () => resolveArtifact(root, "FIND-001")));
+    expect(results).toEqual(Array.from({ length: 12 }, () => results[0]));
+    await expect(readFile(join(root, path), "utf8")).resolves.toBe(before);
+
+    await write(root, "phases/PHASE-001/duplicate-finding.md", "# FIND-001 Duplicate finding\n");
+    await expect(resolveArtifact(root, "FIND-001")).resolves.toMatchObject({
+      kind: "ambiguous",
+      definitions: [{ path: "phases/PHASE-001/duplicate-finding.md" }, { path }],
+      diagnostics: [{ code: "EXSPECSO_ARTIFACT_DUPLICATE_ID" }],
+    });
+  });
+
+  it("rejects blank, malformed, legacy, and unknown FIND/PAC lookups with the canonical vocabulary", async () => {
+    const root = await fixture();
+
+    for (const id of ["", "FIND-01", "FINDING-001", "FIND-0010", "PAC-XYZ", "UNKNOWN-001"]) {
+      await expect(resolveArtifact(root, id)).resolves.toMatchObject({
+        kind: "not-found",
+        diagnostics: [{
+          code: "EXSPECSO_ARTIFACT_INVALID_ID",
+          expected: expect.stringContaining("FIND-NNN"),
+          hint: expect.not.stringContaining("FINDING-NNN"),
+        }],
+      });
+    }
+  });
+
+  it("retains every explicitly declared invalid JSON id and parent shape as a diagnostic", async () => {
+    const root = await fixture();
+    const cases: readonly [string, unknown, string][] = [
+      ["invalid-string", "REQUIREMENT-001", "REQUIREMENT-001"],
+      ["blank", "", "blank"],
+      ["null", null, "null"],
+      ["number", 1, "1"],
+      ["boolean", true, "true"],
+      ["array", [], "[]"],
+      ["object", {}, "{}"],
+    ];
+
+    for (const [index, [name, value]] of cases.entries()) {
+      await write(root, `.exspecso/${name}-id.json`, JSON.stringify({ id: value, parent: "PHASE-001" }));
+      await write(root, `.exspecso/${name}-parent.json`, JSON.stringify({ id: `SPEC-${String(index + 1).padStart(3, "0")}`, parent: value }));
+    }
+
+    const scan = await scanArtifacts(root);
+
+    for (const [name, _value, actual] of cases) {
+      expect(scan.diagnostics).toContainEqual(expect.objectContaining({
+        code: "EXSPECSO_ARTIFACT_INVALID_ID",
+        path: `.exspecso/${name}-id.json`,
+        section: "id",
+        actual,
+      }));
+      expect(scan.diagnostics).toContainEqual(expect.objectContaining({
+        code: "EXSPECSO_ARTIFACT_INVALID_ID",
+        path: `.exspecso/${name}-parent.json`,
+        section: "parent",
+        actual,
+      }));
+    }
+  });
+
+  it("keeps valid JSON definitions separate from explicit frontmatter diagnostics", async () => {
+    const root = await fixture();
+    await write(root, ".exspecso/definition.json", JSON.stringify({ id: "SPEC-001", parent: "PHASE-001" }));
+    await write(root, ".exspecso/invalid-frontmatter.md", "---\nid: REQUIREMENT-001\nparent:\n---\n# Notes\n");
+    await write(root, ".exspecso/exspecso.config.json", renderProjectConfig({
+      schemaVersion: 1,
+      project: { id: "df1c86ff-73de-4ec6-849e-6de229cb3b02", title: "Fixture" },
+      mode: "unclassified",
+      selectedAgents: ["codex"],
+      onboardingStatus: "not-started",
+    }));
+
+    const scan = await scanArtifacts(root);
+
+    expect(scan.definitions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "SPEC-001", parentId: "PHASE-001" }),
+    ]));
+    expect(scan.diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: ".exspecso/invalid-frontmatter.md", section: "id", actual: "REQUIREMENT-001" }),
+      expect.objectContaining({ path: ".exspecso/invalid-frontmatter.md", section: "parent", actual: "blank" }),
+    ]));
+    expect(scan.diagnostics).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: ".exspecso/exspecso.config.json", code: "EXSPECSO_ARTIFACT_INVALID_ID" }),
+    ]));
+  });
+
+  it("reports substituted artifact entries without reading their external bytes", async () => {
+    const reader: BoundReader = {
+      list(components) {
+        if (components.length === 0) return [".exspecso", "redirect"];
+        if (components.join("/") === ".exspecso") return ["definition.json", "broken.json"];
+        throw new Error("EXSPECSO_CONTAINMENT_ENOENT: absent directory");
+      },
+      metadata(components) {
+        const path = components.join("/");
+        if (path === ".exspecso") return "directory";
+        if ([".exspecso/definition.json", ".exspecso/broken.json"].includes(path)) return "file";
+        if (path === "redirect") throw new Error("EXSPECSO_CONTAINMENT_IO: symbolic link rejected");
+        throw new Error("EXSPECSO_CONTAINMENT_ENOENT: absent path");
+      },
+      read(components) {
+        const path = components.join("/");
+        if (path === ".exspecso/definition.json") return Buffer.from('{"id":"SPEC-001","parent":"PHASE-001"}');
+        if (path === ".exspecso/broken.json") return Buffer.from("{ malformed");
+        throw new Error("external bytes must not be read");
+      },
+    };
+
+    const scan = await scanArtifacts("/repository", reader);
+
+    expect(scan.definitions).toEqual([expect.objectContaining({ id: "SPEC-001", path: ".exspecso/definition.json" })]);
+    expect(scan.diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "EXSPECSO_ARTIFACT_PARSE", path: ".exspecso/broken.json" }),
+      expect.objectContaining({ code: "EXSPECSO_ARTIFACT_UNSAFE_READ", path: "redirect" }),
+    ]));
   });
 
   it("returns byte-equivalent locations from concurrent read-only resolution", async () => {
@@ -174,7 +320,7 @@ describe("canonical artifact contracts", () => {
     await expect(readFile(join(root, ".exspecso/exspecso.config.json"), "utf8")).resolves.toContain("unclassified");
     await expect(readFile(join(root, ".exspecso/constitution.md"), "utf8")).resolves.toContain("Artifact truth");
     await expect(readFile(join(root, ".agents/skills/exspecso-start/SKILL.md"), "utf8")).resolves.toContain("exspecso-start");
-    for (const deferredPath of ["roadmap.md", "phases", "specs", "requirements", "plans", "tasks", "decisions", "findings", "trace", "research", "reports", "reviews"]) {
+    for (const deferredPath of ["roadmap.md", "phases", "specs", "requirements", "plans", "tasks", "decisions", "findings", "phase-acceptance", "acceptance.md", "trace", "research", "reports", "reviews"]) {
       await expect(readFile(join(root, ".exspecso", deferredPath), "utf8")).rejects.toThrow();
     }
   });

@@ -4,28 +4,9 @@
   "confidence": "high",
   "manifest_override": true,
   "title": "Exspecso v13 Phase-Oriented Workflow Design",
-  "summary": "Approves the v13 phase-oriented planning and implementation workflow while preserving exspecso-<operation> portable command identities.",
-  "scope": [
-    "phase-oriented workflow",
-    "start",
-    "plan PHASE-NNN",
-    "implement PHASE-NNN",
-    "Phase Delivery Loop",
-    "Spec Delivery Loop",
-    "new-phase",
-    "portable operation identity",
-    "roadmap",
-    "planning artifacts"
-  ],
-  "cross_refs": [
-    "https://app.notion.com/p/2837d0b4dee2808c9745fc3d986960de",
-    "https://app.notion.com/p/30c7d0b4dee280daaf81ff66ad8c960d",
-    "https://app.notion.com/p/3ad7d0b4dee281ec9a2bf2d3d0f7b588",
-    "https://app.notion.com/p/3ad7d0b4dee281d5afa9cef8d742710c",
-    "https://app.notion.com/p/3ad7d0b4dee2818c8a86c12c2882fc0c",
-    "https://app.notion.com/p/3ad7d0b4dee28193abdadeecb779a5af",
-    "../research/runtime-command-naming.md"
-  ],
+  "summary": "Accepted design establishing the canonical v13 phase-oriented workflow, portable operation identity, and Phase Closure Verification acceptance model.",
+  "scope": ["phase-oriented workflow", "Roadmap", "Phase Delivery Loop", "Spec Delivery Loop", "verification hierarchy", "Human Phase Acceptance", "durable PAC state", "failure routing", "portable operation identity"],
+  "cross_refs": ["../research/runtime-command-naming.md", "PROJECT.md", "STATE.md", "Requirements", "Roadmap"],
   "locked": true,
   "precedence": 0,
   "notes": ""

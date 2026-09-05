@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 2,
+  "matrixRevision": "01-19-approved-2026-08-28",
+  "rowId": "ENV-MA25",
+  "stage": "prerequisite",
+  "status": "passed",
+  "evidenceMode": "release",
+  "sourceCommit": "889e5373ee564575d99ee7a4069b66d09ca590d9",
+  "provider": {
+    "sha256": "d064680fae19b776b1ab941cb404757c4efd64afbf3b50d85a24b3e4c1c7eee8",
+    "buildSHA256": "d064680fae19b776b1ab941cb404757c4efd64afbf3b50d85a24b3e4c1c7eee8",
+    "napi": 8,
+    "path": "ENV-MA25/darwin-arm64/contained-fs.node"
+  },
+  "manifest": {
+    "sha256": "d6d8b6d6232f14ed88a2df1c83b53988666ce11bc74c78f7053ad137b8c2c5ec"
+  },
+  "nodeLanes": [
+    "25.2.1"
+  ],
+  "toolchain": {
+    "headerSha256": "800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb",
+    "compilerVersion": "Apple clang version 17.0.0 (clang-1700.6.4.2)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin",
+    "sdkVersion": "26.2",
+    "sdkBuild": "25C58",
+    "developerDirectory": "/Library/Developer/CommandLineTools"
+  },
+  "environment": {
+    "native": true,
+    "cpu": "arm64",
+    "os": "macos",
+    "osVersion": "26.5.1",
+    "osBuild": "25F80",
+    "kernel": "25F80",
+    "filesystem": "apfs",
+    "libc": "system",
+    "libcObserved": "system",
+    "node": {
+      "version": "25.2.1",
+      "liveNapi": 10
+    },
+    "compiler": "Apple clang version 17.0.0 (clang-1700.6.4.2)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin",
+    "toolchain": "Command Line Tools; Apple clang 17.0.0 clang-1700.6.4.2; SDK 26.2 (25C58)",
+    "developerDirectory": "/Library/Developer/CommandLineTools",
+    "sdkPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+  },
+  "fullSuite": {
+    "exitCode": 0,
+    "passed": 137,
+    "total": 137,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0
+  }
+}

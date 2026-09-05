@@ -1,0 +1,69 @@
+name: Containment POSIX tracer
+on: {}
+permissions: {}
+concurrency:
+  group: containment-posix-tracer
+  cancel-in-progress: false
+jobs:
+  tracer:
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+    steps:
+      - name: Fetch this exact public task snapshot
+        shell: bash
+        run: |
+          git init .
+          git remote add origin https://github.com/ishk-sftckz/exspecso.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+      - name: Verify the approved runner and fetch checksum-verified Node inputs
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import { writeFileSync, appendFileSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          import { join } from 'node:path';
+          if (process.arch !== 'arm64' || process.env.ImageVersion !== '20260727.0256.1') throw new Error('Runner CPU/image drift: ' + JSON.stringify({arch: process.arch, image: process.env.ImageVersion}));
+          const base = 'https://nodejs.org/dist/v20.19.0/';
+          const sumsResponse = await fetch(base + 'SHASUMS256.txt');
+          if (!sumsResponse.ok) throw new Error('Cannot fetch Node checksums');
+          const sums = await sumsResponse.text();
+          for (const name of ['node-v20.19.0-darwin-arm64.tar.gz', 'node-v20.19.0-headers.tar.gz']) {
+            const response = await fetch(base + name);
+            if (!response.ok) throw new Error('Cannot fetch ' + name);
+            const bytes = Buffer.from(await response.arrayBuffer());
+            const sha256 = createHash('sha256').update(bytes).digest('hex');
+            const expected = sums.split('\n').map(line => line.trim().split(/\s+/)).find(parts => parts[1] === name)?.[0];
+            if (sha256 !== expected) throw new Error('Node input hash mismatch: ' + name);
+            writeFileSync(join(process.env.RUNNER_TEMP, name), bytes);
+            console.log(JSON.stringify({name, sha256}));
+          }
+          execFileSync('tar', ['-xzf', join(process.env.RUNNER_TEMP, 'node-v20.19.0-darwin-arm64.tar.gz'), '-C', process.env.RUNNER_TEMP]);
+          appendFileSync(process.env.GITHUB_PATH, join(process.env.RUNNER_TEMP, 'node-v20.19.0-darwin-arm64', 'bin') + '\n');
+          appendFileSync(process.env.GITHUB_ENV, 'EXSPECSO_NODE_HEADERS=' + join(process.env.RUNNER_TEMP, 'node-v20.19.0-headers.tar.gz') + '\n');
+          console.log(JSON.stringify({image: process.env.ImageVersion, arch: process.arch}));
+          NODE
+      - name: Install locked development dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Build the release provider and TypeScript
+        run: |
+          node native/build.mjs --variant release --row ENV-MA --out . --headers "$EXSPECSO_NODE_HEADERS"
+          npm run build
+      - name: Run the provider and installed tracer tests
+        run: npm test -- --run tests/unit/contained-fs.test.ts tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=default --reporter=json --outputFile=tracer-results.json
+      - name: Run the existing regression suite with the host provider
+        run: npm test -- --run --testTimeout 60000 --reporter=default --reporter=json --outputFile=regression-results.json
+      - name: Preserve the actual host binaries and test report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: containment-posix-tracer
+          path: |
+            dist/native/
+            tracer-results.json
+            regression-results.json
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "matrixRevision": "01-09-approved-2026-08-28",
+  "rowId": "ENV-WA",
+  "stage": "tracer",
+  "status": "passed",
+  "evidenceMode": "release",
+  "sourceCommit": "bb796935c7d9e81c6da656b82e48e825e498c976",
+  "provider": {
+    "sha256": "d7ec4d8077a6e8ce73754bb66ffcbc38215f828f75ef1692e4aec57f9c954a3a",
+    "buildSHA256": "d7ec4d8077a6e8ce73754bb66ffcbc38215f828f75ef1692e4aec57f9c954a3a"
+  },
+  "tracer": {
+    "requiredTestIds": [
+      "installed-native-promotion"
+    ],
+    "reachedTestIds": [
+      "installed-native-promotion"
+    ],
+    "exitCode": 0
+  },
+  "environment": {
+    "native": true,
+    "cpu": "arm64",
+    "os": "10.0.26200",
+    "kernel": "26200.9168",
+    "filesystem": "ntfs",
+    "libc": "system",
+    "node": {
+      "version": "20.19.0",
+      "napi": 8,
+      "runtimeNapi": 9
+    },
+    "compiler": "19.44.35228.0",
+    "toolchain": "VS 2022 17.14.37614.0; MSVC 14.44.35207; Windows SDK 10.0.26100.0",
+    "image": "20260823.149.1"
+  }
+}

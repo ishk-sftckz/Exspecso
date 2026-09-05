@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "packageVersion": "0.1.0",
+  "buildCommit": "22a7a0852d514ce4e81f3dce08916942aa0f41e2",
+  "variant": "release",
+  "targets": [
+    {
+      "target": "win32-x64",
+      "platform": "win32",
+      "arch": "x64",
+      "osVersion": "10.0.26100",
+      "osBuild": "26100.33296",
+      "filesystem": "ntfs",
+      "napiVersion": 8,
+      "byteLength": 183296,
+      "sha256": "31b70760768d756164da6d349ae5e1b8fbaa4eb9cbdc6c2f1299e0adeed9bb05",
+      "path": "win32-x64/contained-fs.node"
+    }
+  ]
+}

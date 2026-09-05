@@ -14,20 +14,20 @@ Approved specs must survive context limits, implementation, failure, verificatio
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ A user can initialize Exspecso in a Git repository through one idempotent `npx exspecso init` flow and select one or more supported coding-agent integrations. — Phase 1
 
 ### Active
 
-- [ ] A user can initialize Exspecso in a Git repository through one idempotent `npx exspecso init` flow and select one or more supported coding-agent integrations.
 - [ ] A user can run discovery and orientation to establish accurate, challenged, user-approved project context and one minimum-complete canonical Roadmap containing lightweight Phase and Spec declarations.
 - [ ] A user can run `/exspecso-plan PHASE-NNN` to materialize one Roadmap-declared Phase and deeply plan every Spec declared under it without flattening their independent boundaries.
 - [ ] A user can invoke the same portable `exspecso-<operation>` skill identity in every supported runtime, documented through the canonical `/exspecso-<operation>` command notation.
 - [ ] A user can extend the canonical Roadmap with `/exspecso-new-phase`, including the new Phase's lightweight Spec map, without creating a second Roadmap lifecycle.
 - [ ] An approved Spec contains current Requirements, Acceptance Criteria, verification intent, the smallest viable Plan, and bounded Tasks with explicit scope and dependencies.
-- [ ] Deterministic helpers can reconstruct context, resolve artifacts, validate dependencies, compute Phase/Spec/Task readiness and status, enforce WIP and verification gates, manage checkpoints, maintain traceability, and derive nested Delivery Loop transitions from repository files.
+- [ ] Deterministic helpers can reconstruct context, resolve artifacts, validate dependencies, compute Phase/Spec/Task readiness and status, enforce WIP and verification gates, manage checkpoints, maintain traceability, derive nested Delivery Loop transitions, and reconstruct Phase Closure Verification/Human Phase Acceptance state from repository files.
 - [ ] `/exspecso-implement PHASE-NNN` can deliver one finite approved Phase by selecting one READY Spec at a time and running it through a bounded internal Spec Delivery Loop.
-- [ ] Failed verification or correctable review findings can enter a bounded Correction Loop that preserves approved scope and reruns the same evidence contract.
-- [ ] Interrupted incomplete Tasks can resume from lightweight persisted state without being misrepresented as complete.
+- [ ] Phase Closure Verification proves integrated Phase outcomes after all Specs are done, reuses sufficiently strong lower-level evidence, and invokes durable Human Phase Acceptance only for the residual proof that genuinely requires the user.
+- [ ] Failed verification, correctable review findings, and failed human checks inside approved intent can enter bounded correction that preserves approved scope and reruns affected evidence, while missing or changed intent returns `needs-plan-revision` through Phase planning.
+- [ ] Interrupted incomplete Tasks and pending Human Phase Acceptance can resume from lightweight persisted state without being misrepresented as complete or repeating unaffected accepted evidence.
 - [ ] Every completed Task can be traced from approved Requirement and Acceptance Criterion through code changes, passing evidence, and a verified durable checkpoint.
 - [ ] Claude Code, OpenAI Codex, and OpenCode can operate on the same canonical artifacts and continue one another's work without migration.
 - [ ] Commands remain safe to rerun, surface malformed or drifting state explicitly, and preserve prior confirmed work through atomic writes and Git boundaries.
@@ -67,17 +67,17 @@ Canonical implementation guidance lives in the Notion Documentation v13 set and 
 
 The repository is currently greenfield for implementation. It contains branding assets and guidance but no application source. Existing branding language that references superseded mechanisms such as RALP must be reconciled with Documentation v13 during implementation rather than treated as canonical product behavior.
 
-Documentation v13 defines a Phase-oriented user workflow over bounded internal Spec and Task contracts. After project-direction confirmation, `/exspecso-start` writes one stable `.exspecso/roadmap.md` containing the smallest complete Phase map and a lightweight Spec map for every Phase without materializing Phase folders or detailed Spec artifacts. `/exspecso-plan PHASE-NNN` materializes one declared Phase and deeply plans every Spec under it. `/exspecso-implement PHASE-NNN` runs one bounded Phase Delivery Loop that selects a READY Spec and executes its internal Spec Delivery Loop one at a time by default. Later work extends the same Roadmap through `/exspecso-new-phase`; V1 has no public `/exspecso-new-roadmap` command, Phase-grooming configuration, or separate canonical Roadmap status file.
+Documentation v13 defines a Phase-oriented user workflow over bounded internal Spec and Task contracts. After project-direction confirmation, `/exspecso-start` writes one stable `.exspecso/roadmap.md` containing the smallest complete Phase map and a lightweight Spec map for every Phase without materializing Phase folders or detailed Spec artifacts. `/exspecso-plan PHASE-NNN` materializes one declared Phase and deeply plans every Spec under it. `/exspecso-implement PHASE-NNN` runs one bounded Phase Delivery Loop that selects a READY Spec and executes its internal Spec Delivery Loop one at a time by default. After all Specs are done, Phase Closure Verification proves the integrated Phase outcome; Human Phase Acceptance is only its residual human-facing portion and is persisted/resumed through lazy Phase acceptance state when required. Later work extends the same Roadmap through `/exspecso-new-phase`; V1 has no public `/exspecso-new-roadmap` command, Phase-grooming configuration, or separate canonical Roadmap status file.
 
 Primary users are developers, solo founders, and small engineering teams that want meaningful AI-agent autonomy inside durable intent, bounded scope, explicit evidence, and recoverable execution—without uncontrolled vibe coding or heavyweight process management.
 
 The selected delivery approach is a **contract-led vertical spine**:
 
 1. Establish the CLI, artifact contracts, stable IDs, templates, and atomic-write foundation.
-2. Build deterministic context, dependency, readiness, status, verification, checkpoint, trace, nested Delivery Loop, and Correction Loop mechanics.
+2. Build deterministic context, dependency, readiness, status, verification, checkpoint, trace, nested Delivery Loop, Correction Loop, and Phase closure/acceptance mechanics.
 3. Implement discovery plus Roadmap-first lightweight Phase/Spec mapping and complete Phase planning.
-4. Prove one Phase Delivery Loop that serially executes bounded internal Spec Delivery Loops through a development runtime.
-5. Harden correction, continuity, closure verification, review aggregation, and truthful completion.
+4. Prove one Phase Delivery Loop that serially executes bounded internal Spec Delivery Loops, Phase Closure Verification, and residual Human Phase Acceptance through a development runtime.
+5. Harden correction, continuity, acceptance resume, selective evidence invalidation, plan-gap routing, review aggregation, and truthful completion.
 6. Freeze the shared contracts, add Claude Code, Codex, and OpenCode adapters, run conformance flows, and prepare the npm release.
 
 The first end-to-end milestone is a proof gate inside the full V1 roadmap, not the final project boundary.
@@ -96,10 +96,10 @@ The first end-to-end milestone is a proof gate inside the full V1 roadmap, not t
 - **Dependencies**: Explicit stable IDs form acyclic Phase, Spec, and Task graphs — dependencies gate delivery readiness, while declared order is only a preference among ready work.
 - **Verification**: Every Acceptance Criterion declares verification intent before implementation — evidence strength must match the behavior claimed.
 - **Verification integrity**: Builders cannot weaken, delete, skip, or reinterpret approved verification merely to obtain a pass — conflicts require escalation.
-- **Completion**: A Phase becomes done only after every required Spec is reviewed and done and any declared Phase-level integration or closure verification passes.
-- **Continuity**: Every Task must be independently reconstructible from canonical artifacts and repository state — a physical fresh session is optional runtime strategy.
+- **Completion**: A Phase becomes done only after every required Spec is reviewed and done, all required Phase Closure Verification—including Human Phase Acceptance when required—passes, and no unresolved `blocking-plan-gap` remains.
+- **Continuity**: Every Task and pending Human Phase Acceptance stage must be independently reconstructible from canonical artifacts and repository state — a physical fresh session is optional runtime strategy.
 - **Checkpoints**: Resume checkpoints preserve incomplete-work continuity; verified checkpoints alone establish completion — Git repositories default to an atomic commit per verified Task.
-- **Recovery**: Correction is bounded by explicit attempts and stop conditions — it may not expand scope or replace the evidence contract that found the failure.
+- **Recovery**: Correction is bounded by explicit attempts and stop conditions — it may not expand scope or replace the evidence contract that found the failure. Human acceptance failures inside approved intent return to bounded correction and selective reverification; missing or changed intent returns `needs-plan-revision`.
 - **Human control**: Users own intent, scope changes, meaningful tradeoffs, ambiguity resolution, and overrides — Exspecso may challenge but cannot silently replace product intent.
 - **User experience**: Governance should be strong but quiet — users should see a small workflow rather than manage internal routing, trace, counters, or scheduling.
 
@@ -119,8 +119,11 @@ The first end-to-end milestone is a proof gate inside the full V1 roadmap, not t
 | Use a contract-led vertical delivery spine | It validates the full workflow early while avoiding an untested horizontal engine or premature three-runtime integration churn | — Pending |
 | Define evidence before implementation and make verification control completion | Builder confidence and retrofitted checks cannot reliably prove approved intent | — Pending |
 | Use one Phase-scoped outer Delivery Loop with one active bounded internal Spec Delivery Loop and Task WIP=1 by default | Phase scope reduces user scheduling while Spec and Task boundaries preserve finite budgets, evidence, correction, review, and resume safety | ✓ Accepted |
+| Treat Human Phase Acceptance as the residual human-facing portion of Phase Closure Verification | One evidence hierarchy avoids duplicated UAT, preserves strong lower-level proof, and requests user judgment only where integrated outcomes cannot otherwise be proven | ✓ Accepted |
 | Support bounded correction and typed Delivery Loop outcomes | Recovery must accelerate approved work without hiding ambiguity, failure, or scope changes | — Pending |
 | Treat runtime portability as a shared-contract conformance problem | Agents may present workflows differently but must never fork project truth or lifecycle semantics | — Pending |
+| Ship the Phase 1 initializer through pure TypeScript/Node filesystem capabilities | Host permissions remain the OS boundary; historical native containment material is retained but excluded from active build, test, workflow, and package surfaces | ✓ Accepted — Phase 1 |
+| Emit one concise successful-initialization line | Successful committed and no-op initialization prints exactly `Exspecso initialized successfully.` while native invocation metadata remains in generated adapters | ✓ Accepted — Phase 1 |
 
 ## Evolution
 
@@ -140,4 +143,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-26 after Documentation v13 Phase-oriented workflow alignment*
+*Last updated: 2026-09-05 after Phase 1 completion*

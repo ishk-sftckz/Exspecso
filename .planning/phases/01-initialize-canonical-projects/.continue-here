@@ -1,0 +1,10 @@
+Plan 01-11 is blocked, not complete.
+
+Last source commit: ddff8f4
+Last guarded remote snapshot: 587ab446eecb6a5681cf61f651781c3e9c463989 on codex/containment-native-matrix-20260828
+Last hosted run: 33152941157
+
+Six rows passed actual installed-native tracer: ENV-MA, ENV-MX, ENV-WX, ENV-WA, ENV-LGX, ENV-LGA.
+Required musl rows ENV-LMX and ENV-LMA built real musl providers but tracer preflight observed filesystem UNKNOWN inside the approved pinned Alpine runtime. The approved contract expects ext4/observed ext2/ext3, so no acceptance fallback is permitted.
+
+Resume only after a user-approved musl filesystem contract decision or an approved native-musl runtime with the required filesystem observation. Re-run all eight rows from one new guarded snapshot, download all records, then run scripts/containment-evidence.mjs. Do not begin Plan 12.

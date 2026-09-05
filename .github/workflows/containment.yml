@@ -1,0 +1,239 @@
+name: Containment native target matrix
+on: {}
+permissions: {}
+concurrency:
+  group: containment-native-matrix
+  cancel-in-progress: false
+jobs:
+  native:
+    name: ${{ matrix.row.id }} / Node ${{ matrix.nodeLane }}
+    runs-on: ${{ matrix.row.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        row:
+          - {id: ENV-MA, runner: macos-15, family: macos, target: darwin-arm64}
+          - {id: ENV-MX, runner: macos-15-intel, family: macos, target: darwin-x64}
+          - {id: ENV-WX, runner: windows-2025, family: windows, target: win32-x64}
+          - {id: ENV-WA, runner: windows-11-arm, family: windows, target: win32-arm64}
+          - {id: ENV-LGX, runner: ubuntu-24.04, family: glibc, target: linux-x64}
+          - {id: ENV-LGA, runner: ubuntu-24.04-arm, family: glibc, target: linux-arm64}
+          - {id: ENV-LMX, runner: ubuntu-24.04, family: musl, target: linux-x64}
+          - {id: ENV-LMA, runner: ubuntu-24.04-arm, family: musl, target: linux-arm64}
+        nodeLane: ["20.19.0", "20.19.5", "20.20.2", "22.13.0", "22.23.2", "24.0.0", "24.20.0", "25.2.1", "26.0.0", "26.8.1"]
+    steps:
+      - name: Fetch only the reviewed temporary snapshot
+        if: inputs.mode == 'full' || matrix.row.family == 'musl'
+        shell: bash
+        run: |
+          git init .
+          git remote add origin https://github.com/ishk-sftckz/exspecso.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+      - name: Fetch checksum-verified declared Node runtime and build inputs
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && (matrix.row.family == 'macos' || matrix.row.family == 'glibc')
+        shell: bash
+        env:
+          TARGET: ${{ matrix.row.target }}
+          NODE_LANE: ${{ matrix.nodeLane }}
+        run: |
+          set -euo pipefail
+          runtime_archive="node-v$NODE_LANE-$TARGET.tar.gz"
+          runtime_base="https://nodejs.org/dist/v$NODE_LANE"
+          headers_base=https://nodejs.org/dist/v20.19.0
+          curl --fail --silent --show-error "$runtime_base/SHASUMS256.txt" -o runtime-SHASUMS256.txt
+          curl --fail --silent --show-error -O "$runtime_base/$runtime_archive" -O "$headers_base/node-v20.19.0-headers.tar.gz"
+          grep "  $runtime_archive$" runtime-SHASUMS256.txt | shasum -a 256 -c -
+          test "$(shasum -a 256 node-v20.19.0-headers.tar.gz | awk '{print $1}')" = 800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb
+          tar -xzf "$runtime_archive"
+          echo "$PWD/node-v$NODE_LANE-$TARGET/bin" >> "$GITHUB_PATH"
+          echo "EXSPECSO_NODE_HEADERS=$PWD/node-v20.19.0-headers.tar.gz" >> "$GITHUB_ENV"
+      - name: Build and run the real installed tracer natively
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && (matrix.row.family == 'macos' || matrix.row.family == 'glibc')
+        shell: bash
+        env:
+          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.row.id }}
+          EXSPECSO_OBSERVED_NODE_LANE: ${{ matrix.nodeLane }}
+          TARGET: ${{ matrix.row.target }}
+          FAMILY: ${{ matrix.row.family }}
+        run: |
+          set -euo pipefail
+          export EXSPECSO_TEST_TMPDIR="$PWD/.ci-fixtures"
+          mkdir -p "$EXSPECSO_TEST_TMPDIR"
+          npm ci --ignore-scripts
+          node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
+          npm run build
+          npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+          if [ "$FAMILY" = macos ]; then
+            diagnostic=undefined
+          else
+            diagnostic=address
+          fi
+          node native/build.mjs --variant test --diagnostic "$diagnostic" --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
+          cp dist/native/build-provenance.json diagnostic-build-provenance.json
+          diagnostic_args=(-- --run tests/unit/contained-fs.test.ts --testTimeout 60000 --reporter=json --outputFile=diagnostic-results.json)
+          if [ "$FAMILY" = glibc ]; then
+            asan_runtime="$(g++ -print-file-name=libasan.so)"
+            test "$asan_runtime" != libasan.so
+            test -f "$asan_runtime"
+            LD_PRELOAD="$asan_runtime${LD_PRELOAD:+:$LD_PRELOAD}" npm test "${diagnostic_args[@]}"
+          else
+            npm test "${diagnostic_args[@]}"
+          fi
+          node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
+          if [ "$FAMILY" = glibc ]; then node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --work-root "$PWD" --out filesystem-observation.json; fi
+          node scripts/write-containment-evidence.mjs
+      - name: Fetch checksum-verified declared Windows runtime and build inputs
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && matrix.row.family == 'windows'
+        shell: pwsh
+        env:
+          TARGET: ${{ matrix.row.target }}
+          NODE_LANE: ${{ matrix.nodeLane }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $nodeTarget = $env:TARGET.Replace('win32-', 'win-')
+          $runtimeBase = "https://nodejs.org/dist/v$env:NODE_LANE/"
+          $headersBase = 'https://nodejs.org/dist/v20.19.0/'
+          Invoke-WebRequest "$runtimeBase/SHASUMS256.txt" -OutFile runtime-SHASUMS256.txt
+          Invoke-WebRequest "$headersBase/SHASUMS256.txt" -OutFile headers-SHASUMS256.txt
+          $runtimeArchive = "node-v$env:NODE_LANE-$nodeTarget.zip"
+          foreach ($name in @($runtimeArchive, 'node-v20.19.0-headers.tar.gz', "$nodeTarget/node.lib")) {
+            $destination = Join-Path $env:RUNNER_TEMP ([IO.Path]::GetFileName($name))
+            $base = if ($name -eq $runtimeArchive) { $runtimeBase } else { $headersBase }
+            $checksumFile = if ($name -eq $runtimeArchive) { 'runtime-SHASUMS256.txt' } else { 'headers-SHASUMS256.txt' }
+            Invoke-WebRequest "$base$name" -OutFile $destination
+            $expected = ((Get-Content $checksumFile | Where-Object { $_ -match "\s$name$" }) -split '\s+')[0]
+            if ((Get-FileHash $destination -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw "Node input checksum mismatch: $name" }
+          }
+          Expand-Archive (Join-Path $env:RUNNER_TEMP $runtimeArchive) $env:RUNNER_TEMP
+          "$env:RUNNER_TEMP/node-v$env:NODE_LANE-$nodeTarget" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "EXSPECSO_NODE_HEADERS=$(Join-Path $env:RUNNER_TEMP 'node-v20.19.0-headers.tar.gz')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "EXSPECSO_NODE_LIB=$(Join-Path $env:RUNNER_TEMP 'node.lib')" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Build and run the real installed Windows tracer
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && matrix.row.family == 'windows'
+        shell: pwsh
+        env:
+          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.row.id }}
+          EXSPECSO_OBSERVED_NODE_LANE: ${{ matrix.nodeLane }}
+          TARGET: ${{ matrix.row.target }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          npm ci --ignore-scripts
+          node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
+          npm run build
+          npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 240000 --reporter=json --outputFile=tracer-results.json
+          node native/build.mjs --variant test --diagnostic address --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
+          Copy-Item dist/native/build-provenance.json diagnostic-build-provenance.json
+          $preflight = Get-Content windows-preflight/environment.json -Raw | ConvertFrom-Json
+          $asanTarget = switch ($env:TARGET) {
+            'win32-x64' { 'x86_64' }
+            'win32-arm64' { 'aarch64' }
+            default { throw "Unsupported ASan runtime target $($env:TARGET)" }
+          }
+          $llvmRoot = Join-Path $preflight.visualStudioPath 'VC/Tools/Llvm'
+          if (!(Test-Path -LiteralPath $llvmRoot)) { throw "Approved Visual Studio LLVM directory missing: $llvmRoot" }
+          $asanRuntime = @(Get-ChildItem -LiteralPath $llvmRoot -Recurse -Filter "clang_rt.asan_dynamic-$asanTarget.dll" -File)
+          if ($asanRuntime.Count -ne 1) { throw "Expected exactly one target-matched ASan runtime for $($env:TARGET) under the approved Visual Studio LLVM layout" }
+          $env:PATH = "$($asanRuntime[0].DirectoryName);$env:PATH"
+          npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 240000 --reporter=json --outputFile=diagnostic-results.json
+          node native/build.mjs --variant release --row $env:EXSPECSO_CONTAINMENT_ROW --out . --headers $env:EXSPECSO_NODE_HEADERS --node-lib $env:EXSPECSO_NODE_LIB
+          node scripts/write-containment-evidence.mjs
+      - name: Build and run the real native musl tracer in the pinned Alpine userland
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && matrix.row.family == 'musl'
+        shell: bash
+        env:
+          EXSPECSO_CONTAINMENT_ROW: ${{ matrix.row.id }}
+          EXSPECSO_OBSERVED_NODE_LANE: ${{ matrix.nodeLane }}
+          TARGET: ${{ matrix.row.target }}
+          NODE_LANE: ${{ matrix.nodeLane }}
+        run: |
+          set -euo pipefail
+          base=$(node -e "const m=require('./native/support-matrix.json');console.log(m.rows.find(x=>x.id===process.env.EXSPECSO_CONTAINMENT_ROW).image)")
+          case "$NODE_LANE/$TARGET" in
+            20.19.0/linux-x64) runtime=node:20.19.0-alpine3.21@sha256:37a5a350292926f98d48de9af160b0a3f7fcb141566117ee452742739500a5bd ;;
+            20.19.0/linux-arm64) runtime=node:20.19.0-alpine3.21@sha256:646bc11400802534d70bc576fc9704bb6409e0ed802658a8e785472d160c38d3 ;;
+            20.19.5/linux-x64) runtime=node:20.19.5-alpine3.22@sha256:be8d32d651b3e0c9c2b28fdc1d3888408125d703232013cff955344d052027e5 ;;
+            20.19.5/linux-arm64) runtime=node:20.19.5-alpine3.22@sha256:9851daa67a46cd267436aae71dedba1d86e6498a1b01e6c417941e31c8021b6e ;;
+            20.20.2/linux-x64) runtime=node:20.20.2-alpine3.23@sha256:afdf98210b07b586eb71fa22ba2e432e058e4cd1304d31ed60888755b8c865fb ;;
+            20.20.2/linux-arm64) runtime=node:20.20.2-alpine3.23@sha256:d63c387675b0ec5d7ef0c15b03691ac9f82803a8b30c87de3ce8a16960831cbc ;;
+            22.13.0/linux-x64) runtime=node:22.13.0-alpine3.21@sha256:133cdce957f50f47236d6d926592fb1db7a120ac3c33191e611b60dfab63e324 ;;
+            22.13.0/linux-arm64) runtime=node:22.13.0-alpine3.21@sha256:9090fa64b73b14ab658d907e7916afcb1633e4bdd5134f9b1be4a21a6c56f0b8 ;;
+            22.23.2/linux-x64) runtime=node:22.23.2-alpine3.24@sha256:76789712cd1ae89a1225eac9077010d68987a423588042dac30446f502f1858c ;;
+            22.23.2/linux-arm64) runtime=node:22.23.2-alpine3.24@sha256:1ef15d33d74602021f35ec64a4e72f4a21e2cfa68ebecd125fbe0c44af8f604a ;;
+            24.0.0/linux-x64) runtime=node:24.0.0-alpine3.21@sha256:daf9b7ead63a07bcad1de673b38566b0ba7e3b8abd12b2458486acabe598f1b7 ;;
+            24.0.0/linux-arm64) runtime=node:24.0.0-alpine3.21@sha256:c68c0a01cf0674640b9b3524d50da2af10112770ce4ce69804da60de59ffd1d2 ;;
+            24.20.0/linux-x64) runtime=node:24.20.0-alpine3.24@sha256:4caaaf42195bcd6f6f3559a413b20cb8f8ad089e231ee874cf7701643966689f ;;
+            24.20.0/linux-arm64) runtime=node:24.20.0-alpine3.24@sha256:d3724e44ee368606d753e0027eb8d2a94fc1f275e5d9e4620178a12edb655f5f ;;
+            25.2.1/linux-x64) runtime=node:25.2.1-alpine3.22@sha256:3725508db47d7e983a75d7ee7a8beecc006080aad286418c2676516d5cd5456f ;;
+            25.2.1/linux-arm64) runtime=node:25.2.1-alpine3.22@sha256:5864b1926ea1a8113aeffa882ca7bffd997af1804ccee29096d04f4f188030b3 ;;
+            26.0.0/linux-x64) runtime=node:26.0.0-alpine3.23@sha256:eb2ff22e292cafc20a333e889d8993cfb1604d1fe545f13fa86ff1a45534d1d7 ;;
+            26.0.0/linux-arm64) runtime=node:26.0.0-alpine3.23@sha256:f93b4c5d322011f11d14ab9749b206a036d3a61c00b7f9355063d5362c062a08 ;;
+            26.8.1/linux-x64) runtime=node:26.8.1-alpine3.24@sha256:ad6400dee476b06e82d0ee3a088e2d7555f6e6569c346e61d69e14d0f19e8c2b ;;
+            26.8.1/linux-arm64) runtime=node:26.8.1-alpine3.24@sha256:0d642590166d10420a0efa32b0db56987aef75eeca82742305b4ac4cfd0210e0 ;;
+            *) echo "unsupported declared Node lane/target: $NODE_LANE/$TARGET" >&2; exit 1 ;;
+          esac
+          docker pull "$base"
+          docker pull "$runtime"
+          docker run --rm --entrypoint sh "$runtime" -c 'cat /usr/local/bin/node' > node-musl
+          chmod +x node-musl
+          docker run --rm --user root -e EXSPECSO_CONTAINMENT_ROW -e EXSPECSO_OBSERVED_NODE_LANE -e TARGET -e NODE_LANE -e EXSPECSO_SOURCE_COMMIT="$GITHUB_SHA" -v "$PWD:/work" -w /work "$base" sh -euxc '
+            apk add --no-cache g++=15.2.0-r5 musl-dev=1.2.6-r2 linux-headers=7.0.0-r1
+            wget -q https://nodejs.org/dist/v20.19.0/node-v20.19.0-headers.tar.gz
+            test "$(sha256sum node-v20.19.0-headers.tar.gz | awk "{print \$1}")" = 800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb
+            ln -sf /work/node-musl /tmp/node
+            export PATH=/tmp:$PATH EXSPECSO_NODE_HEADERS=/work/node-v20.19.0-headers.tar.gz EXSPECSO_CONTAINMENT_LIBC=musl EXSPECSO_TEST_TMPDIR=/work/.ci-fixtures
+            mkdir -p "$EXSPECSO_TEST_TMPDIR"
+            npm ci --ignore-scripts
+            node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
+            npm run build
+            set +e
+            npm test -- --run tests/integration/init-codex-tracer.test.ts --testTimeout 60000 --reporter=json --outputFile=tracer-results.json
+            tracer_status=$?
+            set -e
+            node scripts/capture-filesystem-observation.mjs --fixture-root "$EXSPECSO_TEST_TMPDIR" --out filesystem-observation.json
+            test "$tracer_status" -eq 0
+            node native/build.mjs --variant test --diagnostic address --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
+            cp dist/native/build-provenance.json diagnostic-build-provenance.json
+            npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 60000 --reporter=json --outputFile=diagnostic-results.json
+            node native/build.mjs --variant release --row "$EXSPECSO_CONTAINMENT_ROW" --out . --headers "$EXSPECSO_NODE_HEADERS"
+            node scripts/write-containment-evidence.mjs'
+      - name: Upload actual target evidence and binaries
+        if: (inputs.mode == 'full' || matrix.row.family == 'musl') && always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: containment-${{ matrix.row.id }}-node-${{ matrix.nodeLane }}
+          path: |
+            evidence.json
+            filesystem-observation.json
+            tracer-results.json
+            diagnostic-build-provenance.json
+            diagnostic-results.json
+            dist/native/
+            windows-preflight/
+          if-no-files-found: error
+          retention-days: 7
+  aggregate:
+    name: Validate complete containment tracer evidence
+    if: ${{ always() && inputs.mode == 'full' }}
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Fetch only the reviewed temporary snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin https://github.com/ishk-sftckz/exspecso.git
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+      - name: Download every retained matrix artifact without name collisions
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: containment-*
+          path: final-evidence
+          merge-multiple: false
+      - name: Block incomplete or stale matrix evidence
+        shell: bash
+        run: node scripts/containment-evidence.mjs --stage tracer --evidence-dir final-evidence --matrix native/support-matrix.json --source-commit "$GITHUB_SHA"

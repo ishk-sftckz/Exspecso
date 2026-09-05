@@ -1,6 +1,6 @@
 import { mkdtemp, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join, resolve } from "node:path";
 
 export interface GitFixture {
   root: string;
@@ -10,7 +10,13 @@ export interface GitFixture {
 }
 
 async function createFixture(isRepository: boolean): Promise<GitFixture> {
-  const root = await mkdtemp(join(tmpdir(), "exspecso-fixture-"));
+  // The no-repository fixture must remain outside the checkout so its parent
+  // cannot accidentally satisfy findGitRoot during hosted tracer runs.
+  const configured = isRepository ? process.env.EXSPECSO_TEST_TMPDIR : undefined;
+  const parent = configured === undefined ? tmpdir() : configured;
+  if (configured !== undefined && (!isAbsolute(parent) || resolve(parent) !== parent)) throw new Error("EXSPECSO_TEST_TMPDIR must be an absolute canonical test fixture path");
+  await mkdir(parent, { recursive: true });
+  const root = await mkdtemp(join(parent, "exspecso-fixture-"));
   if (isRepository) {
     await mkdir(join(root, ".git"));
   }

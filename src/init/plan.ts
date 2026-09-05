@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
 import { buildAdapterPlan } from "../adapters/registry.js";
 import { inspectManagedFile, sha256, type ManagedFileState } from "../adapters/managed-file.js";
 import { projectConfigSchema, type ProjectConfig } from "../artifacts/schema.js";
 import { renderConstitution, renderProjectConfig } from "../artifacts/templates.js";
+import { openContainedFilesystem, type BoundReader } from "../filesystem/contained-fs.js";
 import type { AgentId } from "./runtime-selection.js";
 
 export interface PlannedWrite {
@@ -41,13 +41,23 @@ export interface BuildInitPlanInput {
   readonly repositoryRoot: string;
   readonly selectedAgents: readonly AgentId[];
   readonly replaceAgents?: readonly AgentId[];
+  /** A caller-owned capability remains open through later preflight checks. */
+  readonly reader?: BoundReader;
 }
 
-async function readOptional(path: string): Promise<string | undefined> {
+function components(relativePath: string): readonly string[] {
+  const result = relativePath.split("/");
+  if (result.some((component) => !component || component === "." || component === "..")) {
+    throw new Error(`EXSPECSO_INIT_INVALID_RELATIVE_PATH: ${relativePath}`);
+  }
+  return result;
+}
+
+function readOptional(reader: BoundReader, relativePath: string): string | undefined {
   try {
-    return await readFile(path, "utf8");
+    return reader.read(components(relativePath)).toString("utf8");
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+    if (error instanceof Error && error.message.includes("EXSPECSO_CONTAINMENT_ENOENT")) return undefined;
     throw error;
   }
 }
@@ -66,14 +76,16 @@ function writeFor(target: string, relativePath: string, content: string, existin
   });
 }
 
-export async function buildInitPlan(input: BuildInitPlanInput): Promise<InitPlan> {
+async function buildWithReader(input: BuildInitPlanInput, reader: BoundReader): Promise<InitPlan> {
   const repositoryRoot = resolve(input.repositoryRoot);
   const requestedAgents = uniqueAgents(input.selectedAgents);
   const replacementAgents = uniqueAgents(input.replaceAgents ?? []);
-  const configPath = join(repositoryRoot, ".exspecso", "exspecso.config.json");
-  const constitutionPath = join(repositoryRoot, ".exspecso", "constitution.md");
-  const existingConfigText = await readOptional(configPath);
-  const existingConstitution = await readOptional(constitutionPath);
+  const configRelativePath = ".exspecso/exspecso.config.json";
+  const constitutionRelativePath = ".exspecso/constitution.md";
+  const configPath = join(repositoryRoot, ...components(configRelativePath));
+  const constitutionPath = join(repositoryRoot, ...components(constitutionRelativePath));
+  const existingConfigText = readOptional(reader, configRelativePath);
+  const existingConstitution = readOptional(reader, constitutionRelativePath);
   const existingConfig = existingConfigText === undefined
     ? undefined
     : projectConfigSchema.parse(JSON.parse(existingConfigText));
@@ -89,8 +101,8 @@ export async function buildInitPlan(input: BuildInitPlanInput): Promise<InitPlan
     : { ...existingConfig, selectedAgents };
   const writes: PlannedWrite[] = [];
   const renderedConfig = renderProjectConfig(config);
-  if (existingConfigText !== renderedConfig) writes.push(writeFor(configPath, ".exspecso/exspecso.config.json", renderedConfig, existingConfigText));
-  if (existingConstitution === undefined) writes.push(writeFor(constitutionPath, ".exspecso/constitution.md", renderConstitution(), existingConstitution));
+  if (existingConfigText !== renderedConfig) writes.push(writeFor(configPath, configRelativePath, renderedConfig, existingConfigText));
+  if (existingConstitution === undefined) writes.push(writeFor(constitutionPath, constitutionRelativePath, renderConstitution(), existingConstitution));
 
   const conflicts: AdapterConflict[] = [];
   const approvalProblems: InitPlanProblem[] = [];
@@ -104,8 +116,8 @@ export async function buildInitPlan(input: BuildInitPlanInput): Promise<InitPlan
   }
 
   for (const adapter of buildAdapterPlan(requestedAgents)) {
-    const target = join(repositoryRoot, adapter.relativePath);
-    const existing = await readOptional(target);
+    const target = join(repositoryRoot, ...components(adapter.relativePath));
+    const existing = readOptional(reader, adapter.relativePath);
     const inspection = inspectManagedFile(existing, adapter.content);
     const replacementApproved = replacementAgents.includes(adapter.agent);
     if (inspection.state === "absent" || inspection.state === "owned-unchanged") {
@@ -141,7 +153,17 @@ export async function buildInitPlan(input: BuildInitPlanInput): Promise<InitPlan
   });
 }
 
-export async function validateInitPlan(plan: InitPlan): Promise<readonly InitPlanProblem[]> {
+export async function buildInitPlan(input: BuildInitPlanInput): Promise<InitPlan> {
+  if (input.reader !== undefined) return buildWithReader(input, input.reader);
+  const capability = openContainedFilesystem(input.repositoryRoot);
+  try {
+    return await buildWithReader(input, capability.reader);
+  } finally {
+    capability.close();
+  }
+}
+
+async function validateWithReader(plan: InitPlan, reader: BoundReader): Promise<readonly InitPlanProblem[]> {
   const problems: InitPlanProblem[] = [...plan.approvalProblems];
   for (const conflict of plan.conflicts) {
     problems.push(Object.freeze({
@@ -150,7 +172,7 @@ export async function validateInitPlan(plan: InitPlan): Promise<readonly InitPla
     }));
   }
   for (const write of plan.writes) {
-    const current = await readOptional(write.target);
+    const current = readOptional(reader, write.relativePath);
     const matchesExpected = write.expectedExists
       ? current !== undefined && sha256(current) === write.expectedPreimageHash
       : current === undefined;
@@ -162,4 +184,14 @@ export async function validateInitPlan(plan: InitPlan): Promise<readonly InitPla
     }
   }
   return Object.freeze(problems);
+}
+
+export async function validateInitPlan(plan: InitPlan, reader?: BoundReader): Promise<readonly InitPlanProblem[]> {
+  if (reader !== undefined) return validateWithReader(plan, reader);
+  const capability = openContainedFilesystem(plan.repositoryRoot);
+  try {
+    return await validateWithReader(plan, capability.reader);
+  } finally {
+    capability.close();
+  }
 }

@@ -1,0 +1,110 @@
+name: Containment metadata preflight
+on:
+  push:
+    branches:
+      - codex/containment-metadata-preflight-20260828
+    paths:
+      - .github/workflows/containment-metadata-preflight.yml
+permissions: {}
+concurrency:
+  group: containment-metadata-preflight
+  cancel-in-progress: false
+jobs:
+  inspect:
+    name: Inspect ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        runner:
+          - macos-15
+          - macos-15-intel
+          - windows-2025
+          - windows-11-arm
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+    steps:
+      - name: Inspect POSIX environment
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -eu
+          probe() {
+            printf '\nMETADATA_COMMAND %s\n' "$*"
+            set +e
+            "$@"
+            result=$?
+            set -e
+            printf 'METADATA_EXIT %s\n' "$result"
+          }
+          printf 'METADATA_BEGIN\n'
+          printf 'RUNNER_OS=%s\nRUNNER_ARCH=%s\nImageOS=%s\nImageVersion=%s\n' "$RUNNER_OS" "$RUNNER_ARCH" "${ImageOS:-unavailable}" "${ImageVersion:-unavailable}"
+          probe uname -smr
+          probe node --input-type=module -e 'console.log(JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,napi:process.versions.napi,execPath:process.execPath}))'
+          probe python3 --version
+          probe clang --version
+          if [ "$RUNNER_OS" = 'macOS' ]; then
+            probe sw_vers
+            probe xcodebuild -version
+            probe xcrun --show-sdk-version
+            probe xcrun --show-sdk-build-version
+            probe xcrun --find clang
+            for target in "$GITHUB_WORKSPACE" "$RUNNER_TEMP"; do
+              printf 'FILESYSTEM_PATH=%s\n' "$target"
+              device=$(df -P "$target" | awk 'NR==2 {print $1}')
+              probe diskutil info "$device"
+            done
+          else
+            probe cat /etc/os-release
+            probe getconf GNU_LIBC_VERSION
+            probe gcc --version
+            probe g++ --version
+            probe findmnt -n -o FSTYPE,SOURCE,TARGET -T "$GITHUB_WORKSPACE"
+            probe findmnt -n -o FSTYPE,SOURCE,TARGET -T "$RUNNER_TEMP"
+            probe dpkg-query -W libc6 gcc g++ clang musl musl-dev musl-tools
+            for loader in /lib/ld-musl-x86_64.so.1 /lib/ld-musl-aarch64.so.1; do
+              if [ -e "$loader" ]; then printf 'MUSL_LOADER_PRESENT=%s\n' "$loader"; else printf 'MUSL_LOADER_ABSENT=%s\n' "$loader"; fi
+            done
+            if command -v docker >/dev/null 2>&1; then
+              probe docker image ls --format '{{.Repository}}:{{.Tag}} {{.ID}}'
+            fi
+          fi
+          if [ -d "$RUNNER_TOOL_CACHE/node" ]; then
+            printf 'PREINSTALLED_NODE_CACHE\n'
+            find "$RUNNER_TOOL_CACHE/node" -maxdepth 2 -type d
+          fi
+          printf 'METADATA_END\n'
+      - name: Inspect Windows environment
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Write-Output 'METADATA_BEGIN'
+          [ordered]@{RUNNER_OS=$env:RUNNER_OS; RUNNER_ARCH=$env:RUNNER_ARCH; ImageOS=$env:ImageOS; ImageVersion=$env:ImageVersion; OSArchitecture=[System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString(); ProcessArchitecture=[System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString()} | ConvertTo-Json -Compress
+          Get-CimInstance Win32_OperatingSystem | Select-Object Caption,Version,BuildNumber,OSArchitecture | ConvertTo-Json -Compress
+          Get-CimInstance Win32_Processor | Select-Object Name,Architecture | ConvertTo-Json -Compress
+          & node --input-type=module -e 'console.log(JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,napi:process.versions.napi,execPath:process.execPath}))'
+          foreach ($target in @($env:GITHUB_WORKSPACE,$env:RUNNER_TEMP)) {
+            $drive = [System.IO.Path]::GetPathRoot($target).TrimEnd('\').TrimEnd(':')
+            Get-Volume -DriveLetter $drive | Select-Object DriveLetter,FileSystemType,DriveType | ConvertTo-Json -Compress
+          }
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          if (Test-Path $vswhere) {
+            $installs = & $vswhere -all -products '*' -format json | ConvertFrom-Json
+            foreach ($install in $installs) {
+              $install | Select-Object displayName,installationVersion,installationPath | ConvertTo-Json -Compress
+              $tools = Join-Path $install.installationPath 'VC\Tools\MSVC'
+              if (Test-Path $tools) { Get-ChildItem $tools -Directory | Select-Object Name | ConvertTo-Json -Compress }
+            }
+          }
+          $sdk = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\Include'
+          if (Test-Path $sdk) { Write-Output 'WINDOWS_SDK_INCLUDE_VERSIONS'; Get-ChildItem $sdk -Directory | Select-Object Name | ConvertTo-Json -Compress }
+          foreach ($tool in @('clang','python')) {
+            if (Get-Command $tool -ErrorAction SilentlyContinue) { & $tool --version }
+          }
+          $nodeCache = Join-Path $env:RUNNER_TOOL_CACHE 'node'
+          if (Test-Path $nodeCache) { Write-Output 'PREINSTALLED_NODE_CACHE'; Get-ChildItem $nodeCache -Directory | Select-Object Name | ConvertTo-Json -Compress }
+          Write-Output 'METADATA_END'
+          exit 0

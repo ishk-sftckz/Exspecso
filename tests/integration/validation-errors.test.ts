@@ -1,11 +1,14 @@
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, readlink, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
+import { resolveArtifact } from "../../src/artifacts/resolve.js";
 import { runInit } from "../../src/init/run-init.js";
 import { validateProject, validateProjectConfig } from "../../src/artifacts/validate.js";
+import { installContainedPackage } from "../helpers/containment-fixture.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
+import { runCli } from "../helpers/run-cli.js";
 
 const fixtures: GitFixture[] = [];
 
@@ -33,7 +36,10 @@ async function snapshot(root: string, directory = root): Promise<Record<string, 
     }
     const path = join(directory, entry.name);
     if (entry.isDirectory()) {
+      files[`${relative(root, path)}/`] = "[directory]";
       Object.assign(files, await snapshot(root, path));
+    } else if (entry.isSymbolicLink()) {
+      files[relative(root, path)] = `[symlink] ${await readlink(path)}`;
     } else if (entry.isFile()) {
       files[relative(root, path)] = await readFile(path, "utf8");
     }
@@ -45,7 +51,66 @@ function memoryOutput(): Writable {
   return new Writable({ write(_chunk, _encoding, callback) { callback(); } });
 }
 
+function capturedOutput(): { readonly output: Writable; read(): string } {
+  const chunks: Buffer[] = [];
+  return {
+    output: new Writable({
+      write(chunk, _encoding, callback) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        callback();
+      },
+    }),
+    read: () => Buffer.concat(chunks).toString("utf8"),
+  };
+}
+
 describe("direct-edit validation", () => {
+  it("reports an actual provider failure before any ownership or staging write", async () => {
+    const fixture = await useFixture();
+    const before = await snapshot(fixture.root);
+    const installed = await installContainedPackage("release");
+    try {
+      await rename(installed.provider, `${installed.provider}.removed`);
+      const result = await runCli(process.execPath, [installed.cli, "init", "--agent", "codex"], { cwd: fixture.root });
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toContain("EXSPECSO_INIT_PREFLIGHT_FAILED");
+      expect(result.stderr).toContain("EXSPECSO_CONTAINMENT_UNAVAILABLE");
+      await expect(snapshot(fixture.root)).resolves.toEqual(before);
+    } finally {
+      await installed.dispose();
+    }
+  });
+
+  it("rejects an invalid JSON parent before init writes anything", async () => {
+    const fixture = await useFixture();
+    await write(fixture.root, ".exspecso/definition.json", JSON.stringify({ id: "SPEC-001", parent: "REQUIREMENT-001" }));
+    await write(fixture.root, ".exspecso/valid-definition.json", JSON.stringify({ id: "SPEC-002", parent: "PHASE-001" }));
+    const before = await snapshot(fixture.root);
+    const stdout = capturedOutput();
+    const stderr = capturedOutput();
+
+    const exitCode = await runInit({
+      selectedAgents: ["codex"],
+      cwd: fixture.root,
+      stdin: new PassThrough(),
+      stdout: stdout.output,
+      stderr: stderr.output,
+    });
+
+    expect(exitCode).not.toBe(0);
+    expect(stderr.read()).toContain("EXSPECSO_ARTIFACT_INVALID_ID");
+    expect(stderr.read()).toContain(".exspecso/definition.json (parent)");
+    expect(stderr.read()).toContain("REQUIREMENT-001");
+    expect(stderr.read()).toContain("Expected:");
+    expect(stderr.read()).toContain("Actual:");
+    expect(stderr.read()).toContain("Repair:");
+    expect(stdout.read()).toBe("");
+    await expect(snapshot(fixture.root)).resolves.toEqual(before);
+    await expect(resolveArtifact(fixture.root, "SPEC-002")).resolves.toMatchObject({ kind: "resolved", id: "SPEC-002" });
+  });
+
   it("returns every independent config schema error with actionable diagnostics", async () => {
     const path = join(await mkdtemp(join(tmpdir(), "exspecso-invalid-config-")), "exspecso.config.json");
     await writeFile(path, JSON.stringify({
@@ -78,6 +143,97 @@ describe("direct-edit validation", () => {
       "EXSPECSO_ARTIFACT_UNKNOWN_PARENT",
       "EXSPECSO_ARTIFACT_DUPLICATE_ID",
     ]));
+  });
+
+  it("aggregates independent invalid declarations once alongside config, duplicate, and parent errors", async () => {
+    const fixture = await useFixture();
+    await write(fixture.root, ".exspecso/exspecso.config.json", "{ malformed");
+    await write(fixture.root, ".exspecso/invalid.json", JSON.stringify({ id: "REQUIREMENT-001", parent: null }));
+    await write(fixture.root, ".exspecso/specs/first.md", "---\nid: SPEC-001\nparent: PHASE-404\n---\n# First\n");
+    await write(fixture.root, ".exspecso/specs/second.md", "# SPEC-001 Second\n");
+
+    const diagnostics = await validateProject(fixture.root);
+
+    expect(diagnostics.map((diagnostic) => diagnostic.code)).toEqual(expect.arrayContaining([
+      "EXSPECSO_CONFIG_PARSE",
+      "EXSPECSO_ARTIFACT_INVALID_ID",
+      "EXSPECSO_ARTIFACT_UNKNOWN_PARENT",
+      "EXSPECSO_ARTIFACT_DUPLICATE_ID",
+    ]));
+    expect(diagnostics.filter((diagnostic) => diagnostic.code === "EXSPECSO_ARTIFACT_INVALID_ID")).toEqual([
+      expect.objectContaining({ path: ".exspecso/invalid.json", section: "id", actual: "REQUIREMENT-001" }),
+      expect.objectContaining({ path: ".exspecso/invalid.json", section: "parent", actual: "null" }),
+    ]);
+  });
+
+  it("aggregates legacy FINDING, duplicate FIND, and a PAC unknown parent before init without mutation", async () => {
+    const fixture = await useFixture();
+    await write(fixture.root, ".exspecso/legacy.json", JSON.stringify({ id: "FINDING-001" }));
+    await write(fixture.root, ".exspecso/findings/first.md", "# FIND-001 First finding\n");
+    await write(fixture.root, ".exspecso/findings/second.md", "# FIND-001 Second finding\n");
+    await write(fixture.root, ".exspecso/acceptance/pac.md", "---\nid: PAC-001\nparent: PHASE-404\n---\n# Phase acceptance\n");
+    const before = await snapshot(fixture.root);
+    const stderr = capturedOutput();
+
+    const diagnostics = await validateProject(fixture.root);
+    expect(diagnostics.filter((diagnostic) => diagnostic.code === "EXSPECSO_ARTIFACT_INVALID_ID")).toEqual([
+      expect.objectContaining({ path: ".exspecso/legacy.json", section: "id", actual: "FINDING-001" }),
+    ]);
+    expect(diagnostics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "EXSPECSO_ARTIFACT_DUPLICATE_ID", actual: "2 definitions" }),
+      expect.objectContaining({ code: "EXSPECSO_ARTIFACT_UNKNOWN_PARENT", path: ".exspecso/acceptance/pac.md", actual: "PHASE-404" }),
+    ]));
+
+    await expect(runInit({
+      selectedAgents: ["codex"],
+      cwd: fixture.root,
+      stdin: new PassThrough(),
+      stdout: memoryOutput(),
+      stderr: stderr.output,
+    })).resolves.not.toBe(0);
+    expect(stderr.read().match(/EXSPECSO_ARTIFACT_INVALID_ID/g)).toHaveLength(1);
+    expect(stderr.read().match(/EXSPECSO_ARTIFACT_DUPLICATE_ID/g)).toHaveLength(1);
+    expect(stderr.read().match(/EXSPECSO_ARTIFACT_UNKNOWN_PARENT/g)).toHaveLength(1);
+    await expect(snapshot(fixture.root)).resolves.toEqual(before);
+  });
+
+  it("reports malformed canonical JSON separately from the project configuration parser", async () => {
+    const fixture = await useFixture();
+    await write(fixture.root, ".exspecso/definition.json", "{ malformed");
+
+    await expect(validateProject(fixture.root)).resolves.toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: "EXSPECSO_ARTIFACT_PARSE",
+        path: ".exspecso/definition.json",
+        expected: "valid JSON",
+        actual: "malformed JSON",
+      }),
+    ]));
+  });
+
+  it("blocks init for every declared invalid JSON shape without mutating the fixture tree", async () => {
+    const fixture = await useFixture();
+    const values: readonly unknown[] = ["REQUIREMENT-001", "", null, 1, true, [], {}];
+    for (const [index, value] of values.entries()) {
+      await write(fixture.root, `.exspecso/invalid-id-${index}.json`, JSON.stringify({ id: value, parent: "PHASE-001" }));
+      await write(fixture.root, `.exspecso/invalid-parent-${index}.json`, JSON.stringify({ id: `SPEC-${String(index + 1).padStart(3, "0")}`, parent: value }));
+    }
+    const before = await snapshot(fixture.root);
+    const stdout = capturedOutput();
+    const stderr = capturedOutput();
+
+    const exitCode = await runInit({
+      selectedAgents: ["codex"],
+      cwd: fixture.root,
+      stdin: new PassThrough(),
+      stdout: stdout.output,
+      stderr: stderr.output,
+    });
+
+    expect(exitCode).not.toBe(0);
+    expect(stderr.read().match(/EXSPECSO_ARTIFACT_INVALID_ID/g)).toHaveLength(values.length * 2);
+    expect(stdout.read()).toBe("");
+    await expect(snapshot(fixture.root)).resolves.toEqual(before);
   });
 
   it("reports malformed JSON through a stable parse diagnostic without a stack trace", async () => {

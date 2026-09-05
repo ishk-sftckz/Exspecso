@@ -1,0 +1,828 @@
+windows	Set up job	﻿2026-08-28T05:08:30.9730049Z Current runner version: '2.336.0'
+windows	Set up job	2026-08-28T05:08:31.0198333Z ##[group]Runner Image Provisioner
+windows	Set up job	2026-08-28T05:08:31.0199380Z Hosted Compute Agent
+windows	Set up job	2026-08-28T05:08:31.0200038Z Version: 20260729.566
+windows	Set up job	2026-08-28T05:08:31.0200740Z Commit: cf7153fe6e25b664e8693c24944bf2b00355d109
+windows	Set up job	2026-08-28T05:08:31.0201607Z Build Date: 2026-07-29T19:17:02Z
+windows	Set up job	2026-08-28T05:08:31.0202371Z Worker ID: {0d41a1a3-31a6-4a07-920d-977385d6c69a}
+windows	Set up job	2026-08-28T05:08:31.0203226Z Azure Region: eastus
+windows	Set up job	2026-08-28T05:08:31.0203828Z ##[endgroup]
+windows	Set up job	2026-08-28T05:08:31.0205337Z ##[group]Operating System
+windows	Set up job	2026-08-28T05:08:31.0205983Z Microsoft Windows Server 2025
+windows	Set up job	2026-08-28T05:08:31.0206602Z 10.0.26100
+windows	Set up job	2026-08-28T05:08:31.0207130Z Datacenter
+windows	Set up job	2026-08-28T05:08:31.0207992Z ##[endgroup]
+windows	Set up job	2026-08-28T05:08:31.0208569Z ##[group]Runner Image
+windows	Set up job	2026-08-28T05:08:31.0209145Z Image: windows-2025-vs2026
+windows	Set up job	2026-08-28T05:08:31.0209787Z Version: 20260818.207.1
+windows	Set up job	2026-08-28T05:08:31.0210978Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20260818.207/images/windows/Windows2025-VS2026-Readme.md
+windows	Set up job	2026-08-28T05:08:31.0213091Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20260818.207
+windows	Set up job	2026-08-28T05:08:31.0214155Z ##[endgroup]
+windows	Set up job	2026-08-28T05:08:31.0215187Z ##[group]GITHUB_TOKEN Permissions
+windows	Set up job	2026-08-28T05:08:31.0218050Z Metadata: read
+windows	Set up job	2026-08-28T05:08:31.0218692Z ##[endgroup]
+windows	Set up job	2026-08-28T05:08:31.0221066Z Secret source: Actions
+windows	Set up job	2026-08-28T05:08:31.0222317Z Prepare workflow directory
+windows	Set up job	2026-08-28T05:08:31.1655219Z Prepare all required actions
+windows	Set up job	2026-08-28T05:08:31.1704961Z Getting action download info
+windows	Set up job	2026-08-28T05:08:31.3305333Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+windows	Set up job	2026-08-28T05:08:31.9210838Z Complete job name: windows
+windows	Fetch this exact public task snapshot	﻿2026-08-28T05:08:32.7816760Z ##[group]Run git init .
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:32.7817432Z [36;1mgit init .[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:32.7817984Z [36;1mif ($LASTEXITCODE) { throw 'git init failed' }[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:32.7818838Z [36;1mgit remote add origin https://github.com/ishk-sftckz/exspecso.git[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:32.7819627Z [36;1mgit fetch --depth=1 origin $env:GITHUB_SHA[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:32.7820295Z [36;1mif ($LASTEXITCODE) { throw 'git fetch failed' }[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:32.7820947Z [36;1mgit checkout --detach FETCH_HEAD[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:32.7821593Z [36;1mif ($LASTEXITCODE) { throw 'git checkout failed' }[0m
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:33.0756534Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:33.0758102Z ##[endgroup]
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:34.0921859Z Initialized empty Git repository in D:/a/exspecso/exspecso/.git/
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:35.4739073Z From https://github.com/ishk-sftckz/exspecso
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:35.4741059Z  * branch            ef023b64d89ff8f53eb5fd3369f16e14cdfbdc58 -> FETCH_HEAD
+windows	Fetch this exact public task snapshot	2026-08-28T05:08:35.6231620Z HEAD is now at ef023b6 test(01-10): retain tool hashes before stopping on image drift
+windows	Inspect the pinned native Windows SDK and toolchain	﻿2026-08-28T05:08:49.7510677Z ##[group]Run ./native/windows-preflight.ps1
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:49.7511399Z [36;1m./native/windows-preflight.ps1[0m
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:49.7619565Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:49.7620017Z ##[endgroup]
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5009623Z {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5010339Z   "imageVersion": "20260818.207.1",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5011016Z   "imageOS": "win25-vs2026",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5011467Z   "architecture": "X64",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5011952Z   "caption": "Microsoft Windows Server 2025 Datacenter",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5012520Z   "version": "10.0.26100",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5012865Z   "build": "26100",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5013204Z   "ubr": 33296,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5013573Z   "displayVersion": "24H2",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5013974Z   "filesystem": "NTFS",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5014387Z   "visualStudio": [
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5014718Z     {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5015073Z       "installationVersion": "18.9.12112.369",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5015966Z       "installationPath": "C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise"
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5019848Z     }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5020147Z   ],
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5020457Z   "sdkVersion": "10.0.26100.0",
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5020856Z   "msvcVersion": "14.44.35207"
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.5021222Z }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9858314Z --- um/winternl.h line 213 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9862774Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9865221Z typedef struct _OBJECT_ATTRIBUTES {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9868575Z     ULONG Length;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9872373Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9873765Z     PUNICODE_STRING ObjectName;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9874478Z     ULONG Attributes;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9875421Z     PVOID SecurityDescriptor;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9876135Z     PVOID SecurityQualityOfService;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9877219Z } OBJECT_ATTRIBUTES;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9877892Z typedef OBJECT_ATTRIBUTES *POBJECT_ATTRIBUTES;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9879987Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9881549Z typedef struct _IO_STATUS_BLOCK {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9882713Z #pragma warning(push)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9884145Z #pragma warning(disable: 4201) // we'll always use the Microsoft compiler
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9885499Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9886169Z         NTSTATUS Status;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9887193Z         PVOID Pointer;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9889595Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9891298Z #pragma warning(pop)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9893027Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9896024Z     ULONG_PTR Information;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9897848Z } IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9899979Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9902446Z typedef
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9904473Z VOID
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9906551Z (NTAPI *PIO_APC_ROUTINE) (
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9908488Z     IN PVOID ApcContext,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9910651Z     IN PIO_STATUS_BLOCK IoStatusBlock,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9912708Z     IN ULONG Reserved
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9914645Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9916654Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9918823Z --- um/winternl.h line 475 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9920862Z NTAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9922869Z NtCreateFile (
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9924891Z     OUT PHANDLE FileHandle,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9926696Z     IN ACCESS_MASK DesiredAccess,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9928739Z     IN POBJECT_ATTRIBUTES ObjectAttributes,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9930731Z     OUT PIO_STATUS_BLOCK IoStatusBlock,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9932755Z     IN PLARGE_INTEGER AllocationSize OPTIONAL,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9934670Z     IN ULONG FileAttributes,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9936672Z     IN ULONG ShareAccess,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9938662Z     IN ULONG CreateDisposition,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9940589Z     IN ULONG CreateOptions,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9942532Z     IN PVOID EaBuffer OPTIONAL,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9944582Z     IN ULONG EaLength
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9946314Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9948131Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9950018Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9951755Z // use the Win32 API instead
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9953717Z //     CreateFile
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9955675Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9958653Z __kernel_entry NTSTATUS
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9959169Z NTAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9961821Z NtOpenFile (
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9963452Z     OUT PHANDLE FileHandle,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9965800Z     IN ACCESS_MASK DesiredAccess,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9967877Z     IN POBJECT_ATTRIBUTES ObjectAttributes,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9969866Z     OUT PIO_STATUS_BLOCK IoStatusBlock,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9971791Z     IN ULONG ShareAccess,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9973776Z     IN ULONG OpenOptions
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9975636Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9977251Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9979074Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9981300Z --- um/winternl.h line 992 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9982890Z #define FILE_CREATE                     0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9984846Z #define FILE_OPEN_IF                    0x00000003
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9986625Z #define FILE_OVERWRITE                  0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9988524Z #define FILE_OVERWRITE_IF               0x00000005
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9990272Z #define FILE_MAXIMUM_DISPOSITION        0x00000005
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9991707Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9993435Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9995210Z // Define the create/open option flags
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9996951Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:53.9998448Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0000305Z #define FILE_DIRECTORY_FILE                     0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0002186Z #define FILE_WRITE_THROUGH                      0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0003707Z #define FILE_SEQUENTIAL_ONLY                    0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0005447Z #define FILE_NO_INTERMEDIATE_BUFFERING          0x00000008
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0006875Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0008682Z #define FILE_SYNCHRONOUS_IO_ALERT               0x00000010
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0010402Z #define FILE_SYNCHRONOUS_IO_NONALERT            0x00000020
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0012099Z #define FILE_NON_DIRECTORY_FILE                 0x00000040
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0013840Z #define FILE_CREATE_TREE_CONNECTION             0x00000080
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0015258Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0017050Z #define FILE_COMPLETE_IF_OPLOCKED               0x00000100
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0018735Z #define FILE_NO_EA_KNOWLEDGE                    0x00000200
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0020595Z #define FILE_OPEN_REMOTE_INSTANCE               0x00000400
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0022727Z #define FILE_RANDOM_ACCESS                      0x00000800
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0024169Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0026108Z #define FILE_DELETE_ON_CLOSE                    0x00001000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0027797Z #define FILE_OPEN_BY_FILE_ID                    0x00002000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0029493Z #define FILE_OPEN_FOR_BACKUP_INTENT             0x00004000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0031507Z #define FILE_NO_COMPRESSION                     0x00008000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0033363Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0035705Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN7)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0038380Z --- um/winternl.h line 1007 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0040087Z #define FILE_SYNCHRONOUS_IO_ALERT               0x00000010
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0042110Z #define FILE_SYNCHRONOUS_IO_NONALERT            0x00000020
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0043926Z #define FILE_NON_DIRECTORY_FILE                 0x00000040
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0046510Z #define FILE_CREATE_TREE_CONNECTION             0x00000080
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0048271Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0050137Z #define FILE_COMPLETE_IF_OPLOCKED               0x00000100
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0051840Z #define FILE_NO_EA_KNOWLEDGE                    0x00000200
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0053618Z #define FILE_OPEN_REMOTE_INSTANCE               0x00000400
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0055342Z #define FILE_RANDOM_ACCESS                      0x00000800
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0056881Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0058709Z #define FILE_DELETE_ON_CLOSE                    0x00001000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0060600Z #define FILE_OPEN_BY_FILE_ID                    0x00002000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0062577Z #define FILE_OPEN_FOR_BACKUP_INTENT             0x00004000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0064319Z #define FILE_NO_COMPRESSION                     0x00008000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0065628Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0067456Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN7)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0069126Z #define FILE_OPEN_REQUIRING_OPLOCK              0x00010000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0070873Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0072286Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0073900Z #define FILE_RESERVE_OPFILTER                   0x00100000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0075642Z #define FILE_OPEN_REPARSE_POINT                 0x00200000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0077322Z #define FILE_OPEN_NO_RECALL                     0x00400000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0079065Z #define FILE_OPEN_FOR_FREE_SPACE_QUERY          0x00800000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0080415Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0082135Z #define FILE_VALID_OPTION_FLAGS                 0x00ffffff
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0084015Z #define FILE_VALID_PIPE_OPTION_FLAGS            0x00000032
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0085937Z #define FILE_VALID_MAILSLOT_OPTION_FLAGS        0x00000032
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0087859Z #define FILE_VALID_SET_FLAGS                    0x00000036
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0089344Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0091201Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0093014Z // Define the I/O status information return values for NtCreateFile/NtOpenFile
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0094561Z --- um/winternl.h line 1026 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0096273Z #define FILE_RESERVE_OPFILTER                   0x00100000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0098093Z #define FILE_OPEN_REPARSE_POINT                 0x00200000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0100040Z #define FILE_OPEN_NO_RECALL                     0x00400000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0101455Z #define FILE_OPEN_FOR_FREE_SPACE_QUERY          0x00800000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0102889Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0104610Z #define FILE_VALID_OPTION_FLAGS                 0x00ffffff
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0106414Z #define FILE_VALID_PIPE_OPTION_FLAGS            0x00000032
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0108218Z #define FILE_VALID_MAILSLOT_OPTION_FLAGS        0x00000032
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0109910Z #define FILE_VALID_SET_FLAGS                    0x00000036
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0111339Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0112956Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0114718Z // Define the I/O status information return values for NtCreateFile/NtOpenFile
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0116286Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0117932Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0120440Z #define FILE_SUPERSEDED                 0x00000000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0122003Z #define FILE_OPENED                     0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0123675Z #define FILE_CREATED                    0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0125473Z #define FILE_OVERWRITTEN                0x00000003
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0127144Z #define FILE_EXISTS                     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0128926Z #define FILE_DOES_NOT_EXIST             0x00000005
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0130428Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0132171Z #ifndef __os_arm64x_get_x64_information
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0133949Z #define __os_arm64x_get_x64_information __os_arm64x_rdtsc
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0135530Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0137206Z #ifndef __os_arm64x_set_x64_information
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0139133Z #define __os_arm64x_set_x64_information __os_arm64x_cpuidex
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0140951Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0142350Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0144070Z #ifdef __cplusplus
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0145693Z }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0147451Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0149144Z --- um/winternl.h line 1036 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0150912Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0152695Z // Define the I/O status information return values for NtCreateFile/NtOpenFile
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0154053Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0155399Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0156994Z #define FILE_SUPERSEDED                 0x00000000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0158952Z #define FILE_OPENED                     0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0160782Z #define FILE_CREATED                    0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0162240Z #define FILE_OVERWRITTEN                0x00000003
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0163937Z #define FILE_EXISTS                     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0165724Z #define FILE_DOES_NOT_EXIST             0x00000005
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0167289Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0169015Z #ifndef __os_arm64x_get_x64_information
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0170717Z #define __os_arm64x_get_x64_information __os_arm64x_rdtsc
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0172312Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0173925Z #ifndef __os_arm64x_set_x64_information
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0175607Z #define __os_arm64x_set_x64_information __os_arm64x_cpuidex
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0177264Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0178881Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0180809Z #ifdef __cplusplus
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0182155Z }
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0183803Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0185197Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0186885Z #endif // (_WIN32_WINNT >= 0x0500)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0188293Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0189799Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0191591Z #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0193159Z #pragma endregion
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0194720Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0196756Z #endif // _WINTERNL_
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0198951Z --- um/WinBase.h line 9104 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0200786Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0203052Z #define FILE_RENAME_FLAG_REPLACE_IF_EXISTS                  0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0204981Z #define FILE_RENAME_FLAG_POSIX_SEMANTICS                    0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0206482Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0208014Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0209759Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS3)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0211583Z #define FILE_RENAME_FLAG_SUPPRESS_PIN_STATE_INHERITANCE     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0213265Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0214773Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0216921Z typedef struct _FILE_RENAME_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0218197Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0220007Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0221852Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0223754Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0225476Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0227215Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0228905Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0230591Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0232158Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0233822Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0235558Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0237624Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0239103Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0240885Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0242573Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0244359Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0245915Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0247567Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0249352Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0251052Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0252555Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0254278Z --- um/WinBase.h line 9105 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0256046Z #define FILE_RENAME_FLAG_REPLACE_IF_EXISTS                  0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0257799Z #define FILE_RENAME_FLAG_POSIX_SEMANTICS                    0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0259520Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0260912Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0262544Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS3)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0264360Z #define FILE_RENAME_FLAG_SUPPRESS_PIN_STATE_INHERITANCE     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0266046Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0267442Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0269054Z typedef struct _FILE_RENAME_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0270862Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0272808Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0274638Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0276655Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0278426Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0280259Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0282020Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0283756Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0285520Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0287231Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0288972Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0290857Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0292508Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0294254Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0295905Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0297874Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0299804Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0301660Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0303390Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0305120Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0306587Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0308316Z typedef struct _FILE_STREAM_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0309959Z --- um/WinBase.h line 9109 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0311686Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS3)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0405534Z #define FILE_RENAME_FLAG_SUPPRESS_PIN_STATE_INHERITANCE     0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0406418Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0407950Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0409565Z typedef struct _FILE_RENAME_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0411887Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0412685Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0415075Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0416681Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0418192Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0419964Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0421831Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0423531Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0425285Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0426963Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0428660Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0430405Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0431936Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0433744Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0435503Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0437741Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0438824Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0440515Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0442257Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0444011Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0445420Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0447067Z typedef struct _FILE_STREAM_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0448728Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0450481Z     DWORD StreamNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0452167Z     LARGE_INTEGER StreamSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0453878Z     LARGE_INTEGER StreamAllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0455541Z --- um/WinBase.h line 9112 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0457106Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0458969Z typedef struct _FILE_RENAME_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0460628Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0462294Z     union {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0464050Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0465741Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0467380Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0469015Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0470725Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0472369Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0474049Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0475723Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0477479Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0479175Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0480606Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0482351Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0483979Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0485726Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0487139Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0488805Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0490414Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0492159Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0493564Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0495279Z typedef struct _FILE_STREAM_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0496962Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0498908Z     DWORD StreamNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0500433Z     LARGE_INTEGER StreamSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0502158Z     LARGE_INTEGER StreamAllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0503869Z     WCHAR StreamName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0505540Z } FILE_STREAM_INFO, *PFILE_STREAM_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0507011Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0508694Z --- um/WinBase.h line 9116 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0510389Z         BOOLEAN ReplaceIfExists;  // FileRenameInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0512097Z         DWORD Flags;              // FileRenameInfoEx
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0514336Z     } DUMMYUNIONNAME;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0515570Z #else
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0517452Z     BOOLEAN ReplaceIfExists;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0519070Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0520827Z     HANDLE RootDirectory;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0522571Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0524252Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0525945Z } FILE_RENAME_INFO, *PFILE_RENAME_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0527412Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0529074Z typedef struct _FILE_ALLOCATION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0530719Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0532375Z } FILE_ALLOCATION_INFO, *PFILE_ALLOCATION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0533906Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0535602Z typedef struct _FILE_END_OF_FILE_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0537233Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0538993Z } FILE_END_OF_FILE_INFO, *PFILE_END_OF_FILE_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0540438Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0542334Z typedef struct _FILE_STREAM_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0543987Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0545690Z     DWORD StreamNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0547350Z     LARGE_INTEGER StreamSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0549085Z     LARGE_INTEGER StreamAllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0550745Z     WCHAR StreamName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0552466Z } FILE_STREAM_INFO, *PFILE_STREAM_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0554079Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0555658Z typedef struct _FILE_COMPRESSION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0557282Z     LARGE_INTEGER CompressedFileSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0558969Z     WORD CompressionFormat;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0560658Z     UCHAR CompressionUnitShift;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0562120Z --- um/WinBase.h line 9156 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0563743Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0565326Z typedef struct _FILE_DISPOSITION_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0566987Z     BOOLEAN DeleteFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0568757Z } FILE_DISPOSITION_INFO, *PFILE_DISPOSITION_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0570200Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0571842Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS1)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0573588Z #define FILE_DISPOSITION_FLAG_DO_NOT_DELETE              0x00000000
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0575565Z #define FILE_DISPOSITION_FLAG_DELETE                     0x00000001
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0577125Z #define FILE_DISPOSITION_FLAG_POSIX_SEMANTICS            0x00000002
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0578684Z #define FILE_DISPOSITION_FLAG_FORCE_IMAGE_SECTION_CHECK  0x00000004
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0580196Z #define FILE_DISPOSITION_FLAG_ON_CLOSE                   0x00000008
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0582100Z #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS5)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0583536Z #define FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE  0x00000010
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0584979Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0586500Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0588255Z typedef struct _FILE_DISPOSITION_INFO_EX {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0589995Z     DWORD Flags;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0591895Z } FILE_DISPOSITION_INFO_EX, *PFILE_DISPOSITION_INFO_EX;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0593503Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0595016Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0596884Z typedef struct _FILE_ID_BOTH_DIR_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0598531Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0600251Z     DWORD FileIndex;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0601989Z     LARGE_INTEGER CreationTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0603800Z     LARGE_INTEGER LastAccessTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0605464Z     LARGE_INTEGER LastWriteTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0607109Z     LARGE_INTEGER ChangeTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0608855Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0610543Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0612414Z     DWORD FileAttributes;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0614175Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0615824Z --- um/WinBase.h line 9170 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0617227Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0618809Z typedef struct _FILE_DISPOSITION_INFO_EX {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0620415Z     DWORD Flags;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0622317Z } FILE_DISPOSITION_INFO_EX, *PFILE_DISPOSITION_INFO_EX;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0624007Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0625561Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0687390Z typedef struct _FILE_ID_BOTH_DIR_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0688235Z     DWORD NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0688620Z     DWORD FileIndex;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0688946Z     LARGE_INTEGER CreationTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0689316Z     LARGE_INTEGER LastAccessTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0690099Z     LARGE_INTEGER LastWriteTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0690522Z     LARGE_INTEGER ChangeTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0690978Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0691492Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0693072Z     DWORD FileAttributes;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0693484Z     DWORD FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0693871Z     DWORD EaSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0694337Z     CCHAR ShortNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0694708Z     WCHAR ShortName[12];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0695037Z     LARGE_INTEGER FileId;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0695393Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0695785Z } FILE_ID_BOTH_DIR_INFO, *PFILE_ID_BOTH_DIR_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0696122Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0696304Z typedef struct _FILE_FULL_DIR_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0696720Z     ULONG NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0697064Z     ULONG FileIndex;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0697399Z     LARGE_INTEGER CreationTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0697812Z     LARGE_INTEGER LastAccessTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0698249Z     LARGE_INTEGER LastWriteTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0698682Z     LARGE_INTEGER ChangeTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0699082Z --- um/WinBase.h line 9259 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0699478Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0699780Z typedef struct _FILE_ID_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0700210Z     ULONGLONG VolumeSerialNumber;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0700632Z     FILE_ID_128 FileId;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0700994Z } FILE_ID_INFO, *PFILE_ID_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0701269Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0701374Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0701749Z //  Structure definition for FileIdExtdDirectoryInfo
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0702247Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0702550Z typedef struct _FILE_ID_EXTD_DIR_INFO {
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0703000Z     ULONG NextEntryOffset;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0703352Z     ULONG FileIndex;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0703697Z     LARGE_INTEGER CreationTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0704138Z     LARGE_INTEGER LastAccessTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0704588Z     LARGE_INTEGER LastWriteTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0705011Z     LARGE_INTEGER ChangeTime;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0705420Z     LARGE_INTEGER EndOfFile;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0705819Z     LARGE_INTEGER AllocationSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0706276Z     ULONG FileAttributes;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0706680Z     ULONG FileNameLength;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0707130Z     ULONG EaSize;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0707471Z     ULONG ReparsePointTag;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0707850Z     FILE_ID_128 FileId;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0708689Z     WCHAR FileName[1];
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0709222Z } FILE_ID_EXTD_DIR_INFO, *PFILE_ID_EXTD_DIR_INFO;
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0709814Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0711889Z #endif
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0713661Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0715432Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0717216Z // File Remote protocol info (FileRemoteProtocolInfo)
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0718944Z //
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0720640Z --- um/fileapi.h line 889 ---
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0722335Z WINAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0724090Z GetVolumeInformationByHandleW(
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0725773Z     _In_ HANDLE hFile,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0727576Z     _Out_writes_opt_(nVolumeNameSize) LPWSTR lpVolumeNameBuffer,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0729201Z     _In_ DWORD nVolumeNameSize,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0730923Z     _Out_opt_ LPDWORD lpVolumeSerialNumber,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0732711Z     _Out_opt_ LPDWORD lpMaximumComponentLength,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0734688Z     _Out_opt_ LPDWORD lpFileSystemFlags,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0736522Z     _Out_writes_opt_(nFileSystemNameSize) LPWSTR lpFileSystemNameBuffer,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0738042Z     _In_ DWORD nFileSystemNameSize
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0739654Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0741283Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0742975Z #endif /* _WIN32_WINNT >=  0x0600 */
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0744494Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0746281Z WINBASEAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0747919Z BOOL
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0749730Z WINAPI
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0751439Z GetVolumeInformationW(
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0753329Z     _In_opt_ LPCWSTR lpRootPathName,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0755230Z     _Out_writes_opt_(nVolumeNameSize) LPWSTR lpVolumeNameBuffer,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0756699Z     _In_ DWORD nVolumeNameSize,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0758408Z     _Out_opt_ LPDWORD lpVolumeSerialNumber,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0760113Z     _Out_opt_ LPDWORD lpMaximumComponentLength,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0761778Z     _Out_opt_ LPDWORD lpFileSystemFlags,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0763524Z     _Out_writes_opt_(nFileSystemNameSize) LPWSTR lpFileSystemNameBuffer,
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0765040Z     _In_ DWORD nFileSystemNameSize
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0766648Z     );
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0768154Z 
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0769760Z #ifdef UNICODE
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0771500Z #define GetVolumeInformation  GetVolumeInformationW
+windows	Inspect the pinned native Windows SDK and toolchain	2026-08-28T05:08:54.0773638Z #endif
+windows	Fetch checksum-verified native Node inputs	﻿2026-08-28T05:08:54.1790884Z ##[group]Run @'
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1791274Z [36;1m@'[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1791532Z [36;1mimport { createHash } from 'node:crypto';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1791959Z [36;1mimport { writeFileSync, appendFileSync } from 'node:fs';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1792403Z [36;1mimport { execFileSync } from 'node:child_process';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1792798Z [36;1mimport { join, basename } from 'node:path';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1793316Z [36;1mif (process.arch !== 'x64') throw new Error('Native x64 Node bootstrap required');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1793895Z [36;1mconst base = 'https://nodejs.org/dist/v20.19.0/';[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1794344Z [36;1mconst sumsResponse = await fetch(base + 'SHASUMS256.txt');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1794859Z [36;1mif (!sumsResponse.ok) throw new Error('Cannot fetch checksums');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1795307Z [36;1mconst sums = await sumsResponse.text();[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1795868Z [36;1mfor (const name of ['node-v20.19.0-win-x64.zip', 'node-v20.19.0-headers.tar.gz', 'win-x64/node.lib']) {[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1796484Z [36;1m  const response = await fetch(base + name);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1796879Z [36;1m  if (!response.ok) throw new Error('Cannot fetch ' + name);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1797301Z [36;1m  const bytes = Buffer.from(await response.arrayBuffer());[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1797742Z [36;1m  const sha256 = createHash('sha256').update(bytes).digest('hex');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1798331Z [36;1m  const expected = sums.split('\n').map(line => line.trim().split(/\s+/)).find(parts => parts[1] === name)?.[0];[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1798929Z [36;1m  if (sha256 !== expected) throw new Error('Checksum mismatch: ' + name);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1799429Z [36;1m  writeFileSync(join(process.env.RUNNER_TEMP, basename(name)), bytes);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1799847Z [36;1m  console.log(JSON.stringify({name, sha256}));[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1800137Z [36;1m}[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1800602Z [36;1mexecFileSync('tar', ['-xf', join(process.env.RUNNER_TEMP, 'node-v20.19.0-win-x64.zip'), '-C', process.env.RUNNER_TEMP]);[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1801378Z [36;1mappendFileSync(process.env.GITHUB_PATH, join(process.env.RUNNER_TEMP, 'node-v20.19.0-win-x64') + '\n');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1802469Z [36;1mappendFileSync(process.env.GITHUB_ENV, 'EXSPECSO_NODE_HEADERS=' + join(process.env.RUNNER_TEMP, 'node-v20.19.0-headers.tar.gz') + '\n');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1803601Z [36;1mappendFileSync(process.env.GITHUB_ENV, 'EXSPECSO_NODE_LIB=' + join(process.env.RUNNER_TEMP, 'node.lib') + '\n');[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1804146Z [36;1m'@ | node --input-type=module[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1804487Z [36;1mif ($LASTEXITCODE) { throw 'Node input verification failed' }[0m
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1905924Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:54.1906333Z ##[endgroup]
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:08:59.9400406Z {"name":"node-v20.19.0-win-x64.zip","sha256":"be72284c7bc62de07d5a9fd0ae196879842c085f11f7f2b60bf8864c0c9d6a4f"}
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:09:00.0509947Z {"name":"node-v20.19.0-headers.tar.gz","sha256":"800194e32cef4ee77f5a2e8c0e5dd2b4acb38b39ef2ea544929c181b949494bb"}
+windows	Fetch checksum-verified native Node inputs	2026-08-28T05:09:00.1325753Z {"name":"win-x64/node.lib","sha256":"72f7ca3b33f0991e93e25521f7e78c8adf187df7d5223bf0efcb5e005420f327"}
+windows	Install locked development dependencies without lifecycle scripts	﻿2026-08-28T05:09:01.0684851Z ##[group]Run npm ci --ignore-scripts
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:01.0685284Z [36;1mnpm ci --ignore-scripts[0m
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:01.0685591Z [36;1mif ($LASTEXITCODE) { throw 'npm ci failed' }[0m
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:01.0788975Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:01.0789333Z env:
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:01.0789588Z   EXSPECSO_NODE_HEADERS: D:\a\_temp\node-v20.19.0-headers.tar.gz
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:01.0789941Z   EXSPECSO_NODE_LIB: D:\a\_temp\node.lib
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:01.0790190Z ##[endgroup]
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:04.6424130Z 
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:04.6424894Z added 74 packages, and audited 75 packages in 3s
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:04.6425401Z 
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:04.6425584Z 20 packages are looking for funding
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:04.6425965Z   run `npm fund` for details
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:04.6437468Z 
+windows	Install locked development dependencies without lifecycle scripts	2026-08-28T05:09:04.6437707Z found 0 vulnerabilities
+windows	Observe RED provider tests before Windows implementation	﻿2026-08-28T05:09:04.7818394Z ##[group]Run npm test -- --run tests/unit/contained-fs.test.ts --testTimeout 30000 --reporter=default --reporter=json --outputFile=windows-red-results.json
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:04.7819621Z [36;1mnpm test -- --run tests/unit/contained-fs.test.ts --testTimeout 30000 --reporter=default --reporter=json --outputFile=windows-red-results.json[0m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:04.7820444Z [36;1mif ($LASTEXITCODE -eq 0) { throw 'Expected RED before the Windows provider exists' }[0m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:04.7923441Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:04.7923799Z env:
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:04.7924062Z   EXSPECSO_NODE_HEADERS: D:\a\_temp\node-v20.19.0-headers.tar.gz
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:04.7924416Z   EXSPECSO_NODE_LIB: D:\a\_temp\node.lib
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:04.7924666Z ##[endgroup]
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:05.3794529Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:05.3795102Z > exspecso@0.1.0 test
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:05.3796171Z > vitest --run tests/unit/contained-fs.test.ts --testTimeout 30000 --reporter=default --reporter=json --outputFile=windows-red-results.json
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:05.3797130Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:05.8607458Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:05.8612625Z [1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mD:/a/exspecso/exspecso[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:05.8613276Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7611450Z  [31m❯[39m tests/unit/contained-fs.test.ts [2m([22m[2m11 tests[22m[2m | [22m[31m11 failed[39m[2m)[22m[32m 196[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7616326Z [31m     [31m×[31m NP-01 rejects invalid components and wrong types without creating entries[39m[32m 94[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7619179Z [31m     [31m×[31m NP-01 rejects symlink directories and file leaves[39m[32m 55[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7622394Z [31m     [31m×[31m NP-02 replaces an entry without modifying its hardlink alias[39m[32m 8[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7624357Z [31m     [31m×[31m NP-02 binds a moved directory object and never follows its substituted name (limitation)[39m[32m 6[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7627261Z [31m     [31m×[31m NP-03 rejects replacement with a file from a different parent and closes idempotently[39m[32m 4[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7631522Z [31m     [31m×[31m NP-01 creates exclusively and removes only the named file or empty directory[39m[32m 3[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7634957Z [31m     [31m×[31m NP-03 rejects writes through a read-only capability and invalid buffers[39m[32m 4[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7649368Z [31m     [31m×[31m W-01 rejects junctions, alternate streams, device aliases and wrong entry kinds[39m[32m 6[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7651588Z [31m     [31m×[31m W-02 replaces with an open reader while preserving the old object and full identity observation[39m[32m 4[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7654204Z [31m     [31m×[31m W-02 rejects a substituted private sibling without replacing the intended target[39m[32m 4[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7658588Z [31m     [31m×[31m W-02 reports a real sharing conflict without modifying either file[39m[32m 4[2mms[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7750433Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7751790Z [31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 11 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7752635Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7754544Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mNP-01 rejects invalid components and wrong types without creating entries
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7759127Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7761404Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7814716Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7850187Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7855242Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7857662Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7859573Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.7861167Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8011965Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8014859Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8017539Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m28:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8018823Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8020226Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8089762Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8163398Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mNP-01 rejects symlink directories and file leaves
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8181015Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8233379Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8247224Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8267608Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8281264Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8314201Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8316211Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8326050Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8357351Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8359526Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8361461Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m43:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8362451Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8363299Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8364182Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8366155Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mNP-02 replaces an entry without modifying its hardlink alias
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8370339Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8372894Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8374764Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8377539Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8380531Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8381967Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8383117Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8384128Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8385315Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8386672Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8387884Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m54:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8389762Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8390253Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8390773Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8392441Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mNP-02 binds a moved directory object and never follows its substituted name (limitation)
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8395298Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8397221Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8398499Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8400483Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8402683Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8404377Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8406053Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8407362Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8409012Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8410764Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8452553Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m69:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8453523Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8454023Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8454569Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8455954Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mNP-03 rejects replacement with a file from a different parent and closes idempotently
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8458687Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8460369Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8461983Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8464240Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8466665Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8468170Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8469813Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8471083Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8473148Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8475541Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8477168Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m81:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8478504Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8479471Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8480028Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8481359Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mNP-01 creates exclusively and removes only the named file or empty directory
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8483692Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8485321Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8487317Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8489331Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8491389Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8493316Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8494938Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8496361Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8497703Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8499479Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8501208Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m94:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8502112Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8502695Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8504847Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8507194Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mNP-03 rejects writes through a read-only capability and invalid buffers
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8510584Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8512667Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8514651Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8517117Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8519190Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8520746Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8522546Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8523983Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8525224Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8533535Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8534819Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m108:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8535465Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8535917Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8536424Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8653009Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mW-01 rejects junctions, alternate streams, device aliases and wrong entry kinds
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8660245Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8767156Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8769173Z [2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8773568Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8775076Z [2m      Tests [22m [1m[31m11 failed[39m[22m[90m (11)[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8792276Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8793390Z [2m   Start at [22m 05:09:05
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8812359Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8814133Z [2m   Duration [22m 896ms[2m (transform 141ms, setup 0ms, import 183ms, tests 196ms, environment 0ms)[22m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8855907Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8856542Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8857310Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8858052Z JSON report written to D:/a/exspecso/exspecso/windows-red-results.json
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8859278Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8860171Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8860999Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8862164Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8863224Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m123:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8863762Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8864141Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8864580Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8865967Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mW-02 replaces with an open reader while preserving the old object and full identity observation
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8872153Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8873874Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8874994Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8876655Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8878006Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8878925Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8879909Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8880729Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8881497Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8882630Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8883638Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m143:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8884159Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8884510Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8884927Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8886142Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mW-02 rejects a substituted private sibling without replacing the intended target
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8888264Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8889999Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8891078Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8892744Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8894030Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8894976Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8895933Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8896817Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8897603Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8898716Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8900892Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m162:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8901450Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8901813Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8902270Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8903397Z [41m[1m FAIL [22m[49m tests/unit/contained-fs.test.ts[2m > [22mcontained filesystem provider[2m > [22mW-02 reports a real sharing conflict without modifying either file
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8905516Z [31m[1mError[22m: EXSPECSO_CONTAINMENT_UNAVAILABLE: ENOENT: no such file or directory, open 'D:\a\exspecso\exspecso\dist\native\manifest.json'[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8906961Z [36m [2m❯[22m unavailable src/filesystem/contained-fs.ts:[2m30:54[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8908010Z     [90m 28|[39m const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8909686Z     [90m 29|[39m [35mconst[39m require [33m=[39m [34mcreateRequire[39m([35mimport[39m[33m.[39mmeta[33m.[39murl)[33m;[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8911027Z     [90m 30|[39m function unavailable(message: string): never { throw new Error(`EXSPEC…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8911961Z     [90m   |[39m                                                      [31m^[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8912926Z     [90m 31|[39m function loadProvider(): { native: NativeProvider; provenance: Provide…
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8914024Z     [90m 32|[39m   [35mtry[39m {
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8914992Z [90m [2m❯[22m loadProvider src/filesystem/contained-fs.ts:[2m58:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8916325Z [90m [2m❯[22m openContainedFilesystem src/filesystem/contained-fs.ts:[2m90:34[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8917399Z [90m [2m❯[22m tests/unit/contained-fs.test.ts:[2m177:21[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8917928Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8918345Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯[22m[39m
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:06.8919638Z 
+windows	Observe RED provider tests before Windows implementation	2026-08-28T05:09:07.0722670Z ##[error]Process completed with exit code 1.
+windows	Preserve actual Windows observations	﻿2026-08-28T05:09:07.0997194Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1007484Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1008200Z with:
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1008524Z   name: containment-windows-parity
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1009068Z   path: windows-preflight/
+windows	Preserve actual Windows observations	windows-red-results.json
+windows	Preserve actual Windows observations	
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1009599Z   if-no-files-found: error
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1009950Z   retention-days: 7
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1010258Z   compression-level: 6
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1010584Z   overwrite: false
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1010895Z   include-hidden-files: false
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1011247Z env:
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1011648Z   EXSPECSO_NODE_HEADERS: D:\a\_temp\node-v20.19.0-headers.tar.gz
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1012283Z   EXSPECSO_NODE_LIB: D:\a\_temp\node.lib
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.1012686Z ##[endgroup]
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.4137872Z (node:6432) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.4140456Z (Use `node --trace-deprecation ...` to show where the warning was created)
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.4246145Z Multiple search paths detected. Calculating the least common ancestor of all paths
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.4250531Z The least common ancestor is D:\a\exspecso\exspecso. This will be the root directory of the artifact
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.4251612Z With the provided path, there will be 3 files uploaded
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.4262477Z Artifact name is valid!
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.4264270Z Root directory input is valid!
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.6809418Z Beginning upload of artifact content to blob storage
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.7162623Z (node:6432) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.7635428Z Uploaded bytes 4818
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.7683919Z Finished uploading artifact content to blob storage!
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.7685595Z SHA256 digest of uploaded artifact zip is 1e2c6c7fd02f9dc144920cf47e57875a6919d0e37602794a2f8b70b05cd9c4ec
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.7686679Z Finalizing artifact upload
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.9848540Z Artifact containment-windows-parity.zip successfully finalized. Artifact ID 9675006028
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.9850152Z Artifact containment-windows-parity has been successfully uploaded! Final size is 4818 bytes. Artifact ID is 9675006028
+windows	Preserve actual Windows observations	2026-08-28T05:09:07.9861592Z Artifact download URL: https://github.com/ishk-sftckz/exspecso/actions/runs/33143857626/artifacts/9675006028
+windows	Complete job	﻿2026-08-28T05:09:08.0122473Z Cleaning up orphan processes
+windows	Complete job	2026-08-28T05:09:08.0826809Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
