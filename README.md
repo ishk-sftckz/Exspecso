@@ -2,7 +2,7 @@
 
 ![Exspecso. Write the spec. Ship the work.](assets/exspecso-readme-hero.png)
 
-Spec-driven harness engineering for Claude Code, OpenAI Codex, and OpenCode.
+Spec-driven harness engineering for your AI Agents.
 
 > Development is ongoing.
 
