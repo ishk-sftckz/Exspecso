@@ -13,6 +13,7 @@ import { acquireInitOwnership, lockRelativePath, releaseInitOwnership } from "..
 import { openContainedFilesystem } from "../../src/filesystem/contained-fs.js";
 import { runInit } from "../../src/init/run-init.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
+import { runNpm } from "../helpers/npm.js";
 
 const fixtures: GitFixture[] = [];
 const packageRoot = resolve(import.meta.dirname, "../..");
@@ -76,7 +77,7 @@ async function killAtPromotion(root: string, point: PromotionFaultPoint): Promis
   try {
     const recorded = await waitForChildMessage(child);
     expect(recorded.pid).toBe(child.pid);
-  expect(recorded.point).toBe(point);
+    expect(recorded.point).toBe(point);
     child.kill("SIGKILL");
     await expect(exited).resolves.toEqual({ code: null, signal: "SIGKILL" });
   } finally {
@@ -423,10 +424,7 @@ describe("journaled init transaction", () => {
 
   it("reclaims ownership only after a killed process has actually exited", async () => {
     const fixture = await useFixture();
-    await new Promise<void>((resolveBuild, rejectBuild) => {
-      const build = spawn("npm", ["run", "build"], { cwd: packageRoot, stdio: "ignore" });
-      build.once("close", (code) => code === 0 ? resolveBuild() : rejectBuild(new Error(`build failed: ${code}`)));
-    });
+    await runNpm(["run", "build"], packageRoot);
     await killAfterOwnershipPublication(fixture.root);
 
     await expect(recoverInterruptedTransaction(fixture.root)).resolves.toEqual({ kind: "none" });
@@ -595,10 +593,7 @@ describe("journaled init transaction", () => {
       .map((write) => `after-promotion:${write.relativePath}` as PromotionFaultPoint);
     await probe.dispose();
     fixtures.splice(fixtures.indexOf(probe), 1);
-    await new Promise<void>((resolveBuild, rejectBuild) => {
-      const build = spawn("npm", ["run", "build"], { cwd: packageRoot, stdio: "ignore" });
-      build.once("close", (code) => code === 0 ? resolveBuild() : rejectBuild(new Error(`build failed: ${code}`)));
-    });
+    await runNpm(["run", "build"], packageRoot);
 
     for (const point of points) {
       const fixture = await useFixture();

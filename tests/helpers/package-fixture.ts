@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { access, mkdir, mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, isAbsolute, join, resolve } from "node:path";
+import { runNpm } from "./npm.js";
 
 export interface PackedInstallation {
   readonly tarballPath: string;
@@ -17,7 +18,6 @@ export interface InstalledCliResult {
 }
 
 const packageRoot = resolve(import.meta.dirname, "../..");
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
 function sanitizedEnvironment(): NodeJS.ProcessEnv {
   const environment = { ...process.env };
@@ -37,12 +37,6 @@ function run(command: string, args: readonly string[], cwd: string, env: NodeJS.
   });
 }
 
-async function requireSuccess(command: string, args: readonly string[], cwd: string): Promise<InstalledCliResult> {
-  const result = await run(command, args, cwd);
-  if (result.exitCode !== 0) throw new Error(`${command} ${args.join(" ")} failed: ${result.stderr || result.stdout}`);
-  return result;
-}
-
 function parseInventory(stdout: string): readonly string[] {
   const metadata = JSON.parse(stdout) as Array<{ files?: Array<{ path?: string }> }>;
   const files = metadata[0]?.files;
@@ -52,8 +46,8 @@ function parseInventory(stdout: string): readonly string[] {
 
 /** Build the checkout, inspect its normal npm candidate, and install the tarball with lifecycle scripts disabled. */
 export async function packAndInstall(): Promise<PackedInstallation> {
-  await requireSuccess(npmCommand, ["run", "build"], packageRoot);
-  const dryRun = await requireSuccess(npmCommand, ["pack", "--dry-run", "--json"], packageRoot);
+  await runNpm(["run", "build"], packageRoot);
+  const dryRun = await runNpm(["pack", "--dry-run", "--json"], packageRoot);
   const inventory = parseInventory(dryRun.stdout);
   const temporaryRoot = await mkdtemp(join(tmpdir(), "exspecso-installed-package-"));
   const tarballDirectory = join(temporaryRoot, "tarball");
@@ -61,13 +55,13 @@ export async function packAndInstall(): Promise<PackedInstallation> {
   await mkdir(tarballDirectory);
   await mkdir(installationRoot);
 
-  const packed = await requireSuccess(npmCommand, ["pack", "--json", "--pack-destination", tarballDirectory], packageRoot);
+  const packed = await runNpm(["pack", "--json", "--pack-destination", tarballDirectory], packageRoot);
   const metadata = JSON.parse(packed.stdout) as Array<{ filename?: string }>;
   const filename = metadata[0]?.filename;
   if (filename === undefined) throw new Error("npm pack --json did not report a tarball filename");
   const tarballPath = join(tarballDirectory, basename(filename));
   await access(tarballPath);
-  await requireSuccess(npmCommand, ["install", "--ignore-scripts", "--no-package-lock", "--no-save", tarballPath], installationRoot);
+  await runNpm(["install", "--ignore-scripts", "--no-package-lock", "--no-save", tarballPath], installationRoot);
 
   const packageDirectory = join(installationRoot, "node_modules", "exspecso");
   const packageJson = JSON.parse(await readFile(join(packageDirectory, "package.json"), "utf8")) as { bin?: { exspecso?: string } };

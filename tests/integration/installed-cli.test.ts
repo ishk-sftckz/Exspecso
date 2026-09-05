@@ -1,12 +1,11 @@
 import { spawn } from "node:child_process";
 import { readFile, readdir, rm } from "node:fs/promises";
-import { dirname, join, relative, resolve } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
-import { packAndInstall, runInstalledCli } from "../helpers/package-fixture.js";
+import { dirname, join, relative, resolve, sep } from "node:path";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { packAndInstall, runInstalledCli, type PackedInstallation } from "../helpers/package-fixture.js";
 import { createGitFixture, type GitFixture } from "../helpers/git-fixture.js";
 
 const fixtures: GitFixture[] = [];
-const installationRoots: string[] = [];
 const packageRoot = resolve(import.meta.dirname, "../..");
 const successfulInitialization = "Exspecso initialized successfully.\n";
 const adapterPaths = {
@@ -17,7 +16,6 @@ const adapterPaths = {
 
 afterEach(async () => {
   await Promise.all(fixtures.splice(0).map((fixture) => fixture.dispose()));
-  await Promise.all(installationRoots.splice(0).map((path) => rm(path, { force: true, recursive: true })));
 });
 
 async function fixture(): Promise<GitFixture> {
@@ -32,7 +30,7 @@ async function projectFiles(root: string, directory = root): Promise<string[]> {
     if (entry.name === ".git") continue;
     const path = join(directory, entry.name);
     if (entry.isDirectory()) result.push(...(await projectFiles(root, path)));
-    if (entry.isFile()) result.push(relative(root, path));
+    if (entry.isFile()) result.push(relative(root, path).split(sep).join("/"));
   }
   return result.sort();
 }
@@ -52,10 +50,21 @@ async function runInstalledCliWithTimeout(cliPath: string, cwd: string, env: Nod
 }
 
 describe("installed package initializer", () => {
+  let installation: PackedInstallation;
+
+  // The installed package is read-only; each test still initializes fresh repositories.
+  beforeAll(async () => {
+    installation = await packAndInstall();
+  }, 60_000);
+
+  afterAll(async () => {
+    if (installation !== undefined) {
+      await rm(dirname(dirname(dirname(installation.packageDirectory))), { force: true, recursive: true });
+    }
+  });
+
   it("ignores the complete legacy EXSPECSO_TEST environment family", async () => {
-    const installation = await packAndInstall();
     const installationRoot = dirname(dirname(dirname(installation.packageDirectory)));
-    installationRoots.push(installationRoot);
     const repository = await fixture();
     const transactionSignal = join(installationRoot, "caller-selected-transaction-signal.json");
     const ownershipSignal = join(installationRoot, "caller-selected-ownership-signal.json");
@@ -78,8 +87,6 @@ describe("installed package initializer", () => {
   }, 10_000);
 
   it("keeps explicit selection outputs identical when ambient agent variables are populated", async () => {
-    const installation = await packAndInstall();
-    installationRoots.push(dirname(dirname(dirname(installation.packageDirectory))));
     const cleanRepository = await fixture();
     const ambientRepository = await fixture();
     const cleanEnvironment = { ...process.env };
@@ -114,7 +121,7 @@ describe("installed package initializer", () => {
   }, 20_000);
 
   it("declares only the four representative D-22 compatibility rows", async () => {
-    const workflow = await readFile(join(packageRoot, ".github", "workflows", "ci.yml"), "utf8");
+    const workflow = (await readFile(join(packageRoot, ".github", "workflows", "ci.yml"), "utf8")).replace(/\r\n/g, "\n");
 
     expect(workflow.match(/^\s+- os: /gm)).toHaveLength(4);
     expect(workflow).toContain("os: ubuntu-latest\n            node: 22.13.0");
@@ -132,9 +139,6 @@ describe("installed package initializer", () => {
   });
 
   it("packs a native-free tarball and proves every selected runtime subset from root and nested directories", async () => {
-    const installation = await packAndInstall();
-    installationRoots.push(dirname(dirname(dirname(installation.packageDirectory))));
-
     expect(installation.inventory).toEqual(expect.arrayContaining([
       "package.json",
       "dist/cli/main.js",
@@ -181,8 +185,6 @@ describe("installed package initializer", () => {
   }, 30_000);
 
   it("adds selected adapters without changing the project identity or unselected adapter bytes", async () => {
-    const installation = await packAndInstall();
-    installationRoots.push(dirname(dirname(dirname(installation.packageDirectory))));
     const repository = await fixture();
 
     const first = await runInstalledCli(installation, repository.root, ["init", "--agent", "codex"]);

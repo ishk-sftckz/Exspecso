@@ -1,5 +1,5 @@
 import { readFile, readdir } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import { runInit } from "../../src/init/run-init.js";
@@ -23,7 +23,7 @@ async function files(root: string, directory = root): Promise<string[]> {
     if (entry.name === ".git") continue;
     const path = join(directory, entry.name);
     if (entry.isDirectory()) result.push(...(await files(root, path)));
-    if (entry.isFile()) result.push(relative(root, path));
+    if (entry.isFile()) result.push(relative(root, path).split(sep).join("/"));
   }
   return result.sort();
 }

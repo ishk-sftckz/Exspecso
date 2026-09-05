@@ -1,0 +1,13 @@
+---
+# D-21 in .planning/phases/01-initialize-canonical-projects/01-CONTEXT.md
+# retires the native containment implementation and preserves it as provenance.
+# Keep those records intact; analyze the active TypeScript package and its tests.
+# Revisit these exclusions if a separately approved native implementation returns.
+exclude_paths:
+  - ".planning/**"
+  - "native/**"
+  - "scripts/assemble-containment-package.mjs"
+  - "scripts/capture-filesystem-observation.mjs"
+  - "scripts/containment-evidence.mjs"
+  - "scripts/run-local-containment-gate.mjs"
+  - "scripts/write-containment-evidence.mjs"
