@@ -1,9 +1,38 @@
 # Exspecso
 
 Exspecso is a spec-driven framework for Claude Code, OpenAI Codex, and OpenCode.
-It stores project state in Markdown and JSON files in your repository, where
-you can read, edit, and diff them. The planned workflow uses those files to
-carry approved specs, progress, and verification evidence between agent sessions.
+
+## Why I'm building this
+
+The coding models kept getting better, but I still had to keep them on track.
+An agent could understand a difficult requirement and write solid code, then
+forget an earlier product decision, expand the scope, or over-design the
+solution. Sometimes the plan looked convincing but didn't fit the repository.
+Sometimes the agent called the work done without enough evidence.
+
+Starting another session meant reconstructing what happened and explaining
+decisions again. Even when the plan was already approved, I still had to keep
+prompting the agent to continue with the next task.
+
+I first thought better prompts would solve this. Then I focused on context,
+then specs. Those all help, but a spec can still be ignored during
+implementation. The agent needs a way to stay within it, check its work, and
+pick up where it stopped.
+
+That's what I'm building Exspecso to do. The approved spec defines what the
+agent can change and what evidence it must produce before calling the work
+done. That evidence is defined before implementation; the agent can't weaken
+the checks to get a pass. Once you approve a Phase, Exspecso is designed to
+work through its Tasks, verify them, and continue without asking you to
+schedule each step. Failed checks get a limited number of correction attempts.
+Changed requirements and scope still come back to you.
+
+Specs, progress, and verification evidence will live in Markdown and JSON
+files in your repository. Another session should be able to read where the
+work stopped, what passed or failed, and what to do next. Interrupted work
+stays incomplete until its required verification passes.
+
+## Development status
 
 The initializer works today. It creates the project's configuration,
 constitution, and selected agent adapters. Planning, delivery, verification,
