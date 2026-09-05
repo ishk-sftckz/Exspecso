@@ -1,6 +1,6 @@
 ---
 phase: 01-initialize-canonical-projects
-reviewed: 2026-09-05T00:32:30Z
+reviewed: 2026-09-05T06:06:53Z
 depth: standard
 files_reviewed: 34
 files_reviewed_list:
@@ -40,51 +40,57 @@ files_reviewed_list:
   - vitest.config.ts
 findings:
   critical: 0
-  warning: 2
+  warning: 3
   info: 0
-  total: 2
+  total: 3
 status: issues_found
 ---
 
 # Phase 01: Code Review Report
 
-**Reviewed:** 2026-09-05T00:32:30Z
+**Reviewed:** 2026-09-05T06:06:53Z
 **Depth:** standard
 **Files Reviewed:** 34
 **Status:** issues_found
 
 ## Summary
 
-Reviewed the requested Phase 01 implementation at standard depth, including the D-20 supersession. The public registry correctly exposes the ten canonical families, resolves `FIND-NNN` and `PAC-NNN`, and rejects `FINDING-NNN` without a compatibility alias. The active pure TypeScript/Node initializer, package surface, and representative CI workflow are consistent with D-21/D-22; the retained native material is non-shipped historical/deferred code under that decision.
+The committed Node package correctly emits exactly `Exspecso initialized successfully.\n` only after a committed or no-op transaction. The formatter is selection-independent, while selected-subset adapter paths and adapter-native invocation metadata remain intact. Error, cancellation, conflict, busy, and recovery paths do not emit the success line.
 
-`npm run build`, the active `npm test -- --run` suite (94 tests), and `npm pack --dry-run --json` pass. Two required regressions are nevertheless not protected as claimed by the active test gate.
+The active suite, TypeScript build, and package inventory pass. Three warning-level defects remain: two active coverage-quality gaps and one dormant native capability-lifecycle bug in retained, unshipped historical material.
 
 ## Narrative Findings (AI reviewer)
 
 ## Warnings
 
-### WR-01: Detection-free selector test still passes a removed API field
+### WR-01: Runtime-selection test still supplies a deleted API field
 
-**Classification:** WARNING
+**File:** `/Users/ishk.sftckz/Projects/exspecso/tests/unit/runtime-selection.test.ts:83-90`
+**Issue:** The test passes `detectedAgents`, which is not part of `ResolveSelectedAgentsInput` and is ignored at runtime because Vitest transpiles tests without type-checking them. This stale fixture masks accidental reintroduction of detection behavior and leaves the test inconsistent with the detection-free selection contract.
+**Fix:** Remove `detectedAgents: []` from the fixture and enable test type-checking or a focused compile check that includes test sources.
 
-**File:** `/Users/ishk.sftckz/Projects/exspecso/tests/unit/runtime-selection.test.ts:84-90`
+### WR-02: The aggregate D-20 rejection/no-mutation regression is outside routine CI
 
-**Issue:** The duplicate non-TTY selection case still supplies `detectedAgents: []`, although `ResolveSelectedAgentsInput` no longer has that member. This directly misses Plan 01-24's instruction to remove it from the test fixture. Tests are transpiled without type-checking and `tsconfig.json` compiles only `src`, so the stale property is silently ignored. The test therefore passes without proving that callers have stopped using the superseded detection API.
+**File:** `/Users/ishk.sftckz/Projects/exspecso/vitest.config.ts:6-13`
+**Issue:** `tests/integration/validation-errors.test.ts` is excluded from the default Vitest run. Its aggregate regression at `tests/integration/validation-errors.test.ts:169-198` is therefore not exercised by the `npm test -- --run` command used in CI, allowing invalid-ID aggregation or its no-mutation guarantee to regress undetected.
+**Fix:** Remove `tests/integration/validation-errors.test.ts` from `exclude`, or add a separate CI step that runs this file with a configuration that does not exclude it.
 
-**Fix:** Remove `detectedAgents: []` from this call. Type-check test sources in CI (or add a compile-time fixture assertion) so removed public-input fields cannot survive as ignored object properties.
+### WR-03: Native finalization does not revoke descendant capabilities
 
-### WR-02: The new D-20 aggregate-rejection regression is excluded from every active test run
+**File:** `/Users/ishk.sftckz/Projects/exspecso/native/contained-fs.cc:61`
+**Issue:** The N-API finalizer deletes a root `Handle` without calling `contained::close()`. The `Handle` destructor closes only its own descriptor; it does not set the shared root authority inactive (that happens in the POSIX and Windows `close()` implementations). A retained child handle can consequently remain usable after its root wrapper is garbage-collected. This code is historical and excluded from the shipped TypeScript/Node package, so it is not a V1 release blocker, but it would violate the native capability lifecycle if the path is reactivated.
+**Fix:** Make the finalizer revoke authority before deletion, while suppressing finalizer-time errors:
 
-**Classification:** WARNING
-
-**File:** `/Users/ishk.sftckz/Projects/exspecso/vitest.config.ts:9`
-
-**Issue:** The active Vitest configuration excludes `tests/integration/validation-errors.test.ts`. That file now contains the Plan 01-25 regression for rejected `FINDING-NNN`, duplicate `FIND-NNN`, invalid `PAC-NNN` parent, and zero mutation at lines 169-198. Consequently the CI command in `.github/workflows/ci.yml:33` and the reported 94-test full suite do not execute this new D-20 safety contract. The temporary isolated invocation recorded in the plan summary is not a retained CI gate, so a future regression can ship while all active checks remain green.
-
-**Fix:** Move this maintained D-20 case to an included integration suite (for example, `init-typescript-tracer.test.ts`), or add a dedicated CI command that runs this test with a committed isolated Vitest configuration. Keep the historical native-only cases excluded rather than relying on an excluded file for active validation.
+```cpp
+void finalize(napi_env, void* data, void*) {
+  auto* handle = static_cast<contained::Handle*>(data);
+  try { contained::close(*handle); } catch (...) {}
+  delete handle;
+}
+```
 
 ---
 
-_Reviewed: 2026-09-05T00:32:30Z_
+_Reviewed: 2026-09-05T06:06:53Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
