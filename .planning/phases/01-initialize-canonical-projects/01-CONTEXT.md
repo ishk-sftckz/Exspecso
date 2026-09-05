@@ -23,7 +23,7 @@ Phase 1 delivers the repository-local foundation for Exspecso: one idempotent np
 - **D-05:** Interactive init always shows Claude Code, OpenAI Codex, and OpenCode in that stable order. Every option starts unchecked; G-01-1 supersedes the former informational installed-agent-detection label clause, so no environment detection or suggestions appear and only the user's submitted selection has authority.
 - **D-06:** At least one runtime is required. Submitting an empty selection keeps the selector open with an explanation and permits explicit cancellation.
 - **D-07:** Non-interactive terminals and scripts use repeatable --agent flags. Interactive terminals retain the checkbox selector.
-- **D-08:** Successful init shows /exspecso-start as the canonical next operation, then shows only the exact native invocation for each selected runtime, such as $exspecso-start for Codex.
+- **D-08:** **G-01-2 supersession (approved 2026-09-05):** Successful init writes exactly `Exspecso initialized successfully.` followed by one newline to stdout for committed and no-op results. This narrow revision supersedes only the former canonical-next-operation and selected-runtime invocation completion guidance; runtime-native invocation metadata remains in generated adapters.
 
 ### Adapter refresh conflicts
 - **D-09:** Adapter refresh uses managed-file fingerprints. An unchanged managed file refreshes automatically; a locally modified file is preserved, accompanied by a concise diff and an explicit replacement path.

@@ -172,7 +172,7 @@ export async function runInit(input: InitInput): Promise<number> {
       }
     });
     if (transaction.kind === "committed" || transaction.kind === "no-op") {
-      input.stdout.write(formatCompletion(input.selectedAgents));
+      input.stdout.write(formatCompletion());
       return 0;
     }
     if (transaction.kind === "busy") {
