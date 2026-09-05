@@ -60,17 +60,15 @@ describe("native adapter registry", () => {
     expect(renderAdapter(ADAPTER_REGISTRY.opencode)).toBe(`<!-- exspecso:managed template-version=1 original-body-sha256=${hash} -->\n${body}`);
   });
 
-  it("writes only selected native targets and completion invocations for every non-empty subset", () => {
+  it("formats one exact concise success line independently of runtime selection", () => {
+    expect(formatCompletion()).toBe("Exspecso initialized successfully.\n");
+  });
+
+  it("writes only selected native targets for every non-empty subset", () => {
     for (const selected of nonEmptySubsets(SUPPORTED_AGENTS)) {
       const targets = buildAdapterPlan(selected).map((target) => target.relativePath);
-      const completion = formatCompletion(selected);
 
       expect(targets).toEqual(selected.map((agent) => expected[agent].path));
-      expect(completion.startsWith("/exspecso-start\n")).toBe(true);
-      for (const agent of SUPPORTED_AGENTS) {
-        const expectedLine = `For ${ADAPTER_REGISTRY[agent].displayName}, invoke ${expected[agent].invocation}`;
-        expect(completion.includes(expectedLine)).toBe(selected.includes(agent));
-      }
     }
   });
 
@@ -80,7 +78,6 @@ describe("native adapter registry", () => {
       selections.map(async (selected) => ({
         selected,
         targets: buildAdapterPlan(selected).map((target) => ({ path: target.relativePath, content: target.content })),
-        completion: formatCompletion(selected),
       })),
     );
 
@@ -88,7 +85,6 @@ describe("native adapter registry", () => {
       expect(render.targets.map((target) => target.path)).toEqual(
         render.selected.map((agent) => expected[agent].path),
       );
-      expect(render.completion).toContain("/exspecso-start");
       expect(render.targets.every((target) => target.content.includes("exspecso-start"))).toBe(true);
     }
   });
