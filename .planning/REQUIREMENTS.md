@@ -15,7 +15,7 @@
 - [x] **SETUP-05**: User receives only the native integration files for the runtimes selected during initialization.
 - [ ] **SETUP-06**: User receives only the minimal canonical project files during initialization, without empty Roadmap, Phase, Spec, trace, research, or report artifacts.
 - [ ] **SETUP-07**: User can rerun initialization to add or refresh runtime integrations without replacing confirmed canonical artifacts.
-- [ ] **SETUP-08**: **G-01-2 supersession (approved 2026-09-05):** User receives exactly `Exspecso initialized successfully.` followed by one newline on stdout after committed or no-op initialization, with no next-operation or per-runtime invocation guidance.
+- [x] **SETUP-08**: **G-01-2 supersession (approved 2026-09-05):** User receives exactly `Exspecso initialized successfully.` followed by one newline on stdout after committed or no-op initialization, with no next-operation or per-runtime invocation guidance.
 
 ### Artifact and State Model
 
@@ -215,7 +215,7 @@ Deferred to future releases and not included in the current roadmap.
 | SETUP-05 | Phase 1 | Complete |
 | SETUP-06 | Phase 1 | Gaps Found |
 | SETUP-07 | Phase 1 | Gaps Found |
-| SETUP-08 | Phase 1 | Gaps Found |
+| SETUP-08 | Phase 1 | Complete |
 | ART-01 | Phase 1 | Gaps Found |
 | ART-02 | Phase 1 | Gaps Found |
 | ART-03 | Phase 1 | Complete |

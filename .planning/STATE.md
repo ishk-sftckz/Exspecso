@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: initialize-canonical-projects
 status: executing
-stopped_at: Completed 01-25-PLAN.md
-last_updated: "2026-09-04T17:26:46.260Z"
-last_activity: 2026-09-04
+stopped_at: Completed 01-26-PLAN.md
+last_updated: "2026-09-05T06:00:25.481Z"
+last_activity: 2026-09-05
 last_activity_desc: Phase 01 execution started
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 27
-  completed_plans: 25
+  total_plans: 28
+  completed_plans: 26
 ---
 
 # Project State
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-08-31)
 ## Current Position
 
 Phase: 01 (initialize-canonical-projects) — EXECUTING
-Plan: 2 of 25
+Plan: 2 of 26
 Status: Ready to execute
-Last activity: 2026-09-04 — Phase 01 execution started
+Last activity: 2026-09-05 — Phase 01 execution started
 
 Plan execution: 23 plans are implementation-complete (23 total). Plan 01-23 restores portable child-component validation across the active pure-TypeScript/Node filesystem boundary. The existing real-TTY UAT remains valid and in progress. The 2026-08-31 canonical ingest adds a narrow `FIND-NNN` / `PAC-NNN` stable-ID gap that requires targeted planning before Phase completion; it does not reopen unaffected work or require the UAT to restart.
 
@@ -135,6 +135,7 @@ The records below preserve the investigation history. Their native-provider, exh
 | Phase 01 P23 | 7min | 2 tasks | 2 files |
 | Phase 01-initialize-canonical-projects P24 | 268s | 2 tasks | 7 files |
 | Phase 01 P25 | 5 min | 3 tasks | 6 files |
+| Phase 01 P26 | 2 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -197,6 +198,7 @@ Recent decisions affecting current work:
 - [Phase ?]: G-01-1 removes D-05 runtime detection labels while preserving stable unchecked explicit selection.
 - [Phase ?]: Ambient agent variables have no runtime-selection or adapter-write authority.
 - [Phase ?]: D-20 superseded only to make FIND-NNN canonical, reject FINDING-NNN aliases, and add PAC-NNN as the tenth stable-ID family.
+- [Phase ?]: G-01-2 supersedes only D-08/SETUP-08 success stdout with the exact concise line; runtime-native adapter metadata remains unchanged.
 
 ### Pending Todos
 
@@ -230,6 +232,6 @@ Research follow-up: quick task `260828-haj` fixes the generated skill frontmatte
 
 ## Session Continuity
 
-Last session: 2026-09-04T17:26:46.248Z
-Stopped at: Completed 01-25-PLAN.md
+Last session: 2026-09-05T06:00:25.472Z
+Stopped at: Completed 01-26-PLAN.md
 Resume file: None
