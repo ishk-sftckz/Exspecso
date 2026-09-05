@@ -11,7 +11,7 @@ Exspecso reaches V1 through a contract-led vertical spine: initialize an inspect
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Initialize Canonical Projects** - Users create a portable, inspectable Exspecso project without duplicate or hidden state.
+- [x] **Phase 1: Initialize Canonical Projects** - Users create a portable, inspectable Exspecso project without duplicate or hidden state. (completed 2026-09-05)
 - [ ] **Phase 2: Build the Project Truth Engine** - Users can prove deterministic project-state reasoning before any orientation workflow is built.
 - [ ] **Phase 3: Orient and Plan One Approved Phase** - Users turn confirmed direction into a lightweight Roadmap map and one completely planned, implementation-ready Phase.
 - [ ] **Phase 4: Deliver One Approved Phase** - Users execute one approved Phase through bounded, evidence-gated internal Spec and Task loops.
@@ -219,7 +219,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Initialize Canonical Projects | 26/26 | In Progress|  |
+| 1. Initialize Canonical Projects | 26/26 | Complete    | 2026-09-05 |
 | 2. Build the Project Truth Engine | 0/TBD | Not started | - |
 | 3. Orient and Plan One Approved Phase | 0/TBD | Not started | - |
 | 4. Deliver One Approved Phase | 0/TBD | Not started | - |

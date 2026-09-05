@@ -14,11 +14,10 @@ Approved specs must survive context limits, implementation, failure, verificatio
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ A user can initialize Exspecso in a Git repository through one idempotent `npx exspecso init` flow and select one or more supported coding-agent integrations. — Phase 1
 
 ### Active
 
-- [ ] A user can initialize Exspecso in a Git repository through one idempotent `npx exspecso init` flow and select one or more supported coding-agent integrations.
 - [ ] A user can run discovery and orientation to establish accurate, challenged, user-approved project context and one minimum-complete canonical Roadmap containing lightweight Phase and Spec declarations.
 - [ ] A user can run `/exspecso-plan PHASE-NNN` to materialize one Roadmap-declared Phase and deeply plan every Spec declared under it without flattening their independent boundaries.
 - [ ] A user can invoke the same portable `exspecso-<operation>` skill identity in every supported runtime, documented through the canonical `/exspecso-<operation>` command notation.
@@ -123,6 +122,8 @@ The first end-to-end milestone is a proof gate inside the full V1 roadmap, not t
 | Treat Human Phase Acceptance as the residual human-facing portion of Phase Closure Verification | One evidence hierarchy avoids duplicated UAT, preserves strong lower-level proof, and requests user judgment only where integrated outcomes cannot otherwise be proven | ✓ Accepted |
 | Support bounded correction and typed Delivery Loop outcomes | Recovery must accelerate approved work without hiding ambiguity, failure, or scope changes | — Pending |
 | Treat runtime portability as a shared-contract conformance problem | Agents may present workflows differently but must never fork project truth or lifecycle semantics | — Pending |
+| Ship the Phase 1 initializer through pure TypeScript/Node filesystem capabilities | Host permissions remain the OS boundary; historical native containment material is retained but excluded from active build, test, workflow, and package surfaces | ✓ Accepted — Phase 1 |
+| Emit one concise successful-initialization line | Successful committed and no-op initialization prints exactly `Exspecso initialized successfully.` while native invocation metadata remains in generated adapters | ✓ Accepted — Phase 1 |
 
 ## Evolution
 
@@ -142,4 +143,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-26 after Documentation v13 Phase-oriented workflow alignment*
+*Last updated: 2026-09-05 after Phase 1 completion*

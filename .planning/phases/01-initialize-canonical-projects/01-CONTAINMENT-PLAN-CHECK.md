@@ -1,3 +1,9 @@
+---
+status: superseded
+superseded_by: 01-17-PLAN.md
+reason: Pure TypeScript/Node cutover replaced the historical native containment delivery path.
+---
+
 # Portable containment replan — planning check
 
 Date: 2026-08-28
