@@ -6,9 +6,9 @@ current_phase: 2
 current_phase_name: Build the Project Truth Engine
 status: planning
 stopped_at: Phase 1 complete, ready to plan Phase 2
-last_updated: "2026-09-05T08:16:48.525Z"
+last_updated: "2026-09-05T08:24:11.785Z"
 last_activity: 2026-09-05
-last_activity_desc: Completed quick task 260905-l70 — shorten README introduction
+last_activity_desc: Completed quick task 260905-lc3 — simplify README and explain positioning
 progress:
   total_phases: 6
   completed_phases: 1
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-05)
 Phase: 2 — Build the Project Truth Engine
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-09-05 — Completed quick task 260905-l70: shorten README introduction
+Last activity: 2026-09-05 — Completed quick task 260905-lc3: simplify README and explain positioning
 
 Phase 1 is complete: all 26 plans executed, automated verification passed, real-TTY UAT passed, and the security register reports `threats_open: 0`. Phase 2 is ready for discussion or planning against the frozen Phase 1 artifact and initializer contracts.
 
@@ -220,6 +220,7 @@ None yet.
 | 260905-kwe | Remove AI writing patterns from README using no-ai-slop | 2026-09-05 | be7c208 | Complete | [260905-kwe-remove-ai-writing-patterns-from-readme-u](./quick/260905-kwe-remove-ai-writing-patterns-from-readme-u/) |
 | 260905-l44 | Restore founder motivation and delivery problem in README | 2026-09-05 | d772574 | Complete | [260905-l44-restore-founder-motivation-and-delivery-](./quick/260905-l44-restore-founder-motivation-and-delivery-/) |
 | 260905-l70 | Replace README founder narrative with concise product introduction | 2026-09-05 | ba1912c | Complete | [260905-l70-replace-readme-founder-narrative-with-co](./quick/260905-l70-replace-readme-founder-narrative-with-co/) |
+| 260905-lc3 | Simplify README and explain Exspecso positioning among agent workflows | 2026-09-05 | 2be2d0b | Complete | [260905-lc3-simplify-readme-and-explain-exspecso-pos](./quick/260905-lc3-simplify-readme-and-explain-exspecso-pos/) |
 
 Research follow-up: quick task `260828-haj` fixes the generated skill frontmatter incompatibility recorded in `docs/research/initialization-runtime-comparison.md`. Codex 0.150.0-alpha.8 and Claude Code 2.1.207 expose the intended metadata; fingerprints and migration/conflict preflight pass. End-to-end init migration still requires the approved native environment. This does not change Phase 1 completion or containment approval.
 
