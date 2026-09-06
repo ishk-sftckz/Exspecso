@@ -96,6 +96,17 @@ The Architecture, Workflow, Build Guide, Registry, and Foundations updates dated
 - Conformance fixtures must cover no-human closure, batched/resumable acceptance, selective retest, and plan-gap routing.
 - This refinement does not alter the active Phase 1 UAT workflow. That UAT remains evidence for building Exspecso, not a future project `acceptance.md` artifact.
 
+## 2026-09-06 Canonical Alignment and Context-Read Clarification
+
+The project owner reaffirmed that development follows the current Notion Canonical Implementation Documents. All five pages were read directly during the Phase 2 discussion (source edit date 2026-08-30). The normalized Spec must carry their Phase revision approval, bounded planning-context orchestration, and Phase findings contracts explicitly.
+
+- One explicit approval authorizes the entire Phase planning bundle at `approvedRevision == revision`; Specs retain independent artifacts without independent user approval lifecycles. Planning changes increment the Phase revision and require renewed approval.
+- Implementation reports meaningful discoveries through lazy Phase `findings.md`; it cannot repair an insufficient plan by changing approved planning content. Execution blockers preserve valid approval; blocking plan gaps route to Phase planning.
+- The user accepted internal handling of ordinary relevant artifact/repository reads, with user involvement for product decisions or scope changes. `NEED_CONTEXT` retains `WHY`, `REQUEST`, and `BLOCKED_ON` as internal structured context. It is not a user-facing permission ceremony, a stream of chat updates, or a new permanent log. Host access controls still apply.
+- Context requests are bounded; only relevant synthesized findings return to the coordinator. Required inputs are loaded directly, and durable conclusions are captured in existing canonical artifacts as needed.
+- Existing conflict-resolution rules still reject stale Spec-scoped delivery, Task-boundary step mode, and `new-roadmap` examples. Later explicit Phase 1 setup decisions remain in force: opaque project identity, equal unchecked runtime selection without detection, the closed ten-family ID registry, pure TypeScript/Node, and concise initialization stdout. Old illustrative config/ID/setup examples do not reopen completed work.
+- This synchronization clarifies existing requirements and their phase ownership; it does not mark the engine implemented or move later runtime, correction, or release work into Phase 2.
+
 ## Validation
 
 Completion requires:

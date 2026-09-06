@@ -1,7 +1,8 @@
 # SPEC: Exspecso Documentation v13 Phase-Oriented Workflow
 
 **Source version:** Documentation v13
-**Source date:** 2026-08-26
+**Source date:** 2026-08-30; checked against all five canonical Notion pages on 2026-09-06
+**User clarification:** 2026-09-06 — ordinary relevant context reads are handled internally
 **Normalization status:** Approved by project owner
 **Decision precedence:** See `docs/plans/2026-08-26-v13-phase-oriented-workflow-design.md`
 
@@ -17,6 +18,8 @@ This normalized Spec synthesizes the current implementation contracts from:
 - [Step-by-Step Build Guide v13](https://app.notion.com/p/3ad7d0b4dee28193abdadeecb779a5af)
 
 The Notion pages contain isolated stale v12 fragments. The approved design resolves those contradictions and keeps the dominant v13 Phase-oriented contracts below.
+
+Current Notion Canonical Implementation Documents govern development; this file is their local normalization, not an independent strategy. Apply explicit subsequent user decisions, including the Phase 1 setup corrections and the quiet context-read clarification below. Historical examples do not undo those decisions. If a new source change conflicts with an explicit user decision, surface that specific conflict instead of silently replacing either intent.
 
 ## Normal User Flow
 
@@ -75,12 +78,46 @@ The operation:
 3. Refines the lightweight Spec set only when necessary and with user confirmation.
 4. Materializes the Phase `brief.md` and `status.md`.
 5. Deeply plans every declared Spec into its own bounded `spec.md`, `plan.md`, `tasks.md`, and `status.md` family.
-6. Requires explicit confirmation of the Phase brief and every detailed Spec/Plan/Task family before the Phase becomes implementation-ready.
+6. Presents the complete Phase brief and Spec/Plan/Task bundle, then asks for approval of that exact Phase revision before implementation becomes ready. There is no independent user-approval lifecycle per Spec.
 7. Does not modify application source code.
 
 Internal Spec planning remains a real bounded operation, but users do not schedule a separate public `plan SPEC-NNN` command in the normal v13 workflow.
 
 Every detailed Spec remains independently reconstructible, verifiable, correctable, resumable, traceable, and reviewable. Phase planning must never flatten all Specs into one Phase-wide Plan or Task list.
+
+### Bounded Planning Contexts
+
+One planning command may span bounded contexts, workers, or sessions. The coordinator retains confirmed Phase intent, the lightweight Spec map, dependencies, material decisions, concise synthesized findings, and integration questions. Each internal Spec planner receives only its relevant subset. Raw worker transcripts and every sibling Spec's detailed plan are not default context.
+
+Distill confirmed intent so later contexts can reconstruct it from artifacts. The runtime may rotate a pressured context without requiring another user command; a small Phase may stay in one healthy context.
+
+### Revision-Bound Phase Approval
+
+The Phase brief records `revision`, `approvedRevision`, and approval metadata. The Phase revision covers the authoritative Phase brief and all detailed Spec/Plan/Task artifacts in its planning bundle.
+
+- Planning asks an explicit question identifying the Phase and revision being approved.
+- A clearly affirmative natural-language reply is sufficient; no magic keyword is required. Ambiguous replies or requested changes do not approve the revision.
+- The runtime interprets the reply; the deterministic helper persists the structured approval result.
+- Implementation requires `approvedRevision == revision`.
+- Any authoritative planning mutation increments `revision`, preserving the previous `approvedRevision` until the new revision is approved.
+- Independent Spec artifacts and internal readiness checks do not introduce separate user approval ceremonies.
+
+## Operation Context and Quiet Escalation
+
+The helper returns exact canonical file or section references for each operation. Outer Phase scheduling uses the Phase brief and Roadmap Spec dependency/status map. The selected Task context includes Constitution, applicable Standards, its approved Spec and Plan, its own `tasks.md#TASK-NNN` section, relevant repository files or digests, relevant durable Decisions/trace, and its failure learning or validated resume state when present.
+
+Additional context is requested through the internal contract:
+
+```text
+NEED_CONTEXT
+WHY: <why the information is needed for the current work>
+REQUEST: <specific artifact, section, or repository area>
+BLOCKED_ON: <missing fact or decision>
+```
+
+**User clarification, 2026-09-06:** Exspecso handles ordinary relevant repository and artifact reads internally. The reason belongs to the worker/coordinator context request; it is not a per-read user permission prompt or mandatory chat update. The coordinator consumes concise relevant findings rather than forwarding raw retrieval traffic into the user's discussion. Ask the user when the missing input is a product decision or scope change; existing host access permissions still apply.
+
+Required context is included without an escalation ritual. Optional context is bounded to the stated need; a request does not authorize unrestricted context loading, new scope, or implementation outside approved intent. Routine requests are ephemeral orchestration, not new Decision Log entries or a permanent context-request artifact. Durable conclusions belong in the existing canonical artifacts when useful for reconstruction.
 
 ## Planning Completeness
 
@@ -100,11 +137,13 @@ One Phase, one Spec, or one Task is valid when sufficient. No fixed artifact-cou
 
 A Phase can enter delivery only when:
 
-- its detailed Phase plan is approved;
-- every declared Spec has approved detailed planning artifacts;
+- its complete planning bundle has current revision-bound approval (`approvedRevision == revision`);
+- every declared Spec has complete detailed planning artifacts and verification intent within that approved bundle;
 - all Phase dependencies are done;
 - Phase and Spec dependency graphs are valid;
 - no active blocker prevents safe delivery.
+
+An unresolved `blocking-plan-gap` prevents delivery under an insufficient plan. Stale approval routes the user back to `/exspecso-plan PHASE-NNN`.
 
 Dependencies gate delivery, not planning. Declared order is a preferred tie-breaker among READY work and never an implicit dependency.
 
@@ -188,6 +227,20 @@ A Phase becomes done only when all required Specs are done, every required Phase
 
 ## Execution Modes and Results
 
+### Implementation Findings and Planning Authority
+
+Implementation executes the approved bundle and reports reality. It cannot add or rewrite Specs, Requirements, Plans, or Task scope to repair an insufficient plan. Updating Task progress, evidence, and resume state is execution bookkeeping, not a planning mutation.
+
+Meaningful unexpected findings are recorded lazily in `.exspecso/phases/phase-NNN-slug/findings.md`. Stable `FIND-NNN` sections include source Spec/Task, observation, evidence, impact, recommended next action, and `open | deferred | resolved` status.
+
+- `non-blocking`: record/defer and continue approved work without absorbing adjacent scope.
+- `execution-blocker`: stop as blocked while preserving approval if the plan remains correct.
+- `blocking-plan-gap`: keep the Phase incomplete, return `needs-plan-revision`, and route to Phase planning.
+
+Replanning loads unresolved blocking findings and verified work, revises only necessary planning content, increments the Phase revision, and requests approval again. Resolved findings retain their evidence and may link `resolvedByRevision`. Later implementation preserves unaffected verified checkpoints and reopens/reverifies only work whose linked intent or evidence became stale.
+
+### Modes
+
 `execution.mode` supports:
 
 - `continuous` (default): complete the current Spec, recompute READY Specs, and continue until Phase completion or a terminal result;
@@ -217,6 +270,8 @@ Results must project the outer Phase state and, when relevant, the selected inne
 
 The following are internal deterministic helper operations, not new public slash commands:
 
+- `phase-approval-check` checks current revision-bound implementation authority.
+- `finding-record` and `finding-resolve` preserve meaningful Phase findings and their resolution links without inventing semantic decisions.
 - `phase-closure-check` resolves and evaluates declared Phase Closure Verification evidence, including what may be reused from Task or Spec scope.
 - `phase-acceptance-status` reads and validates lazy `acceptance.md` state, including `PAC-NNN` statuses and resumability.
 - `phase-acceptance-record` records an acceptance result with concise user failure evidence and updates only the affected durable check state.
@@ -227,6 +282,9 @@ These helpers preserve the separation between canonical artifacts, deterministic
 
 The conformance fixture suite must prove:
 
+- **revision-bound approval:** missing/stale approval cannot authorize implementation; clear approval binds the complete Phase bundle without separate Spec approval lifecycles;
+- **bounded context:** each Task reconstructs from exact references; justified optional reads remain internal, while unresolved product/scope decisions reach the user;
+- **planning continuity:** bounded per-Spec planning and coordinator context rotation preserve confirmed intent without raw conversation replay;
 - **no-human closure:** a Phase with no residual human checks can pass Phase Closure Verification and complete without creating `acceptance.md`;
 - **batched/resumable acceptance:** actionable `PAC-NNN` checks batch by default and a fresh session resumes only pending or needs-retest checks from durable state;
 - **selective retest:** a bounded approved-intent correction invalidates only acceptance checks made stale and preserves unrelated passed evidence;

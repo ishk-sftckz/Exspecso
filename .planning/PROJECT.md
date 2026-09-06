@@ -71,6 +71,12 @@ Documentation v13 defines a Phase-oriented user workflow over bounded internal S
 
 Primary users are developers, solo founders, and small engineering teams that want meaningful AI-agent autonomy inside durable intent, bounded scope, explicit evidence, and recoverable execution—without uncontrolled vibe coding or heavyweight process management.
 
+**Canonical alignment confirmed 2026-09-06:** Development follows the current Notion Canonical Implementation Documents, with local specifications maintained as their normalization. Read relevant source sections before asking the user to repeat established intent. Explicit later user decisions remain recorded; isolated historical examples do not silently undo them.
+
+Phase approval binds the entire planning bundle to `approvedRevision == revision`; there is no independent user-approval lifecycle per Spec. Any authoritative planning change increments the Phase revision. Implementation reports meaningful discoveries through lazy Phase `findings.md` and routes insufficient plans to `/exspecso-plan PHASE-NNN` instead of rewriting its own scope.
+
+Ordinary relevant artifact and repository reads are internal harness work. `NEED_CONTEXT` supplies a short internal reason, exact requested context, and missing fact; it does not require per-read user approval or interrupt the main discussion with retrieval chatter. The user is involved when product judgment or a scope change is required. One Phase workflow may span bounded contexts without replaying raw worker transcripts or requiring another user command.
+
 The selected delivery approach is a **contract-led vertical spine**:
 
 1. Establish the CLI, artifact contracts, stable IDs, templates, and atomic-write foundation.
@@ -109,6 +115,8 @@ The first end-to-end milestone is a proof gate inside the full V1 roadmap, not t
 |----------|-----------|---------|
 | Target the complete V1 release rather than stopping at the first proof milestone | The requested roadmap must cover the published package, all three runtimes, and hardening; the proof flow remains an intermediate gate | — Pending |
 | Use Documentation v13's Phase-oriented workflow as the implementation source of truth | The Exspecso hub marks v13 canonical; the accepted migration ADR resolves isolated stale fragments in favor of the dominant Phase-oriented contracts | ✓ Accepted |
+| Bind approval to one complete Phase planning revision | Preserves user authority over the full Spec/Plan/Task bundle without separate Spec approval ceremonies | ✓ Accepted — Notion alignment, 2026-09-06 |
+| Handle ordinary relevant context reads internally | Structured reasons keep context bounded while product discussion remains free of per-read permission requests and retrieval chatter | ✓ Accepted — user clarification, 2026-09-06 |
 | Maintain one canonical `.exspecso/roadmap.md` with stable ID `ROADMAP` | A single evolving Roadmap avoids duplicate lifecycle state while Git history and durable decisions preserve change | — Pending |
 | Standardize commands on the portable `exspecso-<operation>` skill identity and `/exspecso-<operation>` documentation notation | Lowercase kebab-case is valid across the shared Agent Skills format; adapters translate only host-owned invocation syntax rather than renaming operations | — Pending |
 | Let `/exspecso-start` declare the complete lightweight Phase and Spec delivery map | Users see the full delivery shape while Phase folders and detailed Spec artifacts remain lazy until Phase planning | ✓ Accepted |
@@ -143,4 +151,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-05 after Phase 1 completion*
+*Last updated: 2026-09-06 after canonical Notion alignment and quiet context-read clarification*

@@ -1,7 +1,7 @@
 # Requirements: Exspecso
 
 **Defined:** 2026-08-21
-**Updated:** 2026-08-31 for Documentation v13 Phase Closure Verification and Human Phase Acceptance
+**Updated:** 2026-09-06 for canonical Notion approval/context/findings alignment and the user's quiet context-read clarification
 **Core Value:** Approved specs must survive context limits, implementation, failure, verification, runtime changes, and session boundaries without losing intent or allowing unproven work to count as complete.
 
 ## v1 Requirements
@@ -62,20 +62,20 @@
 - [ ] **PLAN-12**: User receives the smallest viable implementation approach and minimum Task set that satisfies approved scope and evidence obligations.
 - [ ] **PLAN-13**: User receives one canonical `tasks.md` whose stable Task sections each declare linked Requirements, Acceptance Criteria, objective, scope boundary, dependencies, status, and concrete verification contract.
 - [ ] **PLAN-14**: User receives a failing-reproduction requirement for bug-fix work whenever reproduction is technically feasible.
-- [ ] **PLAN-15**: User can approve or revise the Phase brief and every detailed Spec, Plan, and Task family before the Phase becomes implementation-ready.
+- [ ] **PLAN-15**: User approves the entire Phase brief and detailed Spec/Plan/Task bundle through one explicit question for the current Phase revision. A clearly affirmative reply records `approvedRevision == revision`; ambiguity or requested changes do not approve. Any authoritative planning change increments `revision`, requiring renewed approval without independent Spec approval lifecycles.
 - [ ] **PLAN-16**: User can plan work without Exspecso modifying application source code.
 - [ ] **PLAN-17**: User receives complete parent-outcome coverage before Exspecso removes duplication, future-only work, or unnecessary decomposition.
 - [ ] **PLAN-18**: User receives no child work that lacks justification through a current approved parent outcome.
 - [ ] **PLAN-19**: User can receive a one-Phase, one-Spec, or one-Task decomposition when one unit is sufficient, without fixed artifact-count targets.
-- [ ] **PLAN-20**: User can trust that Phase planning preserves independently bounded Spec artifacts instead of flattening the Phase into one Plan, Task list, context, or evidence boundary.
+- [ ] **PLAN-20**: User can trust that Phase planning preserves independently bounded Spec artifacts and contexts without flattening the Phase into one Plan, Task list, or evidence boundary. The coordinator uses confirmed intent and concise findings, per-Spec planning receives only relevant inputs, and context/session rotation can continue the same workflow without raw transcript replay or another user command.
 - [ ] **PLAN-21**: User can trust that merely declaring or materializing a Phase does not arbitrarily set it as the active current-work Phase.
 
 ### Deterministic Control
 
 - [ ] **CTRL-01**: User receives an operation-specific context contract containing exact canonical file or section references.
-- [ ] **CTRL-02**: User receives the smallest sufficient Task context by default and can grant explicit context escalation through a structured `NEED_CONTEXT` request.
-- [ ] **CTRL-03**: User can reconstruct the next correct action from canonical artifacts and repository state in a cold session.
-- [ ] **CTRL-04**: User receives mechanically computed Task, Spec, Phase, and Roadmap status rather than status inferred from conversation history.
+- [ ] **CTRL-02**: User receives the smallest sufficient Task context by default. Agents request additional relevant artifacts or repository areas through internal `NEED_CONTEXT` fields `WHY`, `REQUEST`, and `BLOCKED_ON`; ordinary relevant reads need no per-read user permission or chat update. The user is involved for product decisions or scope changes, and host access controls still apply.
+- [ ] **CTRL-03**: User can reconstruct the next correct action from canonical artifacts and repository state in a cold session, including current Phase revision approval, unresolved findings, and acceptance state.
+- [ ] **CTRL-04**: User receives mechanically computed Task, Spec, Phase, and Roadmap status rather than status inferred from conversation history; current Phase implementation authority requires `approvedRevision == revision`, and an unresolved `blocking-plan-gap` prevents completion.
 - [ ] **CTRL-05**: User receives validation errors for unknown Phase, Spec, or Task dependency IDs.
 - [ ] **CTRL-06**: User receives validation errors for dependency cycles at Phase, Spec, or Task level.
 - [ ] **CTRL-07**: User can plan an artifact while its dependencies remain incomplete, while delivery readiness remains blocked until explicit dependencies are satisfied.
@@ -91,15 +91,15 @@
 
 ### Evidence-Gated Delivery
 
-- [ ] **DELV-01**: User can start a bounded Phase Delivery Loop for one approved, implementation-ready Phase with `/exspecso-implement PHASE-NNN`.
+- [ ] **DELV-01**: User can start or continue a bounded Phase Delivery Loop only for the current approved revision (`approvedRevision == revision`) of one implementation-ready Phase with `/exspecso-implement PHASE-NNN`; missing/stale approval routes to Phase planning.
 - [ ] **DELV-02**: User receives a blocked result naming unmet Phase or Spec dependencies, invalid graphs, missing detailed Spec plans, or active blockers when the target Phase is not delivery-ready.
 - [ ] **DELV-03**: User can trust that the approved Phase and its fully planned Spec set are the outer Delivery Loop's finite work budget and that neither loop invents Specs, Requirements, Tasks, or scope.
 - [ ] **DELV-04**: User receives continuous execution by default, with Exspecso completing one selected Spec Delivery Loop, recomputing READY Specs, and continuing until the Phase completes or reaches a terminal result.
 - [ ] **DELV-05**: User can select step execution and receive a safe `paused` result at a completed Spec boundary while Task checkpoints remain internal safety boundaries.
 - [ ] **DELV-06**: User can interrupt delivery and receive an explicit `interrupted` result rather than ambiguous loop state.
 - [ ] **DELV-07**: User can trust that implementation changes are limited to the current Task's approved scope and linked Acceptance Criteria.
-- [ ] **DELV-08**: User receives a recorded deferred finding for useful non-blocking work outside the current Task instead of silent implementation.
-- [ ] **DELV-09**: User receives an explicit stop when an out-of-scope discovery blocks safe Task completion.
+- [ ] **DELV-08**: User receives meaningful unexpected implementation findings in lazy Phase `findings.md`, using stable `FIND-NNN` records with source, evidence, impact, classification, resolution state, and next action; non-blocking adjacent work is recorded/deferred without silent implementation.
+- [ ] **DELV-09**: User receives an explicit stop for blocking discoveries: an `execution-blocker` preserves approval if the plan remains correct, while a `blocking-plan-gap` keeps the Phase incomplete and returns `needs-plan-revision`. Implementation cannot rewrite planning artifacts to repair its own work budget.
 - [ ] **DELV-10**: User must approve a revised Phase planning bundle before discovered work can expand implementation scope.
 - [ ] **DELV-11**: User receives the Task's declared evidence contract as the completion target before implementation changes begin.
 - [ ] **DELV-12**: User receives a failing reproduction before a bug-fix implementation when reproduction is technically feasible.
@@ -132,7 +132,7 @@
 - [ ] **CONT-02**: User receives resume state containing only useful handoff data such as Git base, changed areas, latest verification, blocker, and next action.
 - [ ] **CONT-03**: User can trust that a resume checkpoint never marks a Task complete or permits the next sequential Task to start.
 - [ ] **CONT-04**: User can resume the first incomplete Task after Exspecso validates persisted assumptions against current Git and repository state.
-- [ ] **CONT-05**: User can rerun implementation without repeating Tasks that already have accepted verified checkpoints.
+- [ ] **CONT-05**: User can rerun implementation without repeating unaffected accepted verified checkpoints; after an approved plan revision, only work whose linked intent or evidence became stale is reopened/reverified.
 - [ ] **CONT-06**: User receives one atomic Git commit per successfully verified Task by default in Git repositories.
 - [ ] **CONT-07**: User can disable automatic Task commits without disabling the mandatory verified artifact checkpoint.
 - [ ] **CONT-08**: User can invoke `/exspecso-implement PHASE-NNN` in a fresh session or supported runtime and resume `stage: phase-acceptance` from durable `acceptance.md`, presenting only `pending` or `needs-retest` checks while preserving passed checks unless later work made their evidence stale.
@@ -353,4 +353,4 @@ Deferred to future releases and not included in the current roadmap.
 
 ---
 *Requirements defined: 2026-08-21*
-*Last updated: 2026-08-31 after Documentation v13 Phase Closure Verification and Human Phase Acceptance ingest*
+*Last updated: 2026-09-06 after canonical Notion alignment and quiet context-read clarification; existing requirement IDs, phase mappings, and completion states preserved*
