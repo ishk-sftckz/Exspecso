@@ -6,9 +6,9 @@ current_phase: 2
 current_phase_name: Build the Project Truth Engine
 status: planning
 stopped_at: Phase 2 context gathered; canonical Notion aligned; ready for planning
-last_updated: "2026-09-06T12:16:39.999Z"
-last_activity: 2026-09-06
-last_activity_desc: "Completed quick task 260906-qlz: align local strategy with canonical Notion and quiet context requests"
+last_updated: "2026-09-07T06:09:42.090Z"
+last_activity: 2026-09-07
+last_activity_desc: "Completed quick task 260907-ia3: require unslop for readable agent results"
 progress:
   total_phases: 6
   completed_phases: 1
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-05)
 Phase: 2 — Build the Project Truth Engine
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-09-06 — Completed quick task 260906-qlz: align local strategy with canonical Notion and quiet context requests
+Last activity: 2026-09-07 - Completed quick task 260907-ia3: require unslop for readable agent results
 
 Phase 1 is complete: all 26 plans executed, automated verification passed, real-TTY UAT passed, and the security register reports `threats_open: 0`. Phase 2 is ready for discussion or planning against the frozen Phase 1 artifact and initializer contracts.
 
@@ -222,6 +222,7 @@ None yet.
 | 260905-l70 | Replace README founder narrative with concise product introduction | 2026-09-05 | ba1912c | Complete | [260905-l70-replace-readme-founder-narrative-with-co](./quick/260905-l70-replace-readme-founder-narrative-with-co/) |
 | 260905-lc3 | Simplify README and explain Exspecso positioning among agent workflows | 2026-09-05 | 2be2d0b | Complete | [260905-lc3-simplify-readme-and-explain-exspecso-pos](./quick/260905-lc3-simplify-readme-and-explain-exspecso-pos/) |
 | 260906-qlz | Align local strategy with canonical Notion and quiet context requests | 2026-09-06 | 542c019 | Complete | [260906-qlz-align-local-strategy-with-canonical-noti](./quick/260906-qlz-align-local-strategy-with-canonical-noti/) |
+| 260907-ia3 | Require unslop for readable agent results | 2026-09-07 | 9643862 | Complete | [260907-ia3-require-unslop-for-readable-agent-result](./quick/260907-ia3-require-unslop-for-readable-agent-result/) |
 
 Research follow-up: quick task `260828-haj` fixes the generated skill frontmatter incompatibility recorded in `docs/research/initialization-runtime-comparison.md`. Codex 0.150.0-alpha.8 and Claude Code 2.1.207 expose the intended metadata; fingerprints and migration/conflict preflight pass. End-to-end init migration still requires the approved native environment. This does not change Phase 1 completion or containment approval.
 
