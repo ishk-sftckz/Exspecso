@@ -1,3 +1,10 @@
+## Writing results
+
+1. **Unslop.** Before writing user-facing replies or creating or revising research, context, plans, reviews, or summaries, read and apply the installed `unslop` skill. Resolve its `SKILL.md` through the available skill catalog; the local fallback is `$HOME/.agents/skills/unslop/SKILL.md`.
+2. Lead with what was found, changed, or recommended and why it matters. Distinguish verified facts, proposals, and unresolved questions. Explain necessary technical terms on first use; use a concrete example for rules that are hard to follow.
+3. In detailed artifacts, place a short plain-language explanation before technical detail while preserving required structure. Keep approved meaning, exact IDs, commands, schemas, citations, and verification criteria intact.
+4. Before delivery, run the unslop self-audit. Check that the explanation states the result, its practical effect, and any remaining decision without requiring the user to decode internal field names or read supporting files.
+
 <!-- GSD:project-start source:PROJECT.md -->
 
 ## Project
